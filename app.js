@@ -350,6 +350,14 @@ function updateStats() {
         // For each name, count distinct locations (cluster nearby segments)
         const counts = {};
         Object.entries(streetsByName).forEach(([name, instances]) => {
+            // Check if this is a highway - highways are always counted as 1
+            const firstInstance = instances[0];
+            const fullName = firstInstance.name.toLowerCase();
+            if (fullName.includes('highway') || fullName.includes('hwy')) {
+                counts[name] = 1;
+                return;
+            }
+
             // Get centroids of all segments with this name
             const locations = instances.map(street => {
                 const coords = street.geometry.coordinates;
