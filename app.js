@@ -21,7 +21,7 @@ const colors = {
     suburbs: '#f39c12',
     trees: '#27ae60',
     royalty: '#9b59b6',
-    famous: '#e67e22'
+    famous: '#f1c40f'
 };
 
 // Sample data for demonstration
