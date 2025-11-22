@@ -1,0 +1,27 @@
+# Data files (can be large)
+data/*.geojson
+data/*.json
+data/*.shp
+data/*.zip
+
+# Keep data directory
+!data/.gitkeep
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment
+.env
+.env.local

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sydney Streets - Interactive Street Name Visualization</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: #2c3e50;
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .subtitle {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-top: 0.25rem;
+        }
+
+        .container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        #sidebar {
+            width: 320px;
+            background: #f8f9fa;
+            border-right: 1px solid #dee2e6;
+            padding: 1.5rem;
+            overflow-y: auto;
+        }
+
+        #map {
+            flex: 1;
+            height: 100%;
+        }
+
+        .control-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .control-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #2c3e50;
+        }
+
+        .control-group input,
+        .control-group select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .stats {
+            background: white;
+            padding: 1rem;
+            border-radius: 4px;
+            border: 1px solid #dee2e6;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.85rem;
+        }
+
+        .stat-value {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            width: 100%;
+            margin-top: 0.5rem;
+        }
+
+        button:hover {
+            background: #2980b9;
+        }
+
+        button:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+        }
+
+        .info {
+            background: #e3f2fd;
+            padding: 1rem;
+            border-radius: 4px;
+            border-left: 4px solid #2196f3;
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            #sidebar {
+                width: 100%;
+                max-height: 40vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Sydney Streets</h1>
+        <div class="subtitle">Interactive visualization of street names and patterns across Sydney</div>
+    </header>
+
+    <div class="container">
+        <div id="sidebar">
+            <div class="info">
+                Load street data to begin exploring Sydney's street name patterns.
+            </div>
+
+            <div class="control-group">
+                <label for="data-source">Data Source</label>
+                <select id="data-source">
+                    <option value="sample">Sample Data (Demo)</option>
+                    <option value="nsw">NSW Government Data</option>
+                    <option value="osm">OpenStreetMap</option>
+                </select>
+                <button id="load-data">Load Data</button>
+            </div>
+
+            <div class="control-group">
+                <label for="name-filter">Filter by Street Name</label>
+                <input type="text" id="name-filter" placeholder="e.g., George, Park, Oak...">
+            </div>
+
+            <div class="control-group">
+                <label for="category">Category</label>
+                <select id="category">
+                    <option value="all">All Streets</option>
+                    <option value="common">Most Common Names</option>
+                    <option value="suburbs">Named After Suburbs</option>
+                    <option value="trees">Tree Names</option>
+                    <option value="royalty">Royalty Names</option>
+                </select>
+            </div>
+
+            <div class="stats">
+                <h3 style="margin-bottom: 0.75rem; font-size: 1rem;">Statistics</h3>
+                <div class="stat-item">
+                    <span class="stat-label">Total Streets</span>
+                    <span class="stat-value" id="stat-total">-</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Visible Streets</span>
+                    <span class="stat-value" id="stat-visible">-</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Unique Names</span>
+                    <span class="stat-value" id="stat-unique">-</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Most Common</span>
+                    <span class="stat-value" id="stat-common">-</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="map"></div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
