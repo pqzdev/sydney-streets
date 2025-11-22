@@ -330,12 +330,23 @@ function filterStreets() {
         return true;
     });
 
-    // Update visible streets for stats
-    visibleStreets = filtered.map(feature => ({
-        name: feature.properties.name || 'Unnamed',
-        baseName: getBaseName(feature.properties.name || ''),
-        type: feature.properties.type || feature.properties.highway || ''
-    }));
+    // Update visible streets for stats - deduplicate by name+suburb
+    const uniqueVisible = new Map();
+    filtered.forEach(feature => {
+        const name = feature.properties.name || 'Unnamed';
+        const suburb = feature.properties.suburb || feature.properties.postcode || 'Unknown';
+        const key = `${name.toLowerCase()}_${suburb.toLowerCase()}`;
+
+        if (!uniqueVisible.has(key)) {
+            uniqueVisible.set(key, {
+                name: name,
+                baseName: getBaseName(name),
+                type: feature.properties.type || feature.properties.highway || ''
+            });
+        }
+    });
+
+    visibleStreets = Array.from(uniqueVisible.values());
 
     displayStreets(filtered);
     updateStats();
@@ -363,12 +374,17 @@ function updateStats() {
     document.getElementById('stat-visible').textContent = visibleStreets.length > 0 ? visibleStreets.length : allStreets.length;
     document.getElementById('stat-unique').textContent = uniqueNames;
 
-    // Display top 10
+    // Display top 10 with proper capitalization
     const topTenEl = document.getElementById('top-ten');
     if (topTen.length > 0) {
-        topTenEl.innerHTML = topTen.map((entry, index) =>
-            `${index + 1}. ${entry[0]} (${entry[1]})`
-        ).join('<br>');
+        topTenEl.innerHTML = topTen.map((entry, index) => {
+            // Capitalize each word in the street name (proper noun)
+            const capitalizedName = entry[0]
+                .split(' ')
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(' ');
+            return `${index + 1}. ${capitalizedName} (${entry[1]})`;
+        }).join('<br>');
     } else {
         topTenEl.textContent = '-';
     }
