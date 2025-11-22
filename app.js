@@ -20,7 +20,8 @@ const colors = {
     common: '#e74c3c',
     suburbs: '#f39c12',
     trees: '#27ae60',
-    royalty: '#9b59b6'
+    royalty: '#9b59b6',
+    famous: '#e67e22'
 };
 
 // Sample data for demonstration
@@ -98,9 +99,14 @@ const greaterSydneyLGAs = [
 
 // Categories and patterns
 const categories = {
-    trees: ['oak', 'pine', 'elm', 'maple', 'ash', 'birch', 'cedar', 'willow'],
-    royalty: ['george', 'victoria', 'elizabeth', 'william', 'albert', 'edward', 'mary', 'anne'],
-    // suburbs will be populated from data
+    trees: ['oak', 'pine', 'elm', 'maple', 'ash', 'birch', 'cedar', 'willow', 'plane', 'poplar',
+            'fig', 'wattle', 'eucalyptus', 'gum', 'acacia', 'banksia', 'fir', 'spruce', 'cypress'],
+    royalty: ['george', 'victoria', 'elizabeth', 'william', 'albert', 'edward', 'mary', 'anne',
+              'charlotte', 'margaret', 'adelaide', 'alice', 'henry', 'charles', 'philip', 'andrew',
+              'queen', 'king', 'prince', 'princess', 'duke', 'duchess'],
+    famous: ['cook', 'macquarie', 'phillip', 'bligh', 'hunter', 'darling', 'bourke', 'fitzroy',
+             'wentworth', 'lawson', 'blaxland', 'hume', 'parkes', 'bradfield', 'banks', 'flinders',
+             'sturt', 'mitchell', 'oxley', 'cunningham']
 };
 
 // Initialize UI
@@ -242,6 +248,8 @@ function getStreetColor(feature) {
         return colors.trees;
     } else if (category === 'royalty' && categories.royalty.some(royal => name.includes(royal))) {
         return colors.royalty;
+    } else if (category === 'famous' && categories.famous.some(person => name.includes(person))) {
+        return colors.famous;
     } else if (category === 'common') {
         // Color most common street names
         const commonNames = ['george', 'elizabeth', 'victoria', 'king', 'queen', 'park', 'main', 'church'];
@@ -282,6 +290,10 @@ function filterStreets() {
                 }
             } else if (category === 'royalty') {
                 if (!categories.royalty.some(royal => name.includes(royal))) {
+                    return false;
+                }
+            } else if (category === 'famous') {
+                if (!categories.famous.some(person => name.includes(person))) {
                     return false;
                 }
             } else if (category === 'common') {
