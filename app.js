@@ -231,11 +231,25 @@ function displayStreets(streets) {
 function getStreetColor(feature) {
     const category = document.getElementById('category').value;
     const name = (feature.properties.name || '').toLowerCase();
+    const baseName = getBaseName(feature.properties.name || '').toLowerCase();
 
+    // Color by category
     if (category === 'trees' && categories.trees.some(tree => name.includes(tree))) {
         return colors.trees;
     } else if (category === 'royalty' && categories.royalty.some(royal => name.includes(royal))) {
         return colors.royalty;
+    } else if (category === 'common') {
+        // Color most common street names
+        const commonNames = ['george', 'elizabeth', 'victoria', 'king', 'queen', 'park', 'main', 'church'];
+        if (commonNames.some(common => baseName === common)) {
+            return colors.common;
+        }
+    } else if (category === 'suburbs') {
+        // Color streets named after suburbs (basic check)
+        const suburbWords = ['sydney', 'parramatta', 'bondi', 'manly', 'penrith', 'liverpool', 'blacktown'];
+        if (suburbWords.some(suburb => baseName.includes(suburb))) {
+            return colors.suburbs;
+        }
     }
 
     return colors.default;
@@ -249,6 +263,7 @@ function filterStreets() {
 
     let filtered = streetData.features.filter(feature => {
         const name = (feature.properties.name || '').toLowerCase();
+        const baseName = getBaseName(feature.properties.name || '').toLowerCase();
 
         // Apply name filter
         if (nameFilter && !name.includes(nameFilter)) {
@@ -260,6 +275,16 @@ function filterStreets() {
             return false;
         } else if (category === 'royalty' && !categories.royalty.some(royal => name.includes(royal))) {
             return false;
+        } else if (category === 'common') {
+            const commonNames = ['george', 'elizabeth', 'victoria', 'king', 'queen', 'park', 'main', 'church'];
+            if (!commonNames.some(common => baseName === common)) {
+                return false;
+            }
+        } else if (category === 'suburbs') {
+            const suburbWords = ['sydney', 'parramatta', 'bondi', 'manly', 'penrith', 'liverpool', 'blacktown'];
+            if (!suburbWords.some(suburb => baseName.includes(suburb))) {
+                return false;
+            }
         }
 
         return true;
