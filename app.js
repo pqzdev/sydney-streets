@@ -10,6 +10,7 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
 
 // Global variables
 let allStreets = [];
+let visibleStreets = [];
 let currentLayer = null;
 let streetData = null;
 
@@ -118,6 +119,7 @@ async function loadData() {
         if (source === 'sample') {
             streetData = sampleData;
             processStreetData();
+            visibleStreets = [...allStreets];
             displayStreets(streetData.features);
             updateStats();
         } else if (source === 'osm') {
@@ -128,6 +130,7 @@ async function loadData() {
             }
             streetData = await response.json();
             processStreetData();
+            visibleStreets = [...allStreets];
             displayStreets(streetData.features);
             updateStats();
         } else if (source === 'osm-sample') {
@@ -138,6 +141,7 @@ async function loadData() {
             }
             streetData = await response.json();
             processStreetData();
+            visibleStreets = [...allStreets];
             displayStreets(streetData.features);
             updateStats();
         }
@@ -270,25 +274,38 @@ function filterStreets() {
             return false;
         }
 
-        // Apply category filter
-        if (category === 'trees' && !categories.trees.some(tree => name.includes(tree))) {
-            return false;
-        } else if (category === 'royalty' && !categories.royalty.some(royal => name.includes(royal))) {
-            return false;
-        } else if (category === 'common') {
-            const commonNames = ['george', 'elizabeth', 'victoria', 'king', 'queen', 'park', 'main', 'church'];
-            if (!commonNames.some(common => baseName === common)) {
-                return false;
-            }
-        } else if (category === 'suburbs') {
-            const suburbWords = ['sydney', 'parramatta', 'bondi', 'manly', 'penrith', 'liverpool', 'blacktown'];
-            if (!suburbWords.some(suburb => baseName.includes(suburb))) {
-                return false;
+        // Apply category filter - only show streets matching the category
+        if (category !== 'all') {
+            if (category === 'trees') {
+                if (!categories.trees.some(tree => name.includes(tree))) {
+                    return false;
+                }
+            } else if (category === 'royalty') {
+                if (!categories.royalty.some(royal => name.includes(royal))) {
+                    return false;
+                }
+            } else if (category === 'common') {
+                const commonNames = ['george', 'elizabeth', 'victoria', 'king', 'queen', 'park', 'main', 'church'];
+                if (!commonNames.some(common => baseName === common)) {
+                    return false;
+                }
+            } else if (category === 'suburbs') {
+                const suburbWords = ['sydney', 'parramatta', 'bondi', 'manly', 'penrith', 'liverpool', 'blacktown'];
+                if (!suburbWords.some(suburb => baseName.includes(suburb))) {
+                    return false;
+                }
             }
         }
 
         return true;
     });
+
+    // Update visible streets for stats
+    visibleStreets = filtered.map(feature => ({
+        name: feature.properties.name || 'Unnamed',
+        baseName: getBaseName(feature.properties.name || ''),
+        type: feature.properties.type || feature.properties.highway || ''
+    }));
 
     displayStreets(filtered);
     updateStats();
@@ -297,14 +314,12 @@ function filterStreets() {
 function updateStats() {
     if (!allStreets.length) return;
 
-    const nameFilter = document.getElementById('name-filter').value.toLowerCase();
-    const filtered = allStreets.filter(street =>
-        !nameFilter || street.name.toLowerCase().includes(nameFilter)
-    );
+    // Use visibleStreets if available (after filtering), otherwise use all streets
+    const streetsToCount = visibleStreets.length > 0 ? visibleStreets : allStreets;
 
     // Count unique base names
     const nameCount = {};
-    filtered.forEach(street => {
+    streetsToCount.forEach(street => {
         const base = street.baseName.toLowerCase();
         nameCount[base] = (nameCount[base] || 0) + 1;
     });
@@ -314,7 +329,7 @@ function updateStats() {
         .sort((a, b) => b[1] - a[1])[0];
 
     document.getElementById('stat-total').textContent = allStreets.length;
-    document.getElementById('stat-visible').textContent = filtered.length;
+    document.getElementById('stat-visible').textContent = visibleStreets.length > 0 ? visibleStreets.length : allStreets.length;
     document.getElementById('stat-unique').textContent = uniqueNames;
     document.getElementById('stat-common').textContent = mostCommon
         ? `${mostCommon[0]} (${mostCommon[1]})`
