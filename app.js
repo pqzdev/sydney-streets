@@ -128,6 +128,8 @@ async function loadData() {
             visibleStreets = [...allStreets];
             displayStreets(streetData.features);
             updateStats();
+            // Apply any active filters
+            filterStreets();
         } else if (source === 'osm') {
             // Load full OSM dataset
             const response = await fetch('data/sydney-roads-osm.geojson');
@@ -139,6 +141,8 @@ async function loadData() {
             visibleStreets = [...allStreets];
             displayStreets(streetData.features);
             updateStats();
+            // Apply any active filters
+            filterStreets();
         } else if (source === 'osm-sample') {
             // Load sample for testing
             const response = await fetch('data/sydney-roads-sample.geojson');
@@ -150,6 +154,8 @@ async function loadData() {
             visibleStreets = [...allStreets];
             displayStreets(streetData.features);
             updateStats();
+            // Apply any active filters
+            filterStreets();
         }
     } catch (error) {
         alert(`Error loading data: ${error.message}`);
