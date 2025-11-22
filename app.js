@@ -182,27 +182,18 @@ function processStreetData() {
         });
     }
 
-    // Deduplicate by name+suburb combination to count each street only once per suburb
-    const uniqueStreets = new Map();
-    filteredFeatures.forEach(feature => {
-        const name = feature.properties.name || 'Unnamed';
-        const suburb = feature.properties.suburb || feature.properties.postcode || 'Unknown';
-        const key = `${name.toLowerCase()}_${suburb.toLowerCase()}`;
-
-        if (!uniqueStreets.has(key)) {
-            uniqueStreets.set(key, {
-                name: name,
-                type: feature.properties.type || feature.properties.highway || '',
-                suburb: suburb,
-                lga: feature.properties.lga || feature.properties.LGA || '',
-                postcode: feature.properties.postcode || '',
-                geometry: feature.geometry,
-                baseName: getBaseName(name)
-            });
-        }
-    });
-
-    allStreets = Array.from(uniqueStreets.values());
+    // Build street list
+    // Note: OSM data doesn't include suburb info, so we count each road segment
+    // In the future, we could use a reverse geocoding service to add suburb info
+    allStreets = filteredFeatures.map(feature => ({
+        name: feature.properties.name || 'Unnamed',
+        type: feature.properties.type || feature.properties.highway || '',
+        suburb: feature.properties.suburb || feature.properties.postcode || '',
+        lga: feature.properties.lga || feature.properties.LGA || '',
+        postcode: feature.properties.postcode || '',
+        geometry: feature.geometry,
+        baseName: getBaseName(feature.properties.name || 'Unnamed')
+    }));
 
     // Update streetData to contain only filtered streets
     streetData = {
@@ -330,23 +321,12 @@ function filterStreets() {
         return true;
     });
 
-    // Update visible streets for stats - deduplicate by name+suburb
-    const uniqueVisible = new Map();
-    filtered.forEach(feature => {
-        const name = feature.properties.name || 'Unnamed';
-        const suburb = feature.properties.suburb || feature.properties.postcode || 'Unknown';
-        const key = `${name.toLowerCase()}_${suburb.toLowerCase()}`;
-
-        if (!uniqueVisible.has(key)) {
-            uniqueVisible.set(key, {
-                name: name,
-                baseName: getBaseName(name),
-                type: feature.properties.type || feature.properties.highway || ''
-            });
-        }
-    });
-
-    visibleStreets = Array.from(uniqueVisible.values());
+    // Update visible streets for stats
+    visibleStreets = filtered.map(feature => ({
+        name: feature.properties.name || 'Unnamed',
+        baseName: getBaseName(feature.properties.name || 'Unnamed'),
+        type: feature.properties.type || feature.properties.highway || ''
+    }));
 
     displayStreets(filtered);
     updateStats();
