@@ -1,10 +1,11 @@
 // Initialize map centered on Sydney
 const map = L.map('map').setView([-33.8688, 151.2093], 12);
 
-// Add OpenStreetMap tile layer
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-    maxZoom: 19
+// Add CartoDB Positron tile layer (grey, minimal style for visualizations)
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    subdomains: 'abcd',
+    maxZoom: 20
 }).addTo(map);
 
 // Global variables
@@ -106,42 +107,76 @@ document.getElementById('load-data').addEventListener('click', loadData);
 document.getElementById('name-filter').addEventListener('input', filterStreets);
 document.getElementById('category').addEventListener('change', filterStreets);
 
-function loadData() {
+async function loadData() {
     const source = document.getElementById('data-source').value;
+    const button = document.getElementById('load-data');
 
-    if (source === 'sample') {
-        streetData = sampleData;
-        processStreetData();
-        displayStreets(streetData.features);
-        updateStats();
-    } else if (source === 'nsw') {
-        alert('NSW Government data will be loaded from local GeoJSON file. Please download data first.');
-        // TODO: Load from local file
-    } else if (source === 'osm') {
-        alert('OpenStreetMap data loading will be implemented next.');
-        // TODO: Implement Overpass API query
+    button.disabled = true;
+    button.textContent = 'Loading...';
+
+    try {
+        if (source === 'sample') {
+            streetData = sampleData;
+            processStreetData();
+            displayStreets(streetData.features);
+            updateStats();
+        } else if (source === 'osm') {
+            // Load full OSM dataset
+            const response = await fetch('data/sydney-roads-osm.geojson');
+            if (!response.ok) {
+                throw new Error('Failed to load data. Make sure data file exists.');
+            }
+            streetData = await response.json();
+            processStreetData();
+            displayStreets(streetData.features);
+            updateStats();
+        } else if (source === 'osm-sample') {
+            // Load sample for testing
+            const response = await fetch('data/sydney-roads-sample.geojson');
+            if (!response.ok) {
+                throw new Error('Failed to load sample data.');
+            }
+            streetData = await response.json();
+            processStreetData();
+            displayStreets(streetData.features);
+            updateStats();
+        }
+    } catch (error) {
+        alert(`Error loading data: ${error.message}`);
+        console.error(error);
+    } finally {
+        button.disabled = false;
+        button.textContent = 'Load Data';
     }
 }
 
 function processStreetData() {
     if (!streetData) return;
 
-    // Filter to Greater Sydney LGAs only
-    const filteredFeatures = streetData.features.filter(feature => {
-        const lga = (feature.properties.lga || feature.properties.LGA || '').toLowerCase();
-        return greaterSydneyLGAs.some(validLga => lga.includes(validLga));
-    });
+    // For OSM data, we already filtered by bounding box
+    // For other sources, filter to Greater Sydney LGAs
+    let filteredFeatures = streetData.features;
+
+    if (streetData.features.length > 0 &&
+        (streetData.features[0].properties.lga || streetData.features[0].properties.LGA)) {
+        // Has LGA data, filter by it
+        filteredFeatures = streetData.features.filter(feature => {
+            const lga = (feature.properties.lga || feature.properties.LGA || '').toLowerCase();
+            return greaterSydneyLGAs.some(validLga => lga.includes(validLga));
+        });
+    }
 
     allStreets = filteredFeatures.map(feature => ({
         name: feature.properties.name || 'Unnamed',
-        type: feature.properties.type || '',
+        type: feature.properties.type || feature.properties.highway || '',
         suburb: feature.properties.suburb || '',
         lga: feature.properties.lga || feature.properties.LGA || '',
+        postcode: feature.properties.postcode || '',
         geometry: feature.geometry,
         baseName: getBaseName(feature.properties.name)
     }));
 
-    // Update streetData to contain only Greater Sydney streets
+    // Update streetData to contain only filtered streets
     streetData = {
         type: "FeatureCollection",
         features: filteredFeatures
