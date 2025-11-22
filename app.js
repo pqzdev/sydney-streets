@@ -18,9 +18,9 @@ let streetData = null;
 const colors = {
     default: '#3498db',
     common: '#e74c3c',
-    suburbs: '#f39c12',
-    trees: '#27ae60',
-    royalty: '#9b59b6',
+    suburbs: '#f79902ff',
+    trees: '#248f5aff',
+    royalty: '#8b50a3ff',
     famous: '#f1c40f'
 };
 
@@ -182,28 +182,16 @@ function processStreetData() {
         });
     }
 
-    // Build street list - deduplicate by name only since we don't have suburb data
-    // This counts each unique street name once, regardless of how many segments it has
-    const uniqueStreetNames = new Map();
-    filteredFeatures.forEach(feature => {
-        const name = feature.properties.name || 'Unnamed';
-        const baseName = getBaseName(name);
-        const key = baseName.toLowerCase();
-
-        if (!uniqueStreetNames.has(key)) {
-            uniqueStreetNames.set(key, {
-                name: name,
-                type: feature.properties.type || feature.properties.highway || '',
-                suburb: feature.properties.suburb || feature.properties.postcode || '',
-                lga: feature.properties.lga || feature.properties.LGA || '',
-                postcode: feature.properties.postcode || '',
-                geometry: feature.geometry,
-                baseName: baseName
-            });
-        }
-    });
-
-    allStreets = Array.from(uniqueStreetNames.values());
+    // Build street list - keep all features for counting
+    allStreets = filteredFeatures.map(feature => ({
+        name: feature.properties.name || 'Unnamed',
+        type: feature.properties.type || feature.properties.highway || '',
+        suburb: feature.properties.suburb || feature.properties.postcode || '',
+        lga: feature.properties.lga || feature.properties.LGA || '',
+        postcode: feature.properties.postcode || '',
+        geometry: feature.geometry,
+        baseName: getBaseName(feature.properties.name || 'Unnamed')
+    }));
 
     // Update streetData to contain only filtered streets
     streetData = {
@@ -331,23 +319,12 @@ function filterStreets() {
         return true;
     });
 
-    // Update visible streets for stats - deduplicate by name
-    const uniqueVisibleNames = new Map();
-    filtered.forEach(feature => {
-        const name = feature.properties.name || 'Unnamed';
-        const baseName = getBaseName(name);
-        const key = baseName.toLowerCase();
-
-        if (!uniqueVisibleNames.has(key)) {
-            uniqueVisibleNames.set(key, {
-                name: name,
-                baseName: baseName,
-                type: feature.properties.type || feature.properties.highway || ''
-            });
-        }
-    });
-
-    visibleStreets = Array.from(uniqueVisibleNames.values());
+    // Update visible streets for stats - keep all for counting
+    visibleStreets = filtered.map(feature => ({
+        name: feature.properties.name || 'Unnamed',
+        baseName: getBaseName(feature.properties.name || 'Unnamed'),
+        type: feature.properties.type || feature.properties.highway || ''
+    }));
 
     displayStreets(filtered);
     updateStats();
@@ -356,24 +333,32 @@ function filterStreets() {
 function updateStats() {
     if (!allStreets.length) return;
 
+    // Count all unique base names across all streets
+    const allNameCount = {};
+    allStreets.forEach(street => {
+        const base = street.baseName.toLowerCase();
+        allNameCount[base] = (allNameCount[base] || 0) + 1;
+    });
+
     // Use visibleStreets if available (after filtering), otherwise use all streets
     const streetsToCount = visibleStreets.length > 0 ? visibleStreets : allStreets;
 
-    // Count unique base names (each street name counted once per suburb)
+    // Count visible unique base names
     const nameCount = {};
     streetsToCount.forEach(street => {
         const base = street.baseName.toLowerCase();
         nameCount[base] = (nameCount[base] || 0) + 1;
     });
 
-    const uniqueNames = Object.keys(nameCount).length;
+    const totalUniqueNames = Object.keys(allNameCount).length;
+    const visibleUniqueNames = Object.keys(nameCount).length;
     const topTen = Object.entries(nameCount)
         .sort((a, b) => b[1] - a[1])
         .slice(0, 10);
 
-    document.getElementById('stat-total').textContent = allStreets.length;
-    document.getElementById('stat-visible').textContent = visibleStreets.length > 0 ? visibleStreets.length : allStreets.length;
-    document.getElementById('stat-unique').textContent = uniqueNames;
+    document.getElementById('stat-total').textContent = totalUniqueNames;
+    document.getElementById('stat-visible').textContent = visibleUniqueNames;
+    document.getElementById('stat-unique').textContent = visibleUniqueNames;
 
     // Display top 10 with proper capitalization
     const topTenEl = document.getElementById('top-ten');
