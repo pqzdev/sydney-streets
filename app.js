@@ -323,7 +323,8 @@ function filterStreets() {
     visibleStreets = filtered.map(feature => ({
         name: feature.properties.name || 'Unnamed',
         baseName: getBaseName(feature.properties.name || 'Unnamed'),
-        type: feature.properties.type || feature.properties.highway || ''
+        type: feature.properties.type || feature.properties.highway || '',
+        geometry: feature.geometry
     }));
 
     displayStreets(filtered);
