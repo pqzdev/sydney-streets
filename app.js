@@ -17,7 +17,7 @@ let streetData = null;
 const colors = {
     default: '#3498db',
     common: '#e74c3c',
-    suburbs: '#2ecc71',
+    suburbs: '#f39c12',
     trees: '#27ae60',
     royalty: '#9b59b6'
 };
