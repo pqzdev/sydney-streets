@@ -4,12 +4,14 @@ Interactive visualization of Sydney street names and patterns.
 
 ## Overview
 
-This project visualizes street data across Sydney to explore interesting patterns in street naming:
+This project visualizes street data across **Greater Sydney** (as officially defined by the NSW Government) to explore interesting patterns in street naming:
 - Most popular street names
 - Streets named after suburbs
 - Tree-themed street names
 - Royalty-themed street names
 - Geographic clustering of name patterns
+
+**Geographic Scope**: This project uses the official NSW Government definition of Greater Sydney, comprising 33 Local Government Areas across 5 planning districts. See [SCOPE.md](SCOPE.md) for the complete list and sources.
 
 ## Data Sources
 

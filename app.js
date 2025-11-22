@@ -76,6 +76,24 @@ const sampleData = {
     ]
 };
 
+// Greater Sydney LGAs (official NSW Government definition)
+// Source: Greater Sydney Commission & Environmental Planning and Assessment Order 2017
+const greaterSydneyLGAs = [
+    // Eastern City District
+    'bayside', 'burwood', 'canada bay', 'inner west', 'randwick', 'strathfield',
+    'sydney', 'waverley', 'woollahra',
+    // Central City District
+    'blacktown', 'cumberland', 'parramatta', 'the hills shire', 'the hills',
+    // Western City District
+    'camden', 'campbelltown', 'blue mountains', 'fairfield', 'hawkesbury',
+    'liverpool', 'penrith', 'wollondilly',
+    // North District
+    'hornsby', 'hunters hill', 'ku-ring-gai', 'lane cove', 'mosman', 'north sydney',
+    'northern beaches', 'ryde', 'willoughby',
+    // South District
+    'canterbury-bankstown', 'georges river', 'sutherland'
+];
+
 // Categories and patterns
 const categories = {
     trees: ['oak', 'pine', 'elm', 'maple', 'ash', 'birch', 'cedar', 'willow'],
@@ -108,13 +126,26 @@ function loadData() {
 function processStreetData() {
     if (!streetData) return;
 
-    allStreets = streetData.features.map(feature => ({
+    // Filter to Greater Sydney LGAs only
+    const filteredFeatures = streetData.features.filter(feature => {
+        const lga = (feature.properties.lga || feature.properties.LGA || '').toLowerCase();
+        return greaterSydneyLGAs.some(validLga => lga.includes(validLga));
+    });
+
+    allStreets = filteredFeatures.map(feature => ({
         name: feature.properties.name || 'Unnamed',
         type: feature.properties.type || '',
         suburb: feature.properties.suburb || '',
+        lga: feature.properties.lga || feature.properties.LGA || '',
         geometry: feature.geometry,
         baseName: getBaseName(feature.properties.name)
     }));
+
+    // Update streetData to contain only Greater Sydney streets
+    streetData = {
+        type: "FeatureCollection",
+        features: filteredFeatures
+    };
 }
 
 function getBaseName(fullName) {
@@ -145,9 +176,11 @@ function displayStreets(streets) {
         },
         onEachFeature: function(feature, layer) {
             if (feature.properties.name) {
+                const lga = feature.properties.lga || feature.properties.LGA || '';
                 layer.bindPopup(`
                     <strong>${feature.properties.name}</strong><br>
                     ${feature.properties.suburb ? `Suburb: ${feature.properties.suburb}<br>` : ''}
+                    ${lga ? `LGA: ${lga}<br>` : ''}
                     ${feature.properties.type ? `Type: ${feature.properties.type}` : ''}
                 `);
             }
