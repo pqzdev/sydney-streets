@@ -333,22 +333,65 @@ function filterStreets() {
 function updateStats() {
     if (!allStreets.length) return;
 
-    // Count all unique base names across all streets
-    const allNameCount = {};
-    allStreets.forEach(street => {
-        const base = street.baseName.toLowerCase();
-        allNameCount[base] = (allNameCount[base] || 0) + 1;
-    });
+    // Count unique street instances by clustering nearby segments with same name
+    function countUniqueStreets(streets) {
+        const streetsByName = {};
 
-    // Use visibleStreets if available (after filtering), otherwise use all streets
-    const streetsToCount = visibleStreets.length > 0 ? visibleStreets : allStreets;
+        // Group streets by base name
+        streets.forEach(street => {
+            const base = street.baseName.toLowerCase();
+            if (!streetsByName[base]) {
+                streetsByName[base] = [];
+            }
+            streetsByName[base].push(street);
+        });
 
-    // Count visible unique base names
-    const nameCount = {};
-    streetsToCount.forEach(street => {
-        const base = street.baseName.toLowerCase();
-        nameCount[base] = (nameCount[base] || 0) + 1;
-    });
+        // For each name, count distinct locations (cluster nearby segments)
+        const counts = {};
+        Object.entries(streetsByName).forEach(([name, instances]) => {
+            // Get centroids of all segments with this name
+            const locations = instances.map(street => {
+                const coords = street.geometry.coordinates;
+                if (coords.length > 0) {
+                    // Get middle point of linestring
+                    const midIdx = Math.floor(coords.length / 2);
+                    return coords[midIdx];
+                }
+                return null;
+            }).filter(c => c !== null);
+
+            // Cluster locations that are close together (within ~500m)
+            const clusters = [];
+            const CLUSTER_DISTANCE = 0.005; // approximately 500m in degrees
+
+            locations.forEach(loc => {
+                let addedToCluster = false;
+                for (let cluster of clusters) {
+                    const dist = Math.sqrt(
+                        Math.pow(loc[0] - cluster[0], 2) +
+                        Math.pow(loc[1] - cluster[1], 2)
+                    );
+                    if (dist < CLUSTER_DISTANCE) {
+                        addedToCluster = true;
+                        break;
+                    }
+                }
+                if (!addedToCluster) {
+                    clusters.push(loc);
+                }
+            });
+
+            counts[name] = clusters.length;
+        });
+
+        return counts;
+    }
+
+    // Count all streets
+    const allNameCount = countUniqueStreets(allStreets);
+
+    // Count visible streets (after filtering)
+    const nameCount = visibleStreets.length > 0 ? countUniqueStreets(visibleStreets) : allNameCount;
 
     const totalUniqueNames = Object.keys(allNameCount).length;
     const visibleUniqueNames = Object.keys(nameCount).length;
@@ -358,7 +401,6 @@ function updateStats() {
 
     document.getElementById('stat-total').textContent = totalUniqueNames;
     document.getElementById('stat-visible').textContent = visibleUniqueNames;
-    document.getElementById('stat-unique').textContent = visibleUniqueNames;
 
     // Display top 10 with proper capitalization
     const topTenEl = document.getElementById('top-ten');
