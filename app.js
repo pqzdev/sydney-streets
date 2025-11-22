@@ -334,66 +334,47 @@ function filterStreets() {
 function updateStats() {
     if (!allStreets.length) return;
 
-    // Count unique street instances by clustering nearby segments with same name
+    // Count unique streets by base name + location (proxy for suburb)
+    // Since we don't have suburb data, we cluster by geographic proximity
     function countUniqueStreets(streets) {
-        const streetsByName = {};
+        const uniqueStreets = new Map();
 
-        // Group streets by base name
         streets.forEach(street => {
-            const base = street.baseName.toLowerCase();
-            if (!streetsByName[base]) {
-                streetsByName[base] = [];
-            }
-            streetsByName[base].push(street);
-        });
+            const baseName = street.baseName.toLowerCase();
+            const coords = street.geometry.coordinates;
 
-        // For each name, count distinct locations (cluster nearby segments)
-        const counts = {};
-        Object.entries(streetsByName).forEach(([name, instances]) => {
-            // Check if this is a highway - highways are always counted as 1
-            const firstInstance = instances[0];
-            const fullName = firstInstance.name.toLowerCase();
-            if (fullName.includes('highway') || fullName.includes('hwy')) {
-                counts[name] = 1;
-                return;
-            }
+            if (!coords || coords.length === 0) return;
 
-            // Get centroids of all segments with this name
-            const locations = instances.map(street => {
-                const coords = street.geometry.coordinates;
-                if (coords.length > 0) {
-                    // Get middle point of linestring
-                    const midIdx = Math.floor(coords.length / 2);
-                    return coords[midIdx];
-                }
-                return null;
-            }).filter(c => c !== null);
+            // Get middle point of linestring as location identifier
+            const midIdx = Math.floor(coords.length / 2);
+            const location = coords[midIdx];
 
-            // Cluster locations that are close together (within ~500m)
-            const clusters = [];
-            const CLUSTER_DISTANCE = 0.005; // approximately 500m in degrees
+            // Create unique key: baseName_location
+            // Round coordinates to cluster nearby segments (within ~500m)
+            const roundedLat = Math.round(location[1] / 0.005) * 0.005;
+            const roundedLng = Math.round(location[0] / 0.005) * 0.005;
 
-            locations.forEach(loc => {
-                let addedToCluster = false;
-                for (let cluster of clusters) {
-                    const dist = Math.sqrt(
-                        Math.pow(loc[0] - cluster[0], 2) +
-                        Math.pow(loc[1] - cluster[1], 2)
-                    );
-                    if (dist < CLUSTER_DISTANCE) {
-                        addedToCluster = true;
-                        break;
-                    }
-                }
-                if (!addedToCluster) {
-                    clusters.push(loc);
-                }
+            // Special case: highways are always singular
+            const fullName = street.name.toLowerCase();
+            const key = (fullName.includes('highway') || fullName.includes('hwy'))
+                ? baseName  // Highway = one entry regardless of location
+                : `${baseName}_${roundedLat}_${roundedLng}`;  // Street = one per location
+
+            uniqueStreets.set(key, {
+                baseName: baseName,
+                fullName: street.name,
+                location: location
             });
-
-            counts[name] = clusters.length;
         });
 
-        return counts;
+        // Count how many unique instances of each base name
+        const nameCounts = {};
+        uniqueStreets.forEach(street => {
+            const base = street.baseName;
+            nameCounts[base] = (nameCounts[base] || 0) + 1;
+        });
+
+        return nameCounts;
     }
 
     // Count all streets
@@ -402,14 +383,15 @@ function updateStats() {
     // Count visible streets (after filtering)
     const nameCount = visibleStreets.length > 0 ? countUniqueStreets(visibleStreets) : allNameCount;
 
-    const totalUniqueNames = Object.keys(allNameCount).length;
-    const visibleUniqueNames = Object.keys(nameCount).length;
+    // Total unique street instances (e.g., Victoria St in 8 different locations = 8)
+    const totalStreetInstances = Object.values(allNameCount).reduce((sum, count) => sum + count, 0);
+    const visibleStreetInstances = Object.values(nameCount).reduce((sum, count) => sum + count, 0);
     const topTen = Object.entries(nameCount)
         .sort((a, b) => b[1] - a[1])
         .slice(0, 10);
 
-    document.getElementById('stat-total').textContent = totalUniqueNames;
-    document.getElementById('stat-visible').textContent = visibleUniqueNames;
+    document.getElementById('stat-total').textContent = totalStreetInstances;
+    document.getElementById('stat-visible').textContent = visibleStreetInstances;
 
     // Display top 10 with proper capitalization
     const topTenEl = document.getElementById('top-ten');
