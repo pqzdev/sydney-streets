@@ -182,15 +182,27 @@ function processStreetData() {
         });
     }
 
-    allStreets = filteredFeatures.map(feature => ({
-        name: feature.properties.name || 'Unnamed',
-        type: feature.properties.type || feature.properties.highway || '',
-        suburb: feature.properties.suburb || '',
-        lga: feature.properties.lga || feature.properties.LGA || '',
-        postcode: feature.properties.postcode || '',
-        geometry: feature.geometry,
-        baseName: getBaseName(feature.properties.name)
-    }));
+    // Deduplicate by name+suburb combination to count each street only once per suburb
+    const uniqueStreets = new Map();
+    filteredFeatures.forEach(feature => {
+        const name = feature.properties.name || 'Unnamed';
+        const suburb = feature.properties.suburb || feature.properties.postcode || 'Unknown';
+        const key = `${name.toLowerCase()}_${suburb.toLowerCase()}`;
+
+        if (!uniqueStreets.has(key)) {
+            uniqueStreets.set(key, {
+                name: name,
+                type: feature.properties.type || feature.properties.highway || '',
+                suburb: suburb,
+                lga: feature.properties.lga || feature.properties.LGA || '',
+                postcode: feature.properties.postcode || '',
+                geometry: feature.geometry,
+                baseName: getBaseName(name)
+            });
+        }
+    });
+
+    allStreets = Array.from(uniqueStreets.values());
 
     // Update streetData to contain only filtered streets
     streetData = {
@@ -335,7 +347,7 @@ function updateStats() {
     // Use visibleStreets if available (after filtering), otherwise use all streets
     const streetsToCount = visibleStreets.length > 0 ? visibleStreets : allStreets;
 
-    // Count unique base names
+    // Count unique base names (each street name counted once per suburb)
     const nameCount = {};
     streetsToCount.forEach(street => {
         const base = street.baseName.toLowerCase();
@@ -343,15 +355,23 @@ function updateStats() {
     });
 
     const uniqueNames = Object.keys(nameCount).length;
-    const mostCommon = Object.entries(nameCount)
-        .sort((a, b) => b[1] - a[1])[0];
+    const topTen = Object.entries(nameCount)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10);
 
     document.getElementById('stat-total').textContent = allStreets.length;
     document.getElementById('stat-visible').textContent = visibleStreets.length > 0 ? visibleStreets.length : allStreets.length;
     document.getElementById('stat-unique').textContent = uniqueNames;
-    document.getElementById('stat-common').textContent = mostCommon
-        ? `${mostCommon[0]} (${mostCommon[1]})`
-        : '-';
+
+    // Display top 10
+    const topTenEl = document.getElementById('top-ten');
+    if (topTen.length > 0) {
+        topTenEl.innerHTML = topTen.map((entry, index) =>
+            `${index + 1}. ${entry[0]} (${entry[1]})`
+        ).join('<br>');
+    } else {
+        topTenEl.textContent = '-';
+    }
 }
 
 // Initial stats display
