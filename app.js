@@ -259,20 +259,37 @@ function loadList(listType) {
     let streets = [];
 
     if (listType === 'top10') {
-        // Get top 10 most common streets
-        const nameCounts = countAllStreets();
-        const top10 = Object.entries(nameCounts)
-            .sort((a, b) => b[1] - a[1])
+        // Get top 10 most common street BASE NAMES (not counting full names)
+        const baseNameCounts = {};
+
+        // Count by base name
+        uniqueStreetNames.forEach(fullName => {
+            const baseName = getBaseName(fullName);
+            if (baseName) {
+                // Get the count for this specific full street name
+                const count = getStreetCount(fullName);
+
+                // Add to base name total
+                if (!baseNameCounts[baseName]) {
+                    baseNameCounts[baseName] = { total: 0, examples: [] };
+                }
+                baseNameCounts[baseName].total += count;
+                baseNameCounts[baseName].examples.push({ fullName, count });
+            }
+        });
+
+        // Get top 10 base names by total count
+        const top10BaseNames = Object.entries(baseNameCounts)
+            .sort((a, b) => b[1].total - a[1].total)
             .slice(0, 10)
             .map(entry => entry[0]);
 
-        // Convert to full street names
-        streets = top10.map(baseName => {
-            // Find the most common full name for this base name
-            const matches = uniqueStreetNames.filter(name =>
-                name.toLowerCase().includes(baseName.toLowerCase())
-            );
-            return matches[0] || baseName;
+        // For each top base name, find the most common full variation
+        streets = top10BaseNames.map(baseName => {
+            const info = baseNameCounts[baseName];
+            // Sort examples by count and take the most common one
+            const mostCommon = info.examples.sort((a, b) => b.count - a.count)[0];
+            return mostCommon.fullName;
         });
     } else if (categories[listType]) {
         // Get streets matching category
