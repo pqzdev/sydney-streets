@@ -308,14 +308,36 @@ function updateSelectedStreetsUI() {
 
 function updateStreetColorsUI() {
     const container = document.getElementById('street-colors');
+    const presetColors = ['#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c', '#34495e', '#e67e22', '#e91e63', '#00bcd4'];
+
     container.innerHTML = selectedStreetNames.map(name => `
         <div class="street-list-item">
-            <input type="color" class="color-picker" value="${streetColors[name]}" data-street="${name}">
-            <div class="street-name">${name}</div>
+            <div class="color-presets">
+                ${presetColors.map(color => `
+                    <div class="color-preset" style="background: ${color}"
+                         data-street="${name}" data-color="${color}"></div>
+                `).join('')}
+            </div>
+            <div class="street-list-item-row">
+                <input type="color" class="color-picker" value="${streetColors[name]}" data-street="${name}">
+                <div class="street-name">${name}</div>
+            </div>
         </div>
     `).join('');
 
-    // Add color change handlers
+    // Add preset click handlers
+    container.querySelectorAll('.color-preset').forEach(preset => {
+        preset.addEventListener('click', (e) => {
+            const street = e.target.dataset.street;
+            const color = e.target.dataset.color;
+            streetColors[street] = color;
+            // Update the color picker
+            container.querySelector(`input[data-street="${street}"]`).value = color;
+            updateMap();
+        });
+    });
+
+    // Add color picker change handlers
     container.querySelectorAll('.color-picker').forEach(picker => {
         picker.addEventListener('change', (e) => {
             streetColors[e.target.dataset.street] = e.target.value;

@@ -404,7 +404,7 @@
 
         .street-list-item {
             display: flex;
-            align-items: center;
+            flex-direction: column;
             gap: 0.5rem;
             padding: 0.5rem 0;
             border-bottom: 1px solid #f0f0f0;
@@ -412,6 +412,31 @@
 
         .street-list-item:last-child {
             border-bottom: none;
+        }
+
+        .color-presets {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 4px;
+            flex-wrap: wrap;
+        }
+
+        .color-preset {
+            width: 24px;
+            height: 24px;
+            border-radius: 3px;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .color-preset:hover {
+            border-color: #666;
+        }
+
+        .street-list-item-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         .color-picker {
