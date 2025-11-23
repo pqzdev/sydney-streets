@@ -1,10 +1,12 @@
 # Data files (can be large)
 data/sydney-roads-osm.geojson
+data/sydney-roads-optimized*.geojson
 data/*.shp
 data/*.zip
 
 # Keep data directory and important files
 !data/.gitkeep
+!data/sydney-roads-web.geojson
 !data/sydney-roads-sample.geojson
 !data/street_counts_grid200.json
 !data/method_comparison.json

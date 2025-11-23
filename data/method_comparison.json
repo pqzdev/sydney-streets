@@ -1,0 +1,1304 @@
+{
+  "streets": [
+    "Victoria Street",
+    "Regent Street",
+    "Short Street",
+    "Railway Terrace",
+    "Park Street",
+    "George Street",
+    "Elizabeth Street",
+    "William Street",
+    "King Street",
+    "Church Street",
+    "Windsor Street",
+    "Albert Street",
+    "Parramatta Road",
+    "Liverpool Road",
+    "Victoria Road",
+    "Pacific Highway",
+    "Great Western Highway",
+    "Princes Highway",
+    "Hume Highway",
+    "Warringah Freeway",
+    "Central Coast Highway",
+    "Prospect Highway"
+  ],
+  "results": {
+    "Victoria Street": {
+      "Point-to-Point (30m)": {
+        "count": 41,
+        "time": 0.18321704864501953
+      },
+      "Point-to-Point (50m)": {
+        "count": 38,
+        "time": 0.18418097496032715
+      },
+      "Point-to-Point (100m)": {
+        "count": 37,
+        "time": 0.18275189399719238
+      },
+      "Grid 50m + Flood Fill": {
+        "count": 37,
+        "time": 0.0033369064331054688
+      },
+      "Grid 100m + Flood Fill": {
+        "count": 36,
+        "time": 0.0025196075439453125
+      },
+      "Grid 200m + Flood Fill": {
+        "count": 36,
+        "time": 0.0018150806427001953
+      },
+      "Polygon Buffer (30m)": {
+        "count": 38,
+        "time": 0.06502079963684082
+      },
+      "Polygon Buffer (50m)": {
+        "count": 37,
+        "time": 0.054325103759765625
+      },
+      "Polygon Buffer (100m)": {
+        "count": 36,
+        "time": 0.056015729904174805
+      },
+      "Endpoint Only (30m)": {
+        "count": 41,
+        "time": 0.022916078567504883
+      },
+      "Endpoint Only (100m)": {
+        "count": 37,
+        "time": 0.022958755493164062
+      },
+      "Endpoint Adaptive": {
+        "count": 41,
+        "time": 0.02531719207763672
+      },
+      "Highway-Aware (Grid 100m)": {
+        "count": 36,
+        "time": 0.0035970211029052734
+      },
+      "Highway-Aware (Polygon 100m)": {
+        "count": 36,
+        "time": 0.055486202239990234
+      }
+    },
+    "Regent Street": {
+      "Point-to-Point (30m)": {
+        "count": 13,
+        "time": 0.02260303497314453
+      },
+      "Point-to-Point (50m)": {
+        "count": 13,
+        "time": 0.02219414710998535
+      },
+      "Point-to-Point (100m)": {
+        "count": 13,
+        "time": 0.021346092224121094
+      },
+      "Grid 50m + Flood Fill": {
+        "count": 13,
+        "time": 0.0010347366333007812
+      },
+      "Grid 100m + Flood Fill": {
+        "count": 13,
+        "time": 0.0007507801055908203
+      },
+      "Grid 200m + Flood Fill": {
+        "count": 13,
+        "time": 0.0005559921264648438
+      },
+      "Polygon Buffer (30m)": {
+        "count": 13,
+        "time": 0.00794529914855957
+      },
+      "Polygon Buffer (50m)": {
+        "count": 13,
+        "time": 0.007882833480834961
+      },
+      "Polygon Buffer (100m)": {
+        "count": 13,
+        "time": 0.008157014846801758
+      },
+      "Endpoint Only (30m)": {
+        "count": 13,
+        "time": 0.002702951431274414
+      },
+      "Endpoint Only (100m)": {
+        "count": 13,
+        "time": 0.002671957015991211
+      },
+      "Endpoint Adaptive": {
+        "count": 13,
+        "time": 0.0029408931732177734
+      },
+      "Highway-Aware (Grid 100m)": {
+        "count": 13,
+        "time": 0.001104116439819336
+      },
+      "Highway-Aware (Polygon 100m)": {
+        "count": 13,
+        "time": 0.008297920227050781
+      }
+    },
+    "Short Street": {
+      "Point-to-Point (30m)": {
+        "count": 57,
+        "time": 0.029068946838378906
+      },
+      "Point-to-Point (50m)": {
+        "count": 55,
+        "time": 0.02889108657836914
+      },
+      "Point-to-Point (100m)": {
+        "count": 54,
+        "time": 0.028873920440673828
+      },
+      "Grid 50m + Flood Fill": {
+        "count": 54,
+        "time": 0.0017879009246826172
+      },
+      "Grid 100m + Flood Fill": {
+        "count": 54,
+        "time": 0.0012590885162353516
+      },
+      "Grid 200m + Flood Fill": {
+        "count": 53,
+        "time": 0.0009648799896240234
+      },
+      "Polygon Buffer (30m)": {
+        "count": 55,
+        "time": 0.010720014572143555
+      },
+      "Polygon Buffer (50m)": {
+        "count": 54,
+        "time": 0.010758161544799805
+      },
+      "Polygon Buffer (100m)": {
+        "count": 54,
+        "time": 0.010895013809204102
+      },
+      "Endpoint Only (30m)": {
+        "count": 57,
+        "time": 0.0040340423583984375
+      },
+      "Endpoint Only (100m)": {
+        "count": 54,
+        "time": 0.004004001617431641
+      },
+      "Endpoint Adaptive": {
+        "count": 57,
+        "time": 0.004437923431396484
+      },
+      "Highway-Aware (Grid 100m)": {
+        "count": 54,
+        "time": 0.0017850399017333984
+      },
+      "Highway-Aware (Polygon 100m)": {
+        "count": 54,
+        "time": 0.011124134063720703
+      }
+    },
+    "Railway Terrace": {
+      "Point-to-Point (30m)": {
+        "count": 4,
+        "time": 0.02704596519470215
+      },
+      "Point-to-Point (50m)": {
+        "count": 4,
+        "time": 0.026888370513916016
+      },
+      "Point-to-Point (100m)": {
+        "count": 4,
+        "time": 0.02649211883544922
+      },
+      "Grid 50m + Flood Fill": {
+        "count": 4,
+        "time": 0.0011646747589111328
+      },
+      "Grid 100m + Flood Fill": {
+        "count": 4,
+        "time": 0.0007898807525634766
+      },
+      "Grid 200m + Flood Fill": {
+        "count": 4,
+        "time": 0.0005769729614257812
+      },
+      "Polygon Buffer (30m)": {
+        "count": 4,
+        "time": 0.007915973663330078
+      },
+      "Polygon Buffer (50m)": {
+        "count": 4,
+        "time": 0.008001089096069336
+      },
+      "Polygon Buffer (100m)": {
+        "count": 4,
+        "time": 0.008516788482666016
+      },
+      "Endpoint Only (30m)": {
+        "count": 4,
+        "time": 0.0025641918182373047
+      },
+      "Endpoint Only (100m)": {
+        "count": 4,
+        "time": 0.002577066421508789
+      },
+      "Endpoint Adaptive": {
+        "count": 4,
+        "time": 0.0028121471405029297
+      },
+      "Highway-Aware (Grid 100m)": {
+        "count": 4,
+        "time": 0.0011458396911621094
+      },
+      "Highway-Aware (Polygon 100m)": {
+        "count": 4,
+        "time": 0.008612871170043945
+      }
+    },
+    "Park Street": {
+      "Point-to-Point (30m)": {
+        "count": 31,
+        "time": 0.03906822204589844
+      },
+      "Point-to-Point (50m)": {
+        "count": 30,
+        "time": 0.03849291801452637
+      },
+      "Point-to-Point (100m)": {
+        "count": 30,
+        "time": 0.03834986686706543
+      },
+      "Grid 50m + Flood Fill": {
+        "count": 30,
+        "time": 0.0014960765838623047
+      },
+      "Grid 100m + Flood Fill": {
+        "count": 29,
+        "time": 0.0011248588562011719
+      },
+      "Grid 200m + Flood Fill": {
+        "count": 29,
+        "time": 0.0008640289306640625
+      },
+      "Polygon Buffer (30m)": {
+        "count": 30,
+        "time": 0.013914823532104492
+      },
+      "Polygon Buffer (50m)": {
+        "count": 30,
+        "time": 0.014210939407348633
+      },
+      "Polygon Buffer (100m)": {
+        "count": 29,
+        "time": 0.014719009399414062
+      },
+      "Endpoint Only (30m)": {
+        "count": 31,
+        "time": 0.0051860809326171875
+      },
+      "Endpoint Only (100m)": {
+        "count": 30,
+        "time": 0.005206108093261719
+      },
+      "Endpoint Adaptive": {
+        "count": 31,
+        "time": 0.005692720413208008
+      },
+      "Highway-Aware (Grid 100m)": {
+        "count": 29,
+        "time": 0.0016901493072509766
+      },
+      "Highway-Aware (Polygon 100m)": {
+        "count": 29,
+        "time": 0.014873027801513672
+      }
+    },
+    "George Street": {
+      "Point-to-Point (30m)": {
+        "count": 58,
+        "time": 0.6565160751342773
+      },
+      "Point-to-Point (50m)": {
+        "count": 58,
+        "time": 0.6554567813873291
+      },
+      "Point-to-Point (100m)": {
+        "count": 56,
+        "time": 0.6529898643493652
+      },
+      "Grid 50m + Flood Fill": {
+        "count": 56,
+        "time": 0.005498170852661133
+      },
+      "Grid 100m + Flood Fill": {
+        "count": 51,
+        "time": 0.004082202911376953
+      },
+      "Grid 200m + Flood Fill": {
+        "count": 51,
+        "time": 0.0030069351196289062
+      },
+      "Polygon Buffer (30m)": {
+        "count": 58,
+        "time": 0.20977425575256348
+      },
+      "Polygon Buffer (50m)": {
+        "count": 56,
+        "time": 0.19118285179138184
+      },
+      "Polygon Buffer (100m)": {
+        "count": 51,
+        "time": 0.19195890426635742
+      },
+      "Endpoint Only (30m)": {
+        "count": 59,
+        "time": 0.08395981788635254
+      },
+      "Endpoint Only (100m)": {
+        "count": 56,
+        "time": 0.0839381217956543
+      },
+      "Endpoint Adaptive": {
+        "count": 59,
+        "time": 0.09337496757507324
+      },
+      "Highway-Aware (Grid 100m)": {
+        "count": 52,
+        "time": 0.006329774856567383
+      },
+      "Highway-Aware (Polygon 100m)": {
+        "count": 51,
+        "time": 0.1944410800933838
+      }
+    },
+    "Elizabeth Street": {
+      "Point-to-Point (30m)": {
+        "count": 35,
+        "time": 0.1584911346435547
+      },
+      "Point-to-Point (50m)": {
+        "count": 34,
+        "time": 0.15746092796325684
+      },
+      "Point-to-Point (100m)": {
+        "count": 33,
+        "time": 0.1567401885986328
+      },
+      "Grid 50m + Flood Fill": {
+        "count": 34,
+        "time": 0.0028641223907470703
+      },
+      "Grid 100m + Flood Fill": {
+        "count": 31,
+        "time": 0.001947164535522461
+      },
+      "Grid 200m + Flood Fill": {
+        "count": 31,
+        "time": 0.0015039443969726562
+      },
+      "Polygon Buffer (30m)": {
+        "count": 34,
+        "time": 0.06271696090698242
+      },
+      "Polygon Buffer (50m)": {
+        "count": 33,
+        "time": 0.06195688247680664
+      },
+      "Polygon Buffer (100m)": {
+        "count": 31,
+        "time": 0.06348395347595215
+      },
+      "Endpoint Only (30m)": {
+        "count": 35,
+        "time": 0.026046037673950195
+      },
+      "Endpoint Only (100m)": {
+        "count": 33,
+        "time": 0.026002168655395508
+      },
+      "Endpoint Adaptive": {
+        "count": 35,
+        "time": 0.0288088321685791
+      },
+      "Highway-Aware (Grid 100m)": {
+        "count": 31,
+        "time": 0.002866029739379883
+      },
+      "Highway-Aware (Polygon 100m)": {
+        "count": 31,
+        "time": 0.06435108184814453
+      }
+    },
+    "William Street": {
+      "Point-to-Point (30m)": {
+        "count": 56,
+        "time": 0.2562727928161621
+      },
+      "Point-to-Point (50m)": {
+        "count": 56,
+        "time": 0.2577519416809082
+      },
+      "Point-to-Point (100m)": {
+        "count": 56,
+        "time": 0.25274014472961426
+      },
+      "Grid 50m + Flood Fill": {
+        "count": 56,
+        "time": 0.0036818981170654297
+      },
+      "Grid 100m + Flood Fill": {
+        "count": 56,
+        "time": 0.0026679039001464844
+      },
+      "Grid 200m + Flood Fill": {
+        "count": 55,
+        "time": 0.001992940902709961
+      },
+      "Polygon Buffer (30m)": {
+        "count": 56,
+        "time": 0.09081196784973145
+      },
+      "Polygon Buffer (50m)": {
+        "count": 56,
+        "time": 0.09100604057312012
+      },
+      "Polygon Buffer (100m)": {
+        "count": 56,
+        "time": 0.09221911430358887
+      },
+      "Endpoint Only (30m)": {
+        "count": 56,
+        "time": 0.03900599479675293
+      },
+      "Endpoint Only (100m)": {
+        "count": 56,
+        "time": 0.03899502754211426
+      },
+      "Endpoint Adaptive": {
+        "count": 56,
+        "time": 0.04321098327636719
+      },
+      "Highway-Aware (Grid 100m)": {
+        "count": 56,
+        "time": 0.003893136978149414
+      },
+      "Highway-Aware (Polygon 100m)": {
+        "count": 56,
+        "time": 0.09296607971191406
+      }
+    },
+    "King Street": {
+      "Point-to-Point (30m)": {
+        "count": 45,
+        "time": 0.2786750793457031
+      },
+      "Point-to-Point (50m)": {
+        "count": 45,
+        "time": 0.2768068313598633
+      },
+      "Point-to-Point (100m)": {
+        "count": 41,
+        "time": 0.27668094635009766
+      },
+      "Grid 50m + Flood Fill": {
+        "count": 43,
+        "time": 0.003675222396850586
+      },
+      "Grid 100m + Flood Fill": {
+        "count": 41,
+        "time": 0.002565145492553711
+      },
+      "Grid 200m + Flood Fill": {
+        "count": 41,
+        "time": 0.001958131790161133
+      },
+      "Polygon Buffer (30m)": {
+        "count": 43,
+        "time": 0.07373309135437012
+      },
+      "Polygon Buffer (50m)": {
+        "count": 41,
+        "time": 0.07479405403137207
+      },
+      "Polygon Buffer (100m)": {
+        "count": 41,
+        "time": 0.07526803016662598
+      },
+      "Endpoint Only (30m)": {
+        "count": 45,
+        "time": 0.0310361385345459
+      },
+      "Endpoint Only (100m)": {
+        "count": 41,
+        "time": 0.031071901321411133
+      },
+      "Endpoint Adaptive": {
+        "count": 45,
+        "time": 0.03438997268676758
+      },
+      "Highway-Aware (Grid 100m)": {
+        "count": 41,
+        "time": 0.0037369728088378906
+      },
+      "Highway-Aware (Polygon 100m)": {
+        "count": 41,
+        "time": 0.07475781440734863
+      }
+    },
+    "Church Street": {
+      "Point-to-Point (30m)": {
+        "count": 46,
+        "time": 0.4071061611175537
+      },
+      "Point-to-Point (50m)": {
+        "count": 45,
+        "time": 0.4070611000061035
+      },
+      "Point-to-Point (100m)": {
+        "count": 42,
+        "time": 0.40347790718078613
+      },
+      "Grid 50m + Flood Fill": {
+        "count": 42,
+        "time": 0.0039141178131103516
+      },
+      "Grid 100m + Flood Fill": {
+        "count": 41,
+        "time": 0.0027539730072021484
+      },
+      "Grid 200m + Flood Fill": {
+        "count": 40,
+        "time": 0.002064943313598633
+      },
+      "Polygon Buffer (30m)": {
+        "count": 44,
+        "time": 0.14537620544433594
+      },
+      "Polygon Buffer (50m)": {
+        "count": 42,
+        "time": 0.14755773544311523
+      },
+      "Polygon Buffer (100m)": {
+        "count": 40,
+        "time": 0.14973115921020508
+      },
+      "Endpoint Only (30m)": {
+        "count": 47,
+        "time": 0.06324911117553711
+      },
+      "Endpoint Only (100m)": {
+        "count": 43,
+        "time": 0.06389999389648438
+      },
+      "Endpoint Adaptive": {
+        "count": 47,
+        "time": 0.06972193717956543
+      },
+      "Highway-Aware (Grid 100m)": {
+        "count": 40,
+        "time": 0.003968000411987305
+      },
+      "Highway-Aware (Polygon 100m)": {
+        "count": 40,
+        "time": 0.14977216720581055
+      }
+    },
+    "Windsor Street": {
+      "Point-to-Point (30m)": {
+        "count": 5,
+        "time": 0.0016787052154541016
+      },
+      "Point-to-Point (50m)": {
+        "count": 5,
+        "time": 0.0016429424285888672
+      },
+      "Point-to-Point (100m)": {
+        "count": 5,
+        "time": 0.0016281604766845703
+      },
+      "Grid 50m + Flood Fill": {
+        "count": 5,
+        "time": 0.0004496574401855469
+      },
+      "Grid 100m + Flood Fill": {
+        "count": 5,
+        "time": 0.00032210350036621094
+      },
+      "Grid 200m + Flood Fill": {
+        "count": 5,
+        "time": 0.0002219676971435547
+      },
+      "Polygon Buffer (30m)": {
+        "count": 5,
+        "time": 0.0011889934539794922
+      },
+      "Polygon Buffer (50m)": {
+        "count": 5,
+        "time": 0.001094818115234375
+      },
+      "Polygon Buffer (100m)": {
+        "count": 5,
+        "time": 0.0011310577392578125
+      },
+      "Endpoint Only (30m)": {
+        "count": 5,
+        "time": 0.00021886825561523438
+      },
+      "Endpoint Only (100m)": {
+        "count": 5,
+        "time": 0.00021600723266601562
+      },
+      "Endpoint Adaptive": {
+        "count": 5,
+        "time": 0.0002377033233642578
+      },
+      "Highway-Aware (Grid 100m)": {
+        "count": 5,
+        "time": 0.0004429817199707031
+      },
+      "Highway-Aware (Polygon 100m)": {
+        "count": 5,
+        "time": 0.0011298656463623047
+      }
+    },
+    "Albert Street": {
+      "Point-to-Point (30m)": {
+        "count": 41,
+        "time": 0.05626201629638672
+      },
+      "Point-to-Point (50m)": {
+        "count": 41,
+        "time": 0.05611610412597656
+      },
+      "Point-to-Point (100m)": {
+        "count": 40,
+        "time": 0.056105852127075195
+      },
+      "Grid 50m + Flood Fill": {
+        "count": 41,
+        "time": 0.0020689964294433594
+      },
+      "Grid 100m + Flood Fill": {
+        "count": 39,
+        "time": 0.001809835433959961
+      },
+      "Grid 200m + Flood Fill": {
+        "count": 39,
+        "time": 0.0012507438659667969
+      },
+      "Polygon Buffer (30m)": {
+        "count": 41,
+        "time": 0.024359941482543945
+      },
+      "Polygon Buffer (50m)": {
+        "count": 40,
+        "time": 0.02400517463684082
+      },
+      "Polygon Buffer (100m)": {
+        "count": 39,
+        "time": 0.024075031280517578
+      },
+      "Endpoint Only (30m)": {
+        "count": 41,
+        "time": 0.009367942810058594
+      },
+      "Endpoint Only (100m)": {
+        "count": 40,
+        "time": 0.009448051452636719
+      },
+      "Endpoint Adaptive": {
+        "count": 41,
+        "time": 0.01053309440612793
+      },
+      "Highway-Aware (Grid 100m)": {
+        "count": 39,
+        "time": 0.0022656917572021484
+      },
+      "Highway-Aware (Polygon 100m)": {
+        "count": 39,
+        "time": 0.024281978607177734
+      }
+    },
+    "Parramatta Road": {
+      "Point-to-Point (30m)": {
+        "count": 1,
+        "time": 0.6634011268615723
+      },
+      "Point-to-Point (50m)": {
+        "count": 1,
+        "time": 0.6604349613189697
+      },
+      "Point-to-Point (100m)": {
+        "count": 1,
+        "time": 0.6641809940338135
+      },
+      "Grid 50m + Flood Fill": {
+        "count": 1,
+        "time": 0.0047228336334228516
+      },
+      "Grid 100m + Flood Fill": {
+        "count": 1,
+        "time": 0.002959012985229492
+      },
+      "Grid 200m + Flood Fill": {
+        "count": 1,
+        "time": 0.0021390914916992188
+      },
+      "Polygon Buffer (30m)": {
+        "count": 1,
+        "time": 0.4342031478881836
+      },
+      "Polygon Buffer (50m)": {
+        "count": 1,
+        "time": 0.43877291679382324
+      },
+      "Polygon Buffer (100m)": {
+        "count": 1,
+        "time": 0.44742298126220703
+      },
+      "Endpoint Only (30m)": {
+        "count": 1,
+        "time": 0.20142173767089844
+      },
+      "Endpoint Only (100m)": {
+        "count": 1,
+        "time": 0.19550108909606934
+      },
+      "Endpoint Adaptive": {
+        "count": 1,
+        "time": 0.21503305435180664
+      },
+      "Highway-Aware (Grid 100m)": {
+        "count": 1,
+        "time": 0.0042989253997802734
+      },
+      "Highway-Aware (Polygon 100m)": {
+        "count": 1,
+        "time": 0.44718313217163086
+      }
+    },
+    "Liverpool Road": {
+      "Point-to-Point (30m)": {
+        "count": 1,
+        "time": 0.12549519538879395
+      },
+      "Point-to-Point (50m)": {
+        "count": 1,
+        "time": 0.12368202209472656
+      },
+      "Point-to-Point (100m)": {
+        "count": 1,
+        "time": 0.12213301658630371
+      },
+      "Grid 50m + Flood Fill": {
+        "count": 1,
+        "time": 0.00174713134765625
+      },
+      "Grid 100m + Flood Fill": {
+        "count": 1,
+        "time": 0.0011861324310302734
+      },
+      "Grid 200m + Flood Fill": {
+        "count": 1,
+        "time": 0.0008509159088134766
+      },
+      "Polygon Buffer (30m)": {
+        "count": 1,
+        "time": 0.07899618148803711
+      },
+      "Polygon Buffer (50m)": {
+        "count": 1,
+        "time": 0.08015704154968262
+      },
+      "Polygon Buffer (100m)": {
+        "count": 1,
+        "time": 0.08324384689331055
+      },
+      "Endpoint Only (30m)": {
+        "count": 1,
+        "time": 0.032263994216918945
+      },
+      "Endpoint Only (100m)": {
+        "count": 1,
+        "time": 0.0324091911315918
+      },
+      "Endpoint Adaptive": {
+        "count": 1,
+        "time": 0.0358891487121582
+      },
+      "Highway-Aware (Grid 100m)": {
+        "count": 1,
+        "time": 0.0017468929290771484
+      },
+      "Highway-Aware (Polygon 100m)": {
+        "count": 1,
+        "time": 0.08293008804321289
+      }
+    },
+    "Victoria Road": {
+      "Point-to-Point (30m)": {
+        "count": 12,
+        "time": 1.419935941696167
+      },
+      "Point-to-Point (50m)": {
+        "count": 12,
+        "time": 1.4081158638000488
+      },
+      "Point-to-Point (100m)": {
+        "count": 12,
+        "time": 1.4470291137695312
+      },
+      "Grid 50m + Flood Fill": {
+        "count": 12,
+        "time": 0.00693511962890625
+      },
+      "Grid 100m + Flood Fill": {
+        "count": 12,
+        "time": 0.005033016204833984
+      },
+      "Grid 200m + Flood Fill": {
+        "count": 12,
+        "time": 0.003414154052734375
+      },
+      "Polygon Buffer (30m)": {
+        "count": 12,
+        "time": 0.5155141353607178
+      },
+      "Polygon Buffer (50m)": {
+        "count": 12,
+        "time": 0.5203218460083008
+      },
+      "Polygon Buffer (100m)": {
+        "count": 12,
+        "time": 0.5241501331329346
+      },
+      "Endpoint Only (30m)": {
+        "count": 12,
+        "time": 0.2761647701263428
+      },
+      "Endpoint Only (100m)": {
+        "count": 12,
+        "time": 0.24153518676757812
+      },
+      "Endpoint Adaptive": {
+        "count": 12,
+        "time": 0.26350998878479004
+      },
+      "Highway-Aware (Grid 100m)": {
+        "count": 12,
+        "time": 0.006939888000488281
+      },
+      "Highway-Aware (Polygon 100m)": {
+        "count": 12,
+        "time": 0.5365321636199951
+      }
+    },
+    "Pacific Highway": {
+      "Point-to-Point (30m)": {
+        "count": 5,
+        "time": 3.3742191791534424
+      },
+      "Point-to-Point (50m)": {
+        "count": 5,
+        "time": 3.3716700077056885
+      },
+      "Point-to-Point (100m)": {
+        "count": 5,
+        "time": 3.347362995147705
+      },
+      "Grid 50m + Flood Fill": {
+        "count": 5,
+        "time": 0.012468338012695312
+      },
+      "Grid 100m + Flood Fill": {
+        "count": 5,
+        "time": 0.008131980895996094
+      },
+      "Grid 200m + Flood Fill": {
+        "count": 4,
+        "time": 0.005825996398925781
+      },
+      "Polygon Buffer (30m)": {
+        "count": 5,
+        "time": 1.015589952468872
+      },
+      "Polygon Buffer (50m)": {
+        "count": 5,
+        "time": 0.9926238059997559
+      },
+      "Polygon Buffer (100m)": {
+        "count": 5,
+        "time": 1.0975210666656494
+      },
+      "Endpoint Only (30m)": {
+        "count": 6,
+        "time": 0.4728231430053711
+      },
+      "Endpoint Only (100m)": {
+        "count": 5,
+        "time": 0.5000147819519043
+      },
+      "Endpoint Adaptive": {
+        "count": 6,
+        "time": 0.5050289630889893
+      },
+      "Highway-Aware (Grid 100m)": {
+        "count": 1,
+        "time": 0.01094818115234375
+      },
+      "Highway-Aware (Polygon 100m)": {
+        "count": 1,
+        "time": 1.0175340175628662
+      }
+    },
+    "Great Western Highway": {
+      "Point-to-Point (30m)": {
+        "count": 3,
+        "time": 2.3433780670166016
+      },
+      "Point-to-Point (50m)": {
+        "count": 3,
+        "time": 2.274254083633423
+      },
+      "Point-to-Point (100m)": {
+        "count": 3,
+        "time": 2.217966079711914
+      },
+      "Grid 50m + Flood Fill": {
+        "count": 3,
+        "time": 0.010312080383300781
+      },
+      "Grid 100m + Flood Fill": {
+        "count": 3,
+        "time": 0.0066111087799072266
+      },
+      "Grid 200m + Flood Fill": {
+        "count": 3,
+        "time": 0.004700899124145508
+      },
+      "Polygon Buffer (30m)": {
+        "count": 3,
+        "time": 0.5188138484954834
+      },
+      "Polygon Buffer (50m)": {
+        "count": 3,
+        "time": 0.5183959007263184
+      },
+      "Polygon Buffer (100m)": {
+        "count": 3,
+        "time": 0.5222451686859131
+      },
+      "Endpoint Only (30m)": {
+        "count": 3,
+        "time": 0.2266530990600586
+      },
+      "Endpoint Only (100m)": {
+        "count": 3,
+        "time": 0.22690773010253906
+      },
+      "Endpoint Adaptive": {
+        "count": 3,
+        "time": 0.2519552707672119
+      },
+      "Highway-Aware (Grid 100m)": {
+        "count": 1,
+        "time": 0.00972294807434082
+      },
+      "Highway-Aware (Polygon 100m)": {
+        "count": 1,
+        "time": 0.5273652076721191
+      }
+    },
+    "Princes Highway": {
+      "Point-to-Point (30m)": {
+        "count": 3,
+        "time": 1.5244719982147217
+      },
+      "Point-to-Point (50m)": {
+        "count": 3,
+        "time": 1.533236026763916
+      },
+      "Point-to-Point (100m)": {
+        "count": 3,
+        "time": 1.5201787948608398
+      },
+      "Grid 50m + Flood Fill": {
+        "count": 3,
+        "time": 0.009311914443969727
+      },
+      "Grid 100m + Flood Fill": {
+        "count": 3,
+        "time": 0.006228923797607422
+      },
+      "Grid 200m + Flood Fill": {
+        "count": 3,
+        "time": 0.004428863525390625
+      },
+      "Polygon Buffer (30m)": {
+        "count": 3,
+        "time": 0.47963786125183105
+      },
+      "Polygon Buffer (50m)": {
+        "count": 3,
+        "time": 0.4693880081176758
+      },
+      "Polygon Buffer (100m)": {
+        "count": 3,
+        "time": 0.47527217864990234
+      },
+      "Endpoint Only (30m)": {
+        "count": 3,
+        "time": 0.20979619026184082
+      },
+      "Endpoint Only (100m)": {
+        "count": 3,
+        "time": 0.21068429946899414
+      },
+      "Endpoint Adaptive": {
+        "count": 3,
+        "time": 0.23263311386108398
+      },
+      "Highway-Aware (Grid 100m)": {
+        "count": 1,
+        "time": 0.008203983306884766
+      },
+      "Highway-Aware (Polygon 100m)": {
+        "count": 1,
+        "time": 0.4808802604675293
+      }
+    },
+    "Hume Highway": {
+      "Point-to-Point (30m)": {
+        "count": 2,
+        "time": 0.4972820281982422
+      },
+      "Point-to-Point (50m)": {
+        "count": 2,
+        "time": 0.4941539764404297
+      },
+      "Point-to-Point (100m)": {
+        "count": 2,
+        "time": 0.4945399761199951
+      },
+      "Grid 50m + Flood Fill": {
+        "count": 2,
+        "time": 0.004471778869628906
+      },
+      "Grid 100m + Flood Fill": {
+        "count": 2,
+        "time": 0.002886056900024414
+      },
+      "Grid 200m + Flood Fill": {
+        "count": 2,
+        "time": 0.002044200897216797
+      },
+      "Polygon Buffer (30m)": {
+        "count": 2,
+        "time": 0.19946503639221191
+      },
+      "Polygon Buffer (50m)": {
+        "count": 2,
+        "time": 0.2004258632659912
+      },
+      "Polygon Buffer (100m)": {
+        "count": 2,
+        "time": 0.20252370834350586
+      },
+      "Endpoint Only (30m)": {
+        "count": 2,
+        "time": 0.08704781532287598
+      },
+      "Endpoint Only (100m)": {
+        "count": 2,
+        "time": 0.08792710304260254
+      },
+      "Endpoint Adaptive": {
+        "count": 2,
+        "time": 0.09682106971740723
+      },
+      "Highway-Aware (Grid 100m)": {
+        "count": 1,
+        "time": 0.00391077995300293
+      },
+      "Highway-Aware (Polygon 100m)": {
+        "count": 1,
+        "time": 0.22165179252624512
+      }
+    },
+    "Warringah Freeway": {
+      "Point-to-Point (30m)": {
+        "count": 1,
+        "time": 0.0523982048034668
+      },
+      "Point-to-Point (50m)": {
+        "count": 1,
+        "time": 0.05094599723815918
+      },
+      "Point-to-Point (100m)": {
+        "count": 1,
+        "time": 0.048532962799072266
+      },
+      "Grid 50m + Flood Fill": {
+        "count": 1,
+        "time": 0.0012879371643066406
+      },
+      "Grid 100m + Flood Fill": {
+        "count": 1,
+        "time": 0.0007810592651367188
+      },
+      "Grid 200m + Flood Fill": {
+        "count": 1,
+        "time": 0.0005450248718261719
+      },
+      "Polygon Buffer (30m)": {
+        "count": 1,
+        "time": 0.03280997276306152
+      },
+      "Polygon Buffer (50m)": {
+        "count": 1,
+        "time": 0.03285980224609375
+      },
+      "Polygon Buffer (100m)": {
+        "count": 1,
+        "time": 0.034429073333740234
+      },
+      "Endpoint Only (30m)": {
+        "count": 1,
+        "time": 0.012160062789916992
+      },
+      "Endpoint Only (100m)": {
+        "count": 1,
+        "time": 0.012146234512329102
+      },
+      "Endpoint Adaptive": {
+        "count": 1,
+        "time": 0.013225317001342773
+      },
+      "Highway-Aware (Grid 100m)": {
+        "count": 1,
+        "time": 0.0010612010955810547
+      },
+      "Highway-Aware (Polygon 100m)": {
+        "count": 1,
+        "time": 0.03515887260437012
+      }
+    },
+    "Central Coast Highway": {
+      "Point-to-Point (30m)": {
+        "count": 5,
+        "time": 0.06828904151916504
+      },
+      "Point-to-Point (50m)": {
+        "count": 5,
+        "time": 0.06768012046813965
+      },
+      "Point-to-Point (100m)": {
+        "count": 5,
+        "time": 0.06658816337585449
+      },
+      "Grid 50m + Flood Fill": {
+        "count": 5,
+        "time": 0.0018699169158935547
+      },
+      "Grid 100m + Flood Fill": {
+        "count": 4,
+        "time": 0.0011777877807617188
+      },
+      "Grid 200m + Flood Fill": {
+        "count": 4,
+        "time": 0.0008258819580078125
+      },
+      "Polygon Buffer (30m)": {
+        "count": 5,
+        "time": 0.02298712730407715
+      },
+      "Polygon Buffer (50m)": {
+        "count": 5,
+        "time": 0.023081064224243164
+      },
+      "Polygon Buffer (100m)": {
+        "count": 4,
+        "time": 0.024198055267333984
+      },
+      "Endpoint Only (30m)": {
+        "count": 6,
+        "time": 0.008529901504516602
+      },
+      "Endpoint Only (100m)": {
+        "count": 5,
+        "time": 0.008507013320922852
+      },
+      "Endpoint Adaptive": {
+        "count": 6,
+        "time": 0.009434223175048828
+      },
+      "Highway-Aware (Grid 100m)": {
+        "count": 1,
+        "time": 0.0017440319061279297
+      },
+      "Highway-Aware (Polygon 100m)": {
+        "count": 1,
+        "time": 0.024502992630004883
+      }
+    },
+    "Prospect Highway": {
+      "Point-to-Point (30m)": {
+        "count": 2,
+        "time": 0.059626102447509766
+      },
+      "Point-to-Point (50m)": {
+        "count": 2,
+        "time": 0.05884289741516113
+      },
+      "Point-to-Point (100m)": {
+        "count": 2,
+        "time": 0.0583040714263916
+      },
+      "Grid 50m + Flood Fill": {
+        "count": 2,
+        "time": 0.0014379024505615234
+      },
+      "Grid 100m + Flood Fill": {
+        "count": 2,
+        "time": 0.0009448528289794922
+      },
+      "Grid 200m + Flood Fill": {
+        "count": 2,
+        "time": 0.0006940364837646484
+      },
+      "Polygon Buffer (30m)": {
+        "count": 2,
+        "time": 0.021294116973876953
+      },
+      "Polygon Buffer (50m)": {
+        "count": 2,
+        "time": 0.021738052368164062
+      },
+      "Polygon Buffer (100m)": {
+        "count": 2,
+        "time": 0.023437976837158203
+      },
+      "Endpoint Only (30m)": {
+        "count": 2,
+        "time": 0.008242130279541016
+      },
+      "Endpoint Only (100m)": {
+        "count": 2,
+        "time": 0.008023738861083984
+      },
+      "Endpoint Adaptive": {
+        "count": 2,
+        "time": 0.008998870849609375
+      },
+      "Highway-Aware (Grid 100m)": {
+        "count": 1,
+        "time": 0.0013380050659179688
+      },
+      "Highway-Aware (Polygon 100m)": {
+        "count": 1,
+        "time": 0.023005962371826172
+      }
+    }
+  }
+}

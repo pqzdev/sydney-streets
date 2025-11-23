@@ -1,0 +1,701 @@
+{
+  "street_counts": {
+    "Victoria Street": {
+      "Point-to-Point (30m)": 41,
+      "Point-to-Point (50m)": 38,
+      "Point-to-Point (100m)": 37,
+      "Grid 50m + Flood Fill": 37,
+      "Grid 100m + Flood Fill": 36,
+      "Grid 200m + Flood Fill": 36,
+      "Polygon Buffer (30m)": 38,
+      "Polygon Buffer (50m)": 37,
+      "Polygon Buffer (100m)": 36,
+      "Endpoint Only (30m)": 41,
+      "Endpoint Only (100m)": 37,
+      "Endpoint Adaptive": 41,
+      "Highway-Aware (Grid 100m)": 36,
+      "Highway-Aware (Polygon 100m)": 36
+    },
+    "Regent Street": {
+      "Point-to-Point (30m)": 13,
+      "Point-to-Point (50m)": 13,
+      "Point-to-Point (100m)": 13,
+      "Grid 50m + Flood Fill": 13,
+      "Grid 100m + Flood Fill": 13,
+      "Grid 200m + Flood Fill": 13,
+      "Polygon Buffer (30m)": 13,
+      "Polygon Buffer (50m)": 13,
+      "Polygon Buffer (100m)": 13,
+      "Endpoint Only (30m)": 13,
+      "Endpoint Only (100m)": 13,
+      "Endpoint Adaptive": 13,
+      "Highway-Aware (Grid 100m)": 13,
+      "Highway-Aware (Polygon 100m)": 13
+    },
+    "Short Street": {
+      "Point-to-Point (30m)": 57,
+      "Point-to-Point (50m)": 55,
+      "Point-to-Point (100m)": 54,
+      "Grid 50m + Flood Fill": 54,
+      "Grid 100m + Flood Fill": 54,
+      "Grid 200m + Flood Fill": 53,
+      "Polygon Buffer (30m)": 55,
+      "Polygon Buffer (50m)": 54,
+      "Polygon Buffer (100m)": 54,
+      "Endpoint Only (30m)": 57,
+      "Endpoint Only (100m)": 54,
+      "Endpoint Adaptive": 57,
+      "Highway-Aware (Grid 100m)": 54,
+      "Highway-Aware (Polygon 100m)": 54
+    },
+    "Railway Terrace": {
+      "Point-to-Point (30m)": 4,
+      "Point-to-Point (50m)": 4,
+      "Point-to-Point (100m)": 4,
+      "Grid 50m + Flood Fill": 4,
+      "Grid 100m + Flood Fill": 4,
+      "Grid 200m + Flood Fill": 4,
+      "Polygon Buffer (30m)": 4,
+      "Polygon Buffer (50m)": 4,
+      "Polygon Buffer (100m)": 4,
+      "Endpoint Only (30m)": 4,
+      "Endpoint Only (100m)": 4,
+      "Endpoint Adaptive": 4,
+      "Highway-Aware (Grid 100m)": 4,
+      "Highway-Aware (Polygon 100m)": 4
+    },
+    "Park Street": {
+      "Point-to-Point (30m)": 31,
+      "Point-to-Point (50m)": 30,
+      "Point-to-Point (100m)": 30,
+      "Grid 50m + Flood Fill": 30,
+      "Grid 100m + Flood Fill": 29,
+      "Grid 200m + Flood Fill": 29,
+      "Polygon Buffer (30m)": 30,
+      "Polygon Buffer (50m)": 30,
+      "Polygon Buffer (100m)": 29,
+      "Endpoint Only (30m)": 31,
+      "Endpoint Only (100m)": 30,
+      "Endpoint Adaptive": 31,
+      "Highway-Aware (Grid 100m)": 29,
+      "Highway-Aware (Polygon 100m)": 29
+    },
+    "George Street": {
+      "Point-to-Point (30m)": 58,
+      "Point-to-Point (50m)": 58,
+      "Point-to-Point (100m)": 56,
+      "Grid 50m + Flood Fill": 56,
+      "Grid 100m + Flood Fill": 51,
+      "Grid 200m + Flood Fill": 51,
+      "Polygon Buffer (30m)": 58,
+      "Polygon Buffer (50m)": 56,
+      "Polygon Buffer (100m)": 51,
+      "Endpoint Only (30m)": 59,
+      "Endpoint Only (100m)": 56,
+      "Endpoint Adaptive": 59,
+      "Highway-Aware (Grid 100m)": 52,
+      "Highway-Aware (Polygon 100m)": 51
+    },
+    "Elizabeth Street": {
+      "Point-to-Point (30m)": 35,
+      "Point-to-Point (50m)": 34,
+      "Point-to-Point (100m)": 33,
+      "Grid 50m + Flood Fill": 34,
+      "Grid 100m + Flood Fill": 31,
+      "Grid 200m + Flood Fill": 31,
+      "Polygon Buffer (30m)": 34,
+      "Polygon Buffer (50m)": 33,
+      "Polygon Buffer (100m)": 31,
+      "Endpoint Only (30m)": 35,
+      "Endpoint Only (100m)": 33,
+      "Endpoint Adaptive": 35,
+      "Highway-Aware (Grid 100m)": 31,
+      "Highway-Aware (Polygon 100m)": 31
+    },
+    "William Street": {
+      "Point-to-Point (30m)": 56,
+      "Point-to-Point (50m)": 56,
+      "Point-to-Point (100m)": 56,
+      "Grid 50m + Flood Fill": 56,
+      "Grid 100m + Flood Fill": 56,
+      "Grid 200m + Flood Fill": 55,
+      "Polygon Buffer (30m)": 56,
+      "Polygon Buffer (50m)": 56,
+      "Polygon Buffer (100m)": 56,
+      "Endpoint Only (30m)": 56,
+      "Endpoint Only (100m)": 56,
+      "Endpoint Adaptive": 56,
+      "Highway-Aware (Grid 100m)": 56,
+      "Highway-Aware (Polygon 100m)": 56
+    },
+    "King Street": {
+      "Point-to-Point (30m)": 45,
+      "Point-to-Point (50m)": 45,
+      "Point-to-Point (100m)": 41,
+      "Grid 50m + Flood Fill": 43,
+      "Grid 100m + Flood Fill": 41,
+      "Grid 200m + Flood Fill": 41,
+      "Polygon Buffer (30m)": 43,
+      "Polygon Buffer (50m)": 41,
+      "Polygon Buffer (100m)": 41,
+      "Endpoint Only (30m)": 45,
+      "Endpoint Only (100m)": 41,
+      "Endpoint Adaptive": 45,
+      "Highway-Aware (Grid 100m)": 41,
+      "Highway-Aware (Polygon 100m)": 41
+    },
+    "Church Street": {
+      "Point-to-Point (30m)": 46,
+      "Point-to-Point (50m)": 45,
+      "Point-to-Point (100m)": 42,
+      "Grid 50m + Flood Fill": 42,
+      "Grid 100m + Flood Fill": 41,
+      "Grid 200m + Flood Fill": 40,
+      "Polygon Buffer (30m)": 44,
+      "Polygon Buffer (50m)": 42,
+      "Polygon Buffer (100m)": 40,
+      "Endpoint Only (30m)": 47,
+      "Endpoint Only (100m)": 43,
+      "Endpoint Adaptive": 47,
+      "Highway-Aware (Grid 100m)": 40,
+      "Highway-Aware (Polygon 100m)": 40
+    },
+    "Windsor Street": {
+      "Point-to-Point (30m)": 5,
+      "Point-to-Point (50m)": 5,
+      "Point-to-Point (100m)": 5,
+      "Grid 50m + Flood Fill": 5,
+      "Grid 100m + Flood Fill": 5,
+      "Grid 200m + Flood Fill": 5,
+      "Polygon Buffer (30m)": 5,
+      "Polygon Buffer (50m)": 5,
+      "Polygon Buffer (100m)": 5,
+      "Endpoint Only (30m)": 5,
+      "Endpoint Only (100m)": 5,
+      "Endpoint Adaptive": 5,
+      "Highway-Aware (Grid 100m)": 5,
+      "Highway-Aware (Polygon 100m)": 5
+    },
+    "Albert Street": {
+      "Point-to-Point (30m)": 41,
+      "Point-to-Point (50m)": 41,
+      "Point-to-Point (100m)": 40,
+      "Grid 50m + Flood Fill": 41,
+      "Grid 100m + Flood Fill": 39,
+      "Grid 200m + Flood Fill": 39,
+      "Polygon Buffer (30m)": 41,
+      "Polygon Buffer (50m)": 40,
+      "Polygon Buffer (100m)": 39,
+      "Endpoint Only (30m)": 41,
+      "Endpoint Only (100m)": 40,
+      "Endpoint Adaptive": 41,
+      "Highway-Aware (Grid 100m)": 39,
+      "Highway-Aware (Polygon 100m)": 39
+    },
+    "Parramatta Road": {
+      "Point-to-Point (30m)": 1,
+      "Point-to-Point (50m)": 1,
+      "Point-to-Point (100m)": 1,
+      "Grid 50m + Flood Fill": 1,
+      "Grid 100m + Flood Fill": 1,
+      "Grid 200m + Flood Fill": 1,
+      "Polygon Buffer (30m)": 1,
+      "Polygon Buffer (50m)": 1,
+      "Polygon Buffer (100m)": 1,
+      "Endpoint Only (30m)": 1,
+      "Endpoint Only (100m)": 1,
+      "Endpoint Adaptive": 1,
+      "Highway-Aware (Grid 100m)": 1,
+      "Highway-Aware (Polygon 100m)": 1
+    },
+    "Liverpool Road": {
+      "Point-to-Point (30m)": 1,
+      "Point-to-Point (50m)": 1,
+      "Point-to-Point (100m)": 1,
+      "Grid 50m + Flood Fill": 1,
+      "Grid 100m + Flood Fill": 1,
+      "Grid 200m + Flood Fill": 1,
+      "Polygon Buffer (30m)": 1,
+      "Polygon Buffer (50m)": 1,
+      "Polygon Buffer (100m)": 1,
+      "Endpoint Only (30m)": 1,
+      "Endpoint Only (100m)": 1,
+      "Endpoint Adaptive": 1,
+      "Highway-Aware (Grid 100m)": 1,
+      "Highway-Aware (Polygon 100m)": 1
+    },
+    "Victoria Road": {
+      "Point-to-Point (30m)": 12,
+      "Point-to-Point (50m)": 12,
+      "Point-to-Point (100m)": 12,
+      "Grid 50m + Flood Fill": 12,
+      "Grid 100m + Flood Fill": 12,
+      "Grid 200m + Flood Fill": 12,
+      "Polygon Buffer (30m)": 12,
+      "Polygon Buffer (50m)": 12,
+      "Polygon Buffer (100m)": 12,
+      "Endpoint Only (30m)": 12,
+      "Endpoint Only (100m)": 12,
+      "Endpoint Adaptive": 12,
+      "Highway-Aware (Grid 100m)": 12,
+      "Highway-Aware (Polygon 100m)": 12
+    },
+    "Pacific Highway": {
+      "Point-to-Point (30m)": 5,
+      "Point-to-Point (50m)": 5,
+      "Point-to-Point (100m)": 5,
+      "Grid 50m + Flood Fill": 5,
+      "Grid 100m + Flood Fill": 5,
+      "Grid 200m + Flood Fill": 4,
+      "Polygon Buffer (30m)": 5,
+      "Polygon Buffer (50m)": 5,
+      "Polygon Buffer (100m)": 5,
+      "Endpoint Only (30m)": 6,
+      "Endpoint Only (100m)": 5,
+      "Endpoint Adaptive": 6,
+      "Highway-Aware (Grid 100m)": 1,
+      "Highway-Aware (Polygon 100m)": 1
+    },
+    "Great Western Highway": {
+      "Point-to-Point (30m)": 3,
+      "Point-to-Point (50m)": 3,
+      "Point-to-Point (100m)": 3,
+      "Grid 50m + Flood Fill": 3,
+      "Grid 100m + Flood Fill": 3,
+      "Grid 200m + Flood Fill": 3,
+      "Polygon Buffer (30m)": 3,
+      "Polygon Buffer (50m)": 3,
+      "Polygon Buffer (100m)": 3,
+      "Endpoint Only (30m)": 3,
+      "Endpoint Only (100m)": 3,
+      "Endpoint Adaptive": 3,
+      "Highway-Aware (Grid 100m)": 1,
+      "Highway-Aware (Polygon 100m)": 1
+    },
+    "Princes Highway": {
+      "Point-to-Point (30m)": 3,
+      "Point-to-Point (50m)": 3,
+      "Point-to-Point (100m)": 3,
+      "Grid 50m + Flood Fill": 3,
+      "Grid 100m + Flood Fill": 3,
+      "Grid 200m + Flood Fill": 3,
+      "Polygon Buffer (30m)": 3,
+      "Polygon Buffer (50m)": 3,
+      "Polygon Buffer (100m)": 3,
+      "Endpoint Only (30m)": 3,
+      "Endpoint Only (100m)": 3,
+      "Endpoint Adaptive": 3,
+      "Highway-Aware (Grid 100m)": 1,
+      "Highway-Aware (Polygon 100m)": 1
+    },
+    "Hume Highway": {
+      "Point-to-Point (30m)": 2,
+      "Point-to-Point (50m)": 2,
+      "Point-to-Point (100m)": 2,
+      "Grid 50m + Flood Fill": 2,
+      "Grid 100m + Flood Fill": 2,
+      "Grid 200m + Flood Fill": 2,
+      "Polygon Buffer (30m)": 2,
+      "Polygon Buffer (50m)": 2,
+      "Polygon Buffer (100m)": 2,
+      "Endpoint Only (30m)": 2,
+      "Endpoint Only (100m)": 2,
+      "Endpoint Adaptive": 2,
+      "Highway-Aware (Grid 100m)": 1,
+      "Highway-Aware (Polygon 100m)": 1
+    },
+    "Warringah Freeway": {
+      "Point-to-Point (30m)": 1,
+      "Point-to-Point (50m)": 1,
+      "Point-to-Point (100m)": 1,
+      "Grid 50m + Flood Fill": 1,
+      "Grid 100m + Flood Fill": 1,
+      "Grid 200m + Flood Fill": 1,
+      "Polygon Buffer (30m)": 1,
+      "Polygon Buffer (50m)": 1,
+      "Polygon Buffer (100m)": 1,
+      "Endpoint Only (30m)": 1,
+      "Endpoint Only (100m)": 1,
+      "Endpoint Adaptive": 1,
+      "Highway-Aware (Grid 100m)": 1,
+      "Highway-Aware (Polygon 100m)": 1
+    },
+    "Central Coast Highway": {
+      "Point-to-Point (30m)": 5,
+      "Point-to-Point (50m)": 5,
+      "Point-to-Point (100m)": 5,
+      "Grid 50m + Flood Fill": 5,
+      "Grid 100m + Flood Fill": 4,
+      "Grid 200m + Flood Fill": 4,
+      "Polygon Buffer (30m)": 5,
+      "Polygon Buffer (50m)": 5,
+      "Polygon Buffer (100m)": 4,
+      "Endpoint Only (30m)": 6,
+      "Endpoint Only (100m)": 5,
+      "Endpoint Adaptive": 6,
+      "Highway-Aware (Grid 100m)": 1,
+      "Highway-Aware (Polygon 100m)": 1
+    },
+    "Prospect Highway": {
+      "Point-to-Point (30m)": 2,
+      "Point-to-Point (50m)": 2,
+      "Point-to-Point (100m)": 2,
+      "Grid 50m + Flood Fill": 2,
+      "Grid 100m + Flood Fill": 2,
+      "Grid 200m + Flood Fill": 2,
+      "Polygon Buffer (30m)": 2,
+      "Polygon Buffer (50m)": 2,
+      "Polygon Buffer (100m)": 2,
+      "Endpoint Only (30m)": 2,
+      "Endpoint Only (100m)": 2,
+      "Endpoint Adaptive": 2,
+      "Highway-Aware (Grid 100m)": 1,
+      "Highway-Aware (Polygon 100m)": 1
+    }
+  },
+  "timing": {
+    "Point-to-Point (30m)": {
+      "total": 12.244502067565918,
+      "average": 0.5565682757984508
+    },
+    "Point-to-Point (50m)": {
+      "total": 12.155960083007812,
+      "average": 0.5525436401367188
+    },
+    "Point-to-Point (100m)": {
+      "total": 12.084993124008179,
+      "average": 0.549317869273099
+    },
+    "Grid 50m + Flood Fill": {
+      "total": 0.08553743362426758,
+      "average": 0.003888065164739435
+    },
+    "Grid 100m + Flood Fill": {
+      "total": 0.0585324764251709,
+      "average": 0.0026605671102350407
+    },
+    "Grid 200m + Flood Fill": {
+      "total": 0.04224562644958496,
+      "average": 0.0019202557477084074
+    },
+    "Polygon Buffer (30m)": {
+      "total": 4.032789707183838,
+      "average": 0.18330862305381082
+    },
+    "Polygon Buffer (50m)": {
+      "total": 3.9845399856567383,
+      "average": 0.1811154538934881
+    },
+    "Polygon Buffer (100m)": {
+      "total": 4.130614995956421,
+      "average": 0.18775522708892822
+    },
+    "Endpoint Only (30m)": {
+      "total": 1.825390100479126,
+      "average": 0.08297227729450572
+    },
+    "Endpoint Only (100m)": {
+      "total": 1.814645528793335,
+      "average": 0.08248388767242432
+    },
+    "Endpoint Adaptive": {
+      "total": 1.9540073871612549,
+      "average": 0.08881851759823886
+    },
+    "Highway-Aware (Grid 100m)": {
+      "total": 0.08273959159851074,
+      "average": 0.0037608905272050338
+    },
+    "Highway-Aware (Polygon 100m)": {
+      "total": 4.096838712692261,
+      "average": 0.18621994148601184
+    }
+  },
+  "disagreements": [
+    {
+      "street": "Victoria Street",
+      "counts": {
+        "Point-to-Point (30m)": 41,
+        "Point-to-Point (50m)": 38,
+        "Point-to-Point (100m)": 37,
+        "Grid 50m + Flood Fill": 37,
+        "Grid 100m + Flood Fill": 36,
+        "Grid 200m + Flood Fill": 36,
+        "Polygon Buffer (30m)": 38,
+        "Polygon Buffer (50m)": 37,
+        "Polygon Buffer (100m)": 36,
+        "Endpoint Only (30m)": 41,
+        "Endpoint Only (100m)": 37,
+        "Endpoint Adaptive": 41,
+        "Highway-Aware (Grid 100m)": 36,
+        "Highway-Aware (Polygon 100m)": 36
+      }
+    },
+    {
+      "street": "Short Street",
+      "counts": {
+        "Point-to-Point (30m)": 57,
+        "Point-to-Point (50m)": 55,
+        "Point-to-Point (100m)": 54,
+        "Grid 50m + Flood Fill": 54,
+        "Grid 100m + Flood Fill": 54,
+        "Grid 200m + Flood Fill": 53,
+        "Polygon Buffer (30m)": 55,
+        "Polygon Buffer (50m)": 54,
+        "Polygon Buffer (100m)": 54,
+        "Endpoint Only (30m)": 57,
+        "Endpoint Only (100m)": 54,
+        "Endpoint Adaptive": 57,
+        "Highway-Aware (Grid 100m)": 54,
+        "Highway-Aware (Polygon 100m)": 54
+      }
+    },
+    {
+      "street": "Park Street",
+      "counts": {
+        "Point-to-Point (30m)": 31,
+        "Point-to-Point (50m)": 30,
+        "Point-to-Point (100m)": 30,
+        "Grid 50m + Flood Fill": 30,
+        "Grid 100m + Flood Fill": 29,
+        "Grid 200m + Flood Fill": 29,
+        "Polygon Buffer (30m)": 30,
+        "Polygon Buffer (50m)": 30,
+        "Polygon Buffer (100m)": 29,
+        "Endpoint Only (30m)": 31,
+        "Endpoint Only (100m)": 30,
+        "Endpoint Adaptive": 31,
+        "Highway-Aware (Grid 100m)": 29,
+        "Highway-Aware (Polygon 100m)": 29
+      }
+    },
+    {
+      "street": "George Street",
+      "counts": {
+        "Point-to-Point (30m)": 58,
+        "Point-to-Point (50m)": 58,
+        "Point-to-Point (100m)": 56,
+        "Grid 50m + Flood Fill": 56,
+        "Grid 100m + Flood Fill": 51,
+        "Grid 200m + Flood Fill": 51,
+        "Polygon Buffer (30m)": 58,
+        "Polygon Buffer (50m)": 56,
+        "Polygon Buffer (100m)": 51,
+        "Endpoint Only (30m)": 59,
+        "Endpoint Only (100m)": 56,
+        "Endpoint Adaptive": 59,
+        "Highway-Aware (Grid 100m)": 52,
+        "Highway-Aware (Polygon 100m)": 51
+      }
+    },
+    {
+      "street": "Elizabeth Street",
+      "counts": {
+        "Point-to-Point (30m)": 35,
+        "Point-to-Point (50m)": 34,
+        "Point-to-Point (100m)": 33,
+        "Grid 50m + Flood Fill": 34,
+        "Grid 100m + Flood Fill": 31,
+        "Grid 200m + Flood Fill": 31,
+        "Polygon Buffer (30m)": 34,
+        "Polygon Buffer (50m)": 33,
+        "Polygon Buffer (100m)": 31,
+        "Endpoint Only (30m)": 35,
+        "Endpoint Only (100m)": 33,
+        "Endpoint Adaptive": 35,
+        "Highway-Aware (Grid 100m)": 31,
+        "Highway-Aware (Polygon 100m)": 31
+      }
+    },
+    {
+      "street": "William Street",
+      "counts": {
+        "Point-to-Point (30m)": 56,
+        "Point-to-Point (50m)": 56,
+        "Point-to-Point (100m)": 56,
+        "Grid 50m + Flood Fill": 56,
+        "Grid 100m + Flood Fill": 56,
+        "Grid 200m + Flood Fill": 55,
+        "Polygon Buffer (30m)": 56,
+        "Polygon Buffer (50m)": 56,
+        "Polygon Buffer (100m)": 56,
+        "Endpoint Only (30m)": 56,
+        "Endpoint Only (100m)": 56,
+        "Endpoint Adaptive": 56,
+        "Highway-Aware (Grid 100m)": 56,
+        "Highway-Aware (Polygon 100m)": 56
+      }
+    },
+    {
+      "street": "King Street",
+      "counts": {
+        "Point-to-Point (30m)": 45,
+        "Point-to-Point (50m)": 45,
+        "Point-to-Point (100m)": 41,
+        "Grid 50m + Flood Fill": 43,
+        "Grid 100m + Flood Fill": 41,
+        "Grid 200m + Flood Fill": 41,
+        "Polygon Buffer (30m)": 43,
+        "Polygon Buffer (50m)": 41,
+        "Polygon Buffer (100m)": 41,
+        "Endpoint Only (30m)": 45,
+        "Endpoint Only (100m)": 41,
+        "Endpoint Adaptive": 45,
+        "Highway-Aware (Grid 100m)": 41,
+        "Highway-Aware (Polygon 100m)": 41
+      }
+    },
+    {
+      "street": "Church Street",
+      "counts": {
+        "Point-to-Point (30m)": 46,
+        "Point-to-Point (50m)": 45,
+        "Point-to-Point (100m)": 42,
+        "Grid 50m + Flood Fill": 42,
+        "Grid 100m + Flood Fill": 41,
+        "Grid 200m + Flood Fill": 40,
+        "Polygon Buffer (30m)": 44,
+        "Polygon Buffer (50m)": 42,
+        "Polygon Buffer (100m)": 40,
+        "Endpoint Only (30m)": 47,
+        "Endpoint Only (100m)": 43,
+        "Endpoint Adaptive": 47,
+        "Highway-Aware (Grid 100m)": 40,
+        "Highway-Aware (Polygon 100m)": 40
+      }
+    },
+    {
+      "street": "Albert Street",
+      "counts": {
+        "Point-to-Point (30m)": 41,
+        "Point-to-Point (50m)": 41,
+        "Point-to-Point (100m)": 40,
+        "Grid 50m + Flood Fill": 41,
+        "Grid 100m + Flood Fill": 39,
+        "Grid 200m + Flood Fill": 39,
+        "Polygon Buffer (30m)": 41,
+        "Polygon Buffer (50m)": 40,
+        "Polygon Buffer (100m)": 39,
+        "Endpoint Only (30m)": 41,
+        "Endpoint Only (100m)": 40,
+        "Endpoint Adaptive": 41,
+        "Highway-Aware (Grid 100m)": 39,
+        "Highway-Aware (Polygon 100m)": 39
+      }
+    },
+    {
+      "street": "Pacific Highway",
+      "counts": {
+        "Point-to-Point (30m)": 5,
+        "Point-to-Point (50m)": 5,
+        "Point-to-Point (100m)": 5,
+        "Grid 50m + Flood Fill": 5,
+        "Grid 100m + Flood Fill": 5,
+        "Grid 200m + Flood Fill": 4,
+        "Polygon Buffer (30m)": 5,
+        "Polygon Buffer (50m)": 5,
+        "Polygon Buffer (100m)": 5,
+        "Endpoint Only (30m)": 6,
+        "Endpoint Only (100m)": 5,
+        "Endpoint Adaptive": 6,
+        "Highway-Aware (Grid 100m)": 1,
+        "Highway-Aware (Polygon 100m)": 1
+      }
+    },
+    {
+      "street": "Great Western Highway",
+      "counts": {
+        "Point-to-Point (30m)": 3,
+        "Point-to-Point (50m)": 3,
+        "Point-to-Point (100m)": 3,
+        "Grid 50m + Flood Fill": 3,
+        "Grid 100m + Flood Fill": 3,
+        "Grid 200m + Flood Fill": 3,
+        "Polygon Buffer (30m)": 3,
+        "Polygon Buffer (50m)": 3,
+        "Polygon Buffer (100m)": 3,
+        "Endpoint Only (30m)": 3,
+        "Endpoint Only (100m)": 3,
+        "Endpoint Adaptive": 3,
+        "Highway-Aware (Grid 100m)": 1,
+        "Highway-Aware (Polygon 100m)": 1
+      }
+    },
+    {
+      "street": "Princes Highway",
+      "counts": {
+        "Point-to-Point (30m)": 3,
+        "Point-to-Point (50m)": 3,
+        "Point-to-Point (100m)": 3,
+        "Grid 50m + Flood Fill": 3,
+        "Grid 100m + Flood Fill": 3,
+        "Grid 200m + Flood Fill": 3,
+        "Polygon Buffer (30m)": 3,
+        "Polygon Buffer (50m)": 3,
+        "Polygon Buffer (100m)": 3,
+        "Endpoint Only (30m)": 3,
+        "Endpoint Only (100m)": 3,
+        "Endpoint Adaptive": 3,
+        "Highway-Aware (Grid 100m)": 1,
+        "Highway-Aware (Polygon 100m)": 1
+      }
+    },
+    {
+      "street": "Hume Highway",
+      "counts": {
+        "Point-to-Point (30m)": 2,
+        "Point-to-Point (50m)": 2,
+        "Point-to-Point (100m)": 2,
+        "Grid 50m + Flood Fill": 2,
+        "Grid 100m + Flood Fill": 2,
+        "Grid 200m + Flood Fill": 2,
+        "Polygon Buffer (30m)": 2,
+        "Polygon Buffer (50m)": 2,
+        "Polygon Buffer (100m)": 2,
+        "Endpoint Only (30m)": 2,
+        "Endpoint Only (100m)": 2,
+        "Endpoint Adaptive": 2,
+        "Highway-Aware (Grid 100m)": 1,
+        "Highway-Aware (Polygon 100m)": 1
+      }
+    },
+    {
+      "street": "Central Coast Highway",
+      "counts": {
+        "Point-to-Point (30m)": 5,
+        "Point-to-Point (50m)": 5,
+        "Point-to-Point (100m)": 5,
+        "Grid 50m + Flood Fill": 5,
+        "Grid 100m + Flood Fill": 4,
+        "Grid 200m + Flood Fill": 4,
+        "Polygon Buffer (30m)": 5,
+        "Polygon Buffer (50m)": 5,
+        "Polygon Buffer (100m)": 4,
+        "Endpoint Only (30m)": 6,
+        "Endpoint Only (100m)": 5,
+        "Endpoint Adaptive": 6,
+        "Highway-Aware (Grid 100m)": 1,
+        "Highway-Aware (Polygon 100m)": 1
+      }
+    },
+    {
+      "street": "Prospect Highway",
+      "counts": {
+        "Point-to-Point (30m)": 2,
+        "Point-to-Point (50m)": 2,
+        "Point-to-Point (100m)": 2,
+        "Grid 50m + Flood Fill": 2,
+        "Grid 100m + Flood Fill": 2,
+        "Grid 200m + Flood Fill": 2,
+        "Polygon Buffer (30m)": 2,
+        "Polygon Buffer (50m)": 2,
+        "Polygon Buffer (100m)": 2,
+        "Endpoint Only (30m)": 2,
+        "Endpoint Only (100m)": 2,
+        "Endpoint Adaptive": 2,
+        "Highway-Aware (Grid 100m)": 1,
+        "Highway-Aware (Polygon 100m)": 1
+      }
+    }
+  ]
+}
