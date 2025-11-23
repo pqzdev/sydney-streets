@@ -12,6 +12,8 @@ let viewMode = 'overlay'; // 'overlay' or 'grid'
 let nameMode = 'name-only'; // 'name-only' or 'name-type'
 let uniqueStreetNames = []; // All unique street names in dataset
 let legendVisible = false; // Legend toggle state
+let gridMapsSync = false; // Whether grid maps pan/zoom together
+let gridMaps = []; // Array of grid map instances
 
 // Default colors for streets
 const defaultColors = ['#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c', '#34495e', '#e67e22'];
@@ -148,6 +150,20 @@ function setupEventListeners() {
 
     document.getElementById('view-grid').addEventListener('click', () => {
         setViewMode('grid');
+    });
+
+    // Grid sync toggle buttons
+    document.getElementById('sync-independent').addEventListener('click', () => {
+        gridMapsSync = false;
+        document.getElementById('sync-independent').classList.add('active');
+        document.getElementById('sync-synchronized').classList.remove('active');
+    });
+
+    document.getElementById('sync-synchronized').addEventListener('click', () => {
+        gridMapsSync = true;
+        document.getElementById('sync-independent').classList.remove('active');
+        document.getElementById('sync-synchronized').classList.add('active');
+        synchronizeGridMaps();
     });
 
     // Name mode buttons
@@ -516,6 +532,9 @@ function setViewMode(mode) {
     // Update button states
     document.getElementById('view-overlay').classList.toggle('active', mode === 'overlay');
     document.getElementById('view-grid').classList.toggle('active', mode === 'grid');
+
+    // Show/hide grid sync controls
+    document.getElementById('grid-sync-controls').style.display = mode === 'grid' ? 'flex' : 'none';
 
     saveSearch(); // Save view mode to URL
     updateMap();
@@ -953,6 +972,9 @@ function renderGridView(selectedFeatures) {
 
     gridView.innerHTML = gridHTML;
 
+    // Clear old grid maps
+    gridMaps = [];
+
     // Create individual maps for each street
     setTimeout(() => {
         selectedStreetNames.forEach(streetName => {
@@ -980,9 +1002,38 @@ function renderGridView(selectedFeatures) {
                 }).addTo(gridMap);
 
                 gridMap.fitBounds(layer.getBounds(), { padding: [10, 10] });
+
+                // Add to grid maps array
+                gridMaps.push(gridMap);
+
+                // Add sync event listeners if more than one map
+                if (gridMapsSync) {
+                    gridMap.on('moveend', () => syncGridMapView(gridMap));
+                    gridMap.on('zoomend', () => syncGridMapView(gridMap));
+                }
             }
         });
     }, 100);
+}
+
+function syncGridMapView(sourceMap) {
+    if (!gridMapsSync) return;
+    const center = sourceMap.getCenter();
+    const zoom = sourceMap.getZoom();
+    gridMaps.forEach(m => {
+        if (m !== sourceMap) {
+            m.setView(center, zoom);
+        }
+    });
+}
+
+function synchronizeGridMaps() {
+    if (gridMaps.length > 0) {
+        const mainMap = gridMaps[0];
+        const center = mainMap.getCenter();
+        const zoom = mainMap.getZoom();
+        gridMaps.forEach(m => m.setView(center, zoom));
+    }
 }
 
 function updateStats() {
