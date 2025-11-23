@@ -1,14 +1,5 @@
-// Initialize map centered on Sydney
-const map = L.map('map').setView([-33.8688, 151.2093], 12);
-
-// Add CartoDB Positron tile layer (grey, minimal style for visualizations)
-L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-    subdomains: 'abcd',
-    maxZoom: 20
-}).addTo(map);
-
 // Global variables
+let map;
 let allStreets = [];
 let visibleStreets = [];
 let currentLayer = null;
@@ -55,12 +46,23 @@ const categories = {
              'sturt', 'mitchell', 'oxley', 'cunningham']
 };
 
-// Initialize UI
-document.getElementById('name-filter').addEventListener('input', filterStreets);
-document.getElementById('category').addEventListener('change', filterStreets);
-
 // Auto-load data on page load
 window.addEventListener('DOMContentLoaded', () => {
+    // Initialize map centered on Sydney
+    map = L.map('map').setView([-33.8688, 151.2093], 12);
+
+    // Add CartoDB Positron tile layer (grey, minimal style for visualizations)
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        subdomains: 'abcd',
+        maxZoom: 20
+    }).addTo(map);
+
+    // Initialize UI event listeners
+    document.getElementById('name-filter').addEventListener('input', filterStreets);
+    document.getElementById('category').addEventListener('change', filterStreets);
+
+    // Load data
     loadData();
 });
 
@@ -479,6 +481,3 @@ function updateStats() {
         topTenEl.textContent = '-';
     }
 }
-
-// Initial stats display
-updateStats();
