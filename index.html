@@ -192,8 +192,20 @@
 
         .grid-container {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
             gap: 1rem;
+        }
+
+        /* Optimize for 1-2 items on large screens */
+        @media (min-width: 1400px) {
+            .grid-container[data-count="1"] {
+                grid-template-columns: 1fr;
+                max-width: 800px;
+                margin: 0 auto;
+            }
+            .grid-container[data-count="2"] {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
 
         .grid-item {

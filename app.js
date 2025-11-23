@@ -847,7 +847,7 @@ function renderGridView(selectedFeatures) {
 
     // Create grid items
     const gridHTML = `
-        <div class="grid-container">
+        <div class="grid-container" data-count="${selectedStreetNames.length}">
             ${selectedStreetNames.map(streetName => {
                 const features = streetGroups[streetName] || [];
                 const color = streetColors[streetName] || '#3498db';
