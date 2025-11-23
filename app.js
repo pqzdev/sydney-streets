@@ -464,8 +464,11 @@ function updateMap() {
         map.removeLayer(currentLayer);
     }
 
-    // If no streets selected, show empty map
+    // If no streets selected, show empty map/grid
     if (selectedStreetNames.length === 0) {
+        if (viewMode === 'grid') {
+            document.getElementById('grid-view').innerHTML = '<p style="text-align: center; color: #999; margin-top: 2rem;">No streets selected</p>';
+        }
         return;
     }
 
@@ -478,6 +481,10 @@ function updateMap() {
     });
 
     if (viewMode === 'overlay') {
+        // Show overlay map
+        document.getElementById('map').style.display = 'block';
+        document.getElementById('grid-view').classList.remove('active');
+
         // Show all streets on map with their colors
         currentLayer = L.geoJSON(selectedFeatures, {
             style: function(feature) {
@@ -503,11 +510,81 @@ function updateMap() {
             map.fitBounds(currentLayer.getBounds());
         }
     } else {
-        // Grid view - TODO: implement grid layout
-        // For now, just show overlay
-        updateMap();
-        viewMode = 'overlay';
+        // Grid view
+        document.getElementById('map').style.display = 'none';
+        document.getElementById('grid-view').classList.add('active');
+
+        renderGridView(selectedFeatures);
     }
+}
+
+function renderGridView(selectedFeatures) {
+    const gridView = document.getElementById('grid-view');
+
+    // Group features by street name
+    const streetGroups = {};
+    selectedFeatures.forEach(feature => {
+        const name = feature.properties.name || '';
+        if (!streetGroups[name]) {
+            streetGroups[name] = [];
+        }
+        streetGroups[name].push(feature);
+    });
+
+    // Create grid items
+    const gridHTML = `
+        <div class="grid-container">
+            ${selectedStreetNames.map(streetName => {
+                const features = streetGroups[streetName] || [];
+                const color = streetColors[streetName] || '#3498db';
+                const count = getStreetCount(streetName);
+
+                return `
+                    <div class="grid-item">
+                        <div class="grid-item-header">
+                            <div class="grid-item-color" style="background: ${color}"></div>
+                            <div class="grid-item-name">${streetName}</div>
+                            <div class="grid-item-count">${count} instance${count !== 1 ? 's' : ''}</div>
+                        </div>
+                        <div class="grid-item-map" id="grid-map-${streetName.replace(/[^a-zA-Z0-9]/g, '-')}"></div>
+                    </div>
+                `;
+            }).join('')}
+        </div>
+    `;
+
+    gridView.innerHTML = gridHTML;
+
+    // Create individual maps for each street
+    setTimeout(() => {
+        selectedStreetNames.forEach(streetName => {
+            const features = streetGroups[streetName] || [];
+            const mapId = `grid-map-${streetName.replace(/[^a-zA-Z0-9]/g, '-')}`;
+            const color = streetColors[streetName] || '#3498db';
+
+            if (features.length > 0) {
+                const gridMap = L.map(mapId, {
+                    zoomControl: false,
+                    attributionControl: false
+                });
+
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                    subdomains: 'abcd',
+                    maxZoom: 20
+                }).addTo(gridMap);
+
+                const layer = L.geoJSON(features, {
+                    style: {
+                        color: color,
+                        weight: 3,
+                        opacity: 0.7
+                    }
+                }).addTo(gridMap);
+
+                gridMap.fitBounds(layer.getBounds(), { padding: [10, 10] });
+            }
+        });
+    }, 100);
 }
 
 function updateStats() {
@@ -522,10 +599,13 @@ function updateStats() {
         });
     }
 
-    // Update street count list for selected streets
+    // Update street count list for selected streets (sorted by count descending)
     const countEl = document.getElementById('street-count');
     if (selectedStreetNames.length > 0) {
-        countEl.innerHTML = Object.entries(selectedCounts).map(([name, count]) => {
+        const sortedEntries = Object.entries(selectedCounts)
+            .sort((a, b) => b[1] - a[1]); // Sort by count descending
+
+        countEl.innerHTML = sortedEntries.map(([name, count]) => {
             return `${name}: <strong>${count}</strong>`;
         }).join('<br>');
     } else {
