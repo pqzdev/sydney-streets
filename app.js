@@ -13,6 +13,7 @@ let allStreets = [];
 let visibleStreets = [];
 let currentLayer = null;
 let streetData = null;
+let precomputedCounts = null; // Grid 200m + Highway-Aware counts
 
 // Color schemes for different categories
 const colors = {
@@ -125,6 +126,17 @@ async function loadData() {
     button.textContent = 'Loading...';
 
     try {
+        // Try to load pre-computed counts (Grid 200m method)
+        try {
+            const countsResponse = await fetch('data/street_counts_grid200.json');
+            if (countsResponse.ok) {
+                precomputedCounts = await countsResponse.json();
+                console.log('Loaded pre-computed street counts (Grid 200m + Highway-Aware)');
+            }
+        } catch (e) {
+            console.log('Pre-computed counts not available, will use client-side counting');
+        }
+
         if (source === 'sample') {
             streetData = sampleData;
             processStreetData();
@@ -339,6 +351,31 @@ function updateStats() {
 
     // Count unique streets using tight grid with adjacency chains
     function countUniqueStreets(streets) {
+        // If we have pre-computed counts, use them for better accuracy
+        if (precomputedCounts && precomputedCounts.counts) {
+            const nameCounts = {};
+
+            // Group streets by name
+            const streetsByName = {};
+            streets.forEach(street => {
+                const fullName = street.name;
+                if (!streetsByName[fullName]) {
+                    streetsByName[fullName] = [];
+                }
+                streetsByName[fullName].push(street);
+            });
+
+            // Use pre-computed counts
+            for (const streetName of Object.keys(streetsByName)) {
+                const baseName = getBaseName(streetName).toLowerCase();
+                // Use pre-computed count if available, otherwise fall back to 1
+                nameCounts[baseName] = precomputedCounts.counts[streetName] || 1;
+            }
+
+            return nameCounts;
+        }
+
+        // Fallback to client-side counting (Grid 100m method)
         // Grid size: 0.001 degrees ≈ 100 meters
         const GRID_SIZE = 0.001;
 
