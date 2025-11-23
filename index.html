@@ -64,18 +64,171 @@
         }
 
         .control-group label {
-            display: block;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             font-weight: 600;
             margin-bottom: 0.5rem;
             color: #2c3e50;
         }
 
-        .control-group input,
-        .control-group select {
+        .lists-link {
+            font-size: 0.85rem;
+            color: #3498db;
+            text-decoration: none;
+            font-weight: normal;
+            cursor: pointer;
+        }
+
+        .lists-link:hover {
+            text-decoration: underline;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            z-index: 1000;
+            min-width: 150px;
+        }
+
+        .dropdown-menu.show {
+            display: block;
+        }
+
+        .dropdown-item {
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            color: #2c3e50;
+            font-size: 0.9rem;
+        }
+
+        .dropdown-item:hover {
+            background: #f8f9fa;
+        }
+
+        #street-search {
             width: 100%;
             padding: 0.5rem;
             border: 1px solid #ced4da;
             border-radius: 4px;
+            font-size: 0.9rem;
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .selected-streets {
+            margin-top: 0.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .street-tag {
+            background: #e3f2fd;
+            padding: 0.25rem 0.5rem;
+            border-radius: 3px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .street-tag .remove {
+            cursor: pointer;
+            color: #666;
+            font-weight: bold;
+        }
+
+        .street-tag .remove:hover {
+            color: #e74c3c;
+        }
+
+        .collapsible {
+            background: #2c3e50;
+            color: white;
+            cursor: pointer;
+            padding: 0.75rem;
+            width: 100%;
+            border: none;
+            text-align: left;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .collapsible:hover {
+            background: #34495e;
+        }
+
+        .collapsible-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background: white;
+            border: 1px solid #dee2e6;
+            border-top: none;
+            border-radius: 0 0 4px 4px;
+        }
+
+        .collapsible-content.active {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .collapsible-content-inner {
+            padding: 1rem;
+        }
+
+        .view-mode {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .view-mode button {
+            flex: 1;
+            padding: 0.5rem;
+            background: #f8f9fa;
+            color: #2c3e50;
+            border: 1px solid #ced4da;
+            cursor: pointer;
+        }
+
+        .view-mode button.active {
+            background: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+
+        .street-list-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .street-list-item:last-child {
+            border-bottom: none;
+        }
+
+        .color-picker {
+            width: 30px;
+            height: 30px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .street-name {
+            flex: 1;
             font-size: 0.9rem;
         }
 
@@ -107,27 +260,6 @@
             color: #2c3e50;
         }
 
-        button {
-            background: #3498db;
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            width: 100%;
-            margin-top: 0.5rem;
-        }
-
-        button:hover {
-            background: #2980b9;
-        }
-
-        button:disabled {
-            background: #95a5a6;
-            cursor: not-allowed;
-        }
-
         .info {
             background: #e3f2fd;
             padding: 1rem;
@@ -135,6 +267,28 @@
             border-left: 4px solid #2196f3;
             font-size: 0.85rem;
             margin-bottom: 1rem;
+        }
+
+        .autocomplete-list {
+            position: absolute;
+            background: white;
+            border: 1px solid #dee2e6;
+            border-top: none;
+            max-height: 200px;
+            overflow-y: auto;
+            width: calc(100% - 3rem);
+            z-index: 1000;
+            border-radius: 0 0 4px 4px;
+        }
+
+        .autocomplete-item {
+            padding: 0.5rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .autocomplete-item:hover {
+            background: #f8f9fa;
         }
 
         @media (max-width: 768px) {
@@ -162,20 +316,36 @@
             </div>
 
             <div class="control-group">
-                <label for="name-filter">Filter by Street Name</label>
-                <input type="text" id="name-filter" placeholder='e.g., victoria or "Victoria St" for exact'>
+                <label>
+                    Search Streets
+                    <a href="#" class="lists-link" id="lists-toggle">Lists ▾</a>
+                </label>
+                <div class="dropdown-menu" id="lists-dropdown">
+                    <div class="dropdown-item" data-list="top10">Top 10</div>
+                    <div class="dropdown-item" data-list="royalty">Royalty</div>
+                    <div class="dropdown-item" data-list="trees">Trees</div>
+                    <div class="dropdown-item" data-list="suburbs">Suburbs</div>
+                    <div class="dropdown-item" data-list="famous">Famous People</div>
+                </div>
+                <input type="text" id="street-search" placeholder="Type street names (e.g., Victoria Street, George Street)">
+                <div id="autocomplete-list" class="autocomplete-list"></div>
+                <div id="selected-streets" class="selected-streets"></div>
             </div>
 
             <div class="control-group">
-                <label for="category">Category</label>
-                <select id="category">
-                    <option value="all">All Streets</option>
-                    <option value="common">Most Common Names</option>
-                    <option value="suburbs">Named After Suburbs</option>
-                    <option value="trees">Tree Names</option>
-                    <option value="royalty">Royalty Names</option>
-                    <option value="famous">Famous People</option>
-                </select>
+                <button class="collapsible" id="compare-toggle">
+                    Compare Streets
+                    <span>▾</span>
+                </button>
+                <div class="collapsible-content" id="compare-content">
+                    <div class="collapsible-content-inner">
+                        <div class="view-mode">
+                            <button id="view-overlay" class="active">Overlay</button>
+                            <button id="view-grid">Grid</button>
+                        </div>
+                        <div id="street-colors"></div>
+                    </div>
+                </div>
             </div>
 
             <div class="stats">
@@ -188,15 +358,11 @@
                     <span class="stat-label">Visible Streets</span>
                     <span class="stat-value" id="stat-visible">-</span>
                 </div>
-                <div class="stat-item">
-                    <span class="stat-label">In Current View</span>
-                    <span class="stat-value" id="stat-viewport">-</span>
-                </div>
             </div>
 
             <div class="stats" style="margin-top: 1rem;">
-                <h3 style="margin-bottom: 0.75rem; font-size: 1rem;">Top 10 Most Common</h3>
-                <div id="top-ten" style="font-size: 0.85rem; line-height: 1.6;">-</div>
+                <h3 style="margin-bottom: 0.75rem; font-size: 1rem;">Street Count</h3>
+                <div id="street-count" style="font-size: 0.85rem; line-height: 1.6;">-</div>
             </div>
         </div>
 
