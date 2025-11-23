@@ -1,3 +1,4 @@
+// Sydney Streets - Interactive Visualization
 // Global variables
 let map;
 let allStreets = [];
