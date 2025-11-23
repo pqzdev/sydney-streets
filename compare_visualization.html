@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Method Comparison</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        #controls {
+            background: #2c3e50;
+            color: white;
+            padding: 1rem;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        select {
+            padding: 0.5rem;
+            font-size: 1rem;
+            border-radius: 4px;
+            border: none;
+            background: #34495e;
+            color: white;
+            min-width: 200px;
+        }
+
+        #maps-container {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 2px;
+            background: #333;
+        }
+
+        .map-wrapper {
+            position: relative;
+            background: white;
+        }
+
+        .map {
+            width: 100%;
+            height: 100%;
+        }
+
+        .map-label {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-weight: bold;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+
+        .map-label .count {
+            display: block;
+            font-size: 0.85rem;
+            color: #666;
+            font-weight: normal;
+            margin-top: 0.25rem;
+        }
+
+        .legend {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 0.75rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            max-width: 200px;
+        }
+
+        .comparison-info {
+            background: #ecf0f1;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+
+        .comparison-info strong {
+            color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <div id="controls">
+        <label style="display: flex; align-items: center; gap: 0.5rem;">
+            Street:
+            <select id="street-selector">
+                <option value="">Select a street...</option>
+                <option value="Victoria Street">Victoria Street</option>
+                <option value="Regent Street">Regent Street</option>
+                <option value="Short Street">Short Street</option>
+                <option value="Railway Terrace">Railway Terrace</option>
+                <option value="Princes Highway">Princes Highway</option>
+                <option value="Park Street">Park Street</option>
+                <option value="George Street">George Street</option>
+                <option value="Elizabeth Street">Elizabeth Street</option>
+                <option value="William Street">William Street</option>
+                <option value="King Street">King Street</option>
+                <option value="Church Street">Church Street</option>
+                <option value="Windsor Street">Windsor Street</option>
+                <option value="Albert Street">Albert Street</option>
+                <option value="Parramatta Road">Parramatta Road</option>
+                <option value="Liverpool Road">Liverpool Road</option>
+                <option value="Victoria Road">Victoria Road</option>
+            </select>
+        </label>
+
+        <label style="display: flex; align-items: center; gap: 0.5rem;">
+            Method 1:
+            <select id="method1-selector">
+                <option value="Point-to-Point (30m)">Point-to-Point (30m)</option>
+                <option value="Point-to-Point (50m)">Point-to-Point (50m)</option>
+                <option value="Point-to-Point (100m)">Point-to-Point (100m)</option>
+                <option value="Grid 50m + Flood Fill">Grid 50m + Flood Fill</option>
+                <option value="Grid 100m + Flood Fill">Grid 100m + Flood Fill</option>
+                <option value="Grid 200m + Flood Fill">Grid 200m + Flood Fill</option>
+                <option value="Polygon Buffer (30m)">Polygon Buffer (30m)</option>
+                <option value="Polygon Buffer (50m)" selected>Polygon Buffer (50m)</option>
+                <option value="Endpoint Only (30m)">Endpoint Only (30m)</option>
+                <option value="Endpoint Only (100m)">Endpoint Only (100m)</option>
+                <option value="Endpoint Adaptive">Endpoint Adaptive (30m/500m)</option>
+            </select>
+        </label>
+
+        <label style="display: flex; align-items: center; gap: 0.5rem;">
+            Method 2:
+            <select id="method2-selector">
+                <option value="Point-to-Point (30m)" selected>Point-to-Point (30m)</option>
+                <option value="Point-to-Point (50m)">Point-to-Point (50m)</option>
+                <option value="Point-to-Point (100m)">Point-to-Point (100m)</option>
+                <option value="Grid 50m + Flood Fill">Grid 50m + Flood Fill</option>
+                <option value="Grid 100m + Flood Fill">Grid 100m + Flood Fill</option>
+                <option value="Grid 200m + Flood Fill">Grid 200m + Flood Fill</option>
+                <option value="Polygon Buffer (30m)">Polygon Buffer (30m)</option>
+                <option value="Polygon Buffer (50m)">Polygon Buffer (50m)</option>
+                <option value="Endpoint Only (30m)">Endpoint Only (30m)</option>
+                <option value="Endpoint Only (100m)">Endpoint Only (100m)</option>
+                <option value="Endpoint Adaptive">Endpoint Adaptive (30m/500m)</option>
+            </select>
+        </label>
+
+        <label style="display: flex; align-items: center; gap: 0.5rem;">
+            Method 3:
+            <select id="method3-selector">
+                <option value="Point-to-Point (30m)">Point-to-Point (30m)</option>
+                <option value="Point-to-Point (50m)">Point-to-Point (50m)</option>
+                <option value="Point-to-Point (100m)">Point-to-Point (100m)</option>
+                <option value="Grid 50m + Flood Fill">Grid 50m + Flood Fill</option>
+                <option value="Grid 100m + Flood Fill" selected>Grid 100m + Flood Fill</option>
+                <option value="Grid 200m + Flood Fill">Grid 200m + Flood Fill</option>
+                <option value="Polygon Buffer (30m)">Polygon Buffer (30m)</option>
+                <option value="Polygon Buffer (50m)">Polygon Buffer (50m)</option>
+                <option value="Endpoint Only (30m)">Endpoint Only (30m)</option>
+                <option value="Endpoint Only (100m)">Endpoint Only (100m)</option>
+                <option value="Endpoint Adaptive">Endpoint Adaptive (30m/500m)</option>
+            </select>
+        </label>
+
+        <label style="display: flex; align-items: center; gap: 0.5rem;">
+            Method 4:
+            <select id="method4-selector">
+                <option value="Point-to-Point (30m)">Point-to-Point (30m)</option>
+                <option value="Point-to-Point (50m)">Point-to-Point (50m)</option>
+                <option value="Point-to-Point (100m)">Point-to-Point (100m)</option>
+                <option value="Grid 50m + Flood Fill">Grid 50m + Flood Fill</option>
+                <option value="Grid 100m + Flood Fill">Grid 100m + Flood Fill</option>
+                <option value="Grid 200m + Flood Fill">Grid 200m + Flood Fill</option>
+                <option value="Polygon Buffer (30m)">Polygon Buffer (30m)</option>
+                <option value="Polygon Buffer (50m)">Polygon Buffer (50m)</option>
+                <option value="Endpoint Only (30m)" selected>Endpoint Only (30m)</option>
+                <option value="Endpoint Only (100m)">Endpoint Only (100m)</option>
+                <option value="Endpoint Adaptive">Endpoint Adaptive (30m/500m)</option>
+            </select>
+        </label>
+    </div>
+
+    <div class="comparison-info" id="comparison-info" style="display: none;">
+        Showing disagreements: <strong id="disagreement-count">0</strong> segments where methods disagree
+    </div>
+
+    <div id="maps-container">
+        <div class="map-wrapper">
+            <div class="map-label" id="label1">Method 1</div>
+            <div id="map1" class="map"></div>
+            <div class="legend" id="legend1">Each color = one street instance</div>
+        </div>
+        <div class="map-wrapper">
+            <div class="map-label" id="label2">Method 2</div>
+            <div id="map2" class="map"></div>
+            <div class="legend" id="legend2">Each color = one street instance</div>
+        </div>
+        <div class="map-wrapper">
+            <div class="map-label" id="label3">Method 3</div>
+            <div id="map3" class="map"></div>
+            <div class="legend" id="legend3">Each color = one street instance</div>
+        </div>
+        <div class="map-wrapper">
+            <div class="map-label" id="label4">Method 4</div>
+            <div id="map4" class="map"></div>
+            <div class="legend" id="legend4">Each color = one street instance</div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize maps
+        const maps = [
+            L.map('map1').setView([-33.8688, 151.2093], 11),
+            L.map('map2').setView([-33.8688, 151.2093], 11),
+            L.map('map3').setView([-33.8688, 151.2093], 11),
+            L.map('map4').setView([-33.8688, 151.2093], 11)
+        ];
+
+        // Add basemaps
+        maps.forEach(map => {
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; OpenStreetMap &copy; CARTO',
+                subdomains: 'abcd',
+                maxZoom: 20
+            }).addTo(map);
+        });
+
+        // Sync map movements - lock all maps together
+        let isSyncing = false;
+
+        function syncMaps(sourceMap) {
+            if (isSyncing) return;
+            isSyncing = true;
+
+            const center = sourceMap.getCenter();
+            const zoom = sourceMap.getZoom();
+
+            maps.forEach(map => {
+                if (map !== sourceMap) {
+                    map.setView(center, zoom, { animate: false });
+                }
+            });
+
+            isSyncing = false;
+        }
+
+        // Debounce function for URL updates
+        let urlUpdateTimeout;
+        function debouncedUpdateURL() {
+            clearTimeout(urlUpdateTimeout);
+            urlUpdateTimeout = setTimeout(updateURL, 500);
+        }
+
+        maps.forEach(map => {
+            map.on('move', () => syncMaps(map));
+            map.on('zoom', () => syncMaps(map));
+            map.on('drag', () => syncMaps(map));
+            map.on('zoomend', () => syncMaps(map));
+            map.on('moveend', () => {
+                syncMaps(map);
+                debouncedUpdateURL();
+            });
+        });
+
+        let currentLayers = [null, null, null, null];
+        let gridLayers = [null, null, null, null];
+        let disagreementLayers = [[], [], [], []];
+        let allData = null;
+        let detailedData = null;
+
+        function generateColor(index, total) {
+            const hue = (index * 360 / total) % 360;
+            const saturation = 70 + (index % 3) * 10;
+            const lightness = 45 + (index % 2) * 10;
+
+            const c = (1 - Math.abs(2 * lightness / 100 - 1)) * saturation / 100;
+            const x = c * (1 - Math.abs((hue / 60) % 2 - 1));
+            const m = lightness / 100 - c / 2;
+
+            let r, g, b;
+            if (hue < 60) { r = c; g = x; b = 0; }
+            else if (hue < 120) { r = x; g = c; b = 0; }
+            else if (hue < 180) { r = 0; g = c; b = x; }
+            else if (hue < 240) { r = 0; g = x; b = c; }
+            else if (hue < 300) { r = x; g = 0; b = c; }
+            else { r = c; g = 0; b = x; }
+
+            r = Math.round((r + m) * 255);
+            g = Math.round((g + m) * 255);
+            b = Math.round((b + m) * 255);
+
+            return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+        }
+
+        async function loadData() {
+            const geoResponse = await fetch('data/sydney-roads-osm.geojson');
+            allData = await geoResponse.json();
+
+            const detailResponse = await fetch('data/method_comparison_detailed.json');
+            detailedData = await detailResponse.json();
+        }
+
+        async function updateVisualization() {
+            const streetName = document.getElementById('street-selector').value;
+            if (!streetName || !allData || !detailedData) return;
+
+            const methods = [
+                document.getElementById('method1-selector').value,
+                document.getElementById('method2-selector').value,
+                document.getElementById('method3-selector').value,
+                document.getElementById('method4-selector').value
+            ];
+
+            if (!detailedData[streetName]) {
+                console.error('No data for', streetName);
+                return;
+            }
+
+            // Clear old layers
+            currentLayers.forEach((layer, idx) => {
+                if (layer) {
+                    maps[idx].removeLayer(layer);
+                }
+            });
+
+            // Clear old grid layers
+            gridLayers.forEach((layer, idx) => {
+                if (layer) {
+                    maps[idx].removeLayer(layer);
+                }
+            });
+
+            // Clear old disagreement layers
+            disagreementLayers.forEach((layers, idx) => {
+                layers.forEach(layer => {
+                    if (layer) {
+                        maps[idx].removeLayer(layer);
+                    }
+                });
+                disagreementLayers[idx] = [];
+            });
+
+            // Get street features
+            const streetFeatures = allData.features.filter(f => f.properties.name === streetName);
+
+            for (let mapIdx = 0; mapIdx < methods.length; mapIdx++) {
+                const methodName = methods[mapIdx];
+                const methodData = detailedData[streetName][methodName];
+                if (!methodData) continue;
+
+                const components = methodData.components;
+                const count = methodData.count;
+
+                // Count total segments for this method
+                let totalSegments = 0;
+                components.forEach(component => {
+                    totalSegments += component.length;
+                });
+
+                // Update label
+                document.getElementById(`label${mapIdx + 1}`).innerHTML = `
+                    ${methodName}
+                    <span class="count">${count} streets counted (${totalSegments} segments)</span>
+                `;
+
+                // Create colored features first
+                const features = [];
+                components.forEach((component, compIdx) => {
+                    const color = generateColor(compIdx, components.length);
+
+                    component.forEach(segIdx => {
+                        if (segIdx < streetFeatures.length) {
+                            const feature = JSON.parse(JSON.stringify(streetFeatures[segIdx]));
+                            feature.properties.component_id = compIdx;
+                            feature.properties.color = color;
+                            features.push(feature);
+                        }
+                    });
+                });
+
+                // Load grid cells if this is a grid method (add BEFORE streets so streets are on top)
+                if (methodName.includes('Grid')) {
+                    const gridSizeMatch = methodName.match(/(\d+)m/);
+                    if (gridSizeMatch) {
+                        const gridSize = gridSizeMatch[1];
+                        const gridFile = `data/grid_${streetName.toLowerCase().replace(/ /g, '_')}_${gridSize}m.geojson`;
+
+                        console.log('Loading grid file:', gridFile);
+
+                        try {
+                            const gridResponse = await fetch(gridFile);
+                            if (!gridResponse.ok) {
+                                console.error('Grid file not found:', gridFile);
+                            } else {
+                                const gridData = await gridResponse.json();
+
+                                console.log('Grid data loaded:', gridData.features.length, 'cells');
+
+                                // Add grid layer (will be below streets)
+                                const gridLayer = L.geoJSON(gridData, {
+                                    style: {
+                                        color: '#FF0000',
+                                        weight: 2,
+                                        opacity: 0.8,
+                                        fillColor: '#FFFF00',
+                                        fillOpacity: 0.3
+                                    }
+                                }).addTo(maps[mapIdx]);
+
+                                gridLayers[mapIdx] = gridLayer;
+                                console.log('Grid layer added to map', mapIdx);
+                            }
+                        } catch (e) {
+                            console.error('Error loading grid data:', gridFile, e);
+                        }
+                    }
+                }
+
+                // Add streets to map (on top of grid)
+                const layer = L.geoJSON({
+                    type: 'FeatureCollection',
+                    features: features
+                }, {
+                    style: (feature) => ({
+                        color: feature.properties.color,
+                        weight: 4,
+                        opacity: 0.9
+                    })
+                }).addTo(maps[mapIdx]);
+
+                currentLayers[mapIdx] = layer;
+
+                // Fit bounds (only first map, others will sync)
+                // But only if we're not loading from URL with explicit view
+                if (mapIdx === 0 && !window.loadingFromURL) {
+                    maps[0].fitBounds(layer.getBounds());
+                }
+            }
+
+            // Calculate and highlight disagreements
+            highlightDisagreements();
+        }
+
+        function highlightDisagreements() {
+            const streetName = document.getElementById('street-selector').value;
+            if (!streetName || !allData || !detailedData) return;
+
+            const methods = [
+                document.getElementById('method1-selector').value,
+                document.getElementById('method2-selector').value,
+                document.getElementById('method3-selector').value,
+                document.getElementById('method4-selector').value
+            ];
+
+            // Get all components for each method
+            const allComponents = methods.map(m => detailedData[streetName][m]?.components || []);
+
+            // Find segments that are in different components across methods
+            const streetFeatures = allData.features.filter(f => f.properties.name === streetName);
+            const disagreementSegments = new Set();
+
+            // For each segment, check if it's in the same component ID across all methods
+            for (let segIdx = 0; segIdx < streetFeatures.length; segIdx++) {
+                const componentIds = [];
+
+                for (let methodIdx = 0; methodIdx < methods.length; methodIdx++) {
+                    const components = allComponents[methodIdx];
+                    // Find which component this segment belongs to
+                    const compId = components.findIndex(comp => comp.includes(segIdx));
+                    componentIds.push(compId);
+                }
+
+                // If not all methods agree on the component grouping, mark as disagreement
+                // We check if segments are grouped differently, not just different IDs
+                if (componentIds.some(id => id === -1)) continue; // Skip if segment not found
+
+                // Check if this segment's relationships with other segments differ across methods
+                for (let otherSegIdx = 0; otherSegIdx < streetFeatures.length; otherSegIdx++) {
+                    if (segIdx === otherSegIdx) continue;
+
+                    const otherComponentIds = [];
+                    for (let methodIdx = 0; methodIdx < methods.length; methodIdx++) {
+                        const components = allComponents[methodIdx];
+                        const compId = components.findIndex(comp => comp.includes(otherSegIdx));
+                        otherComponentIds.push(compId);
+                    }
+
+                    // Check if the relationship (same component or different) varies across methods
+                    const relationships = componentIds.map((cid, idx) => cid === otherComponentIds[idx]);
+                    if (new Set(relationships).size > 1) {
+                        // Methods disagree on whether these segments are connected
+                        disagreementSegments.add(segIdx);
+                        disagreementSegments.add(otherSegIdx);
+                    }
+                }
+            }
+
+            // Add circles around disagreement segments
+            disagreementSegments.forEach(segIdx => {
+                if (segIdx >= streetFeatures.length) return;
+
+                const coords = streetFeatures[segIdx].geometry.coordinates;
+                if (coords.length === 0) return;
+
+                // Get midpoint of segment
+                const midIdx = Math.floor(coords.length / 2);
+                const midPoint = coords[midIdx];
+                const lat = midPoint[1];
+                const lng = midPoint[0];
+
+                // Add a large circle to all maps
+                maps.forEach((map, idx) => {
+                    const circle = L.circle([lat, lng], {
+                        radius: 200, // 200m radius
+                        color: '#FF6B00',
+                        fillColor: '#FF6B00',
+                        fillOpacity: 0.15,
+                        weight: 3,
+                        opacity: 0.6
+                    }).addTo(map).bindPopup(`<strong>Disagreement</strong><br>Segment ${segIdx}<br>Methods group this differently`);
+                    disagreementLayers[idx].push(circle);
+                });
+            });
+
+            // Update info display
+            if (disagreementSegments.size > 0) {
+                document.getElementById('comparison-info').style.display = 'block';
+                document.getElementById('disagreement-count').textContent = disagreementSegments.size;
+            } else {
+                document.getElementById('comparison-info').style.display = 'none';
+            }
+        }
+
+        // Update URL when selections change
+        function updateURL() {
+            const params = new URLSearchParams();
+            const street = document.getElementById('street-selector').value;
+            if (street) params.set('street', street);
+
+            params.set('m1', document.getElementById('method1-selector').value);
+            params.set('m2', document.getElementById('method2-selector').value);
+            params.set('m3', document.getElementById('method3-selector').value);
+            params.set('m4', document.getElementById('method4-selector').value);
+
+            // Add map view parameters (using first map as reference)
+            const center = maps[0].getCenter();
+            const zoom = maps[0].getZoom();
+            params.set('lat', center.lat.toFixed(6));
+            params.set('lng', center.lng.toFixed(6));
+            params.set('zoom', zoom);
+
+            const newURL = window.location.pathname + '?' + params.toString();
+            window.history.replaceState({}, '', newURL);
+        }
+
+        // Load from URL parameters
+        function loadFromURL() {
+            const params = new URLSearchParams(window.location.search);
+
+            const street = params.get('street');
+            if (street) document.getElementById('street-selector').value = street;
+
+            if (params.get('m1')) document.getElementById('method1-selector').value = params.get('m1');
+            if (params.get('m2')) document.getElementById('method2-selector').value = params.get('m2');
+            if (params.get('m3')) document.getElementById('method3-selector').value = params.get('m3');
+            if (params.get('m4')) document.getElementById('method4-selector').value = params.get('m4');
+
+            // Load map view if specified
+            const lat = params.get('lat');
+            const lng = params.get('lng');
+            const zoom = params.get('zoom');
+
+            if (lat && lng && zoom) {
+                window.loadingFromURL = true;
+                // Set all maps to the specified view
+                const center = [parseFloat(lat), parseFloat(lng)];
+                const zoomLevel = parseInt(zoom);
+                maps.forEach(map => {
+                    map.setView(center, zoomLevel);
+                });
+            }
+
+            if (street) {
+                updateVisualization().then(() => {
+                    window.loadingFromURL = false;
+                });
+            }
+        }
+
+        // Event listeners
+        document.getElementById('street-selector').addEventListener('change', () => {
+            updateVisualization();
+            updateURL();
+        });
+        document.getElementById('method1-selector').addEventListener('change', () => {
+            updateVisualization();
+            updateURL();
+        });
+        document.getElementById('method2-selector').addEventListener('change', () => {
+            updateVisualization();
+            updateURL();
+        });
+        document.getElementById('method3-selector').addEventListener('change', () => {
+            updateVisualization();
+            updateURL();
+        });
+        document.getElementById('method4-selector').addEventListener('change', () => {
+            updateVisualization();
+            updateURL();
+        });
+
+        // Load data on startup
+        loadData().then(() => {
+            loadFromURL();
+        });
+    </script>
+</body>
+</html>

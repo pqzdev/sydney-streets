@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Street Counting Methods - Summary</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 2rem;
+            background: #f5f5f5;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: #7f8c8d;
+            margin-bottom: 2rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 3rem;
+        }
+
+        th {
+            background: #34495e;
+            color: white;
+            padding: 0.75rem;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        th.rotate {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            padding: 0.5rem 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .street-name {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .count-cell {
+            text-align: center;
+            font-family: 'Monaco', 'Courier New', monospace;
+        }
+
+        .time-cell {
+            text-align: right;
+            font-family: 'Monaco', 'Courier New', monospace;
+            color: #7f8c8d;
+        }
+
+        .best {
+            background: #d5f4e6;
+            font-weight: bold;
+            color: #27ae60;
+        }
+
+        .disagreement {
+            background: #ffe5e5;
+            color: #c0392b;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            color: #2c3e50;
+            margin: 2rem 0 1rem 0;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #3498db;
+        }
+
+        .timing-row {
+            font-weight: 600;
+        }
+
+        .note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 4px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: #ecf0f1;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .stat-label {
+            color: #7f8c8d;
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Street Counting Methods - Performance Summary</h1>
+        <p class="subtitle">Comparison of 9 different algorithms for counting unique street instances in Greater Sydney</p>
+
+        <div class="stats" id="stats"></div>
+
+        <div class="note">
+            <strong>Note:</strong> Grid methods are 100-200x faster than Point-to-Point methods, with comparable accuracy for most streets.
+            Highlighted cells show the fastest method for each street.
+        </div>
+
+        <h2 class="section-title">Street Count Results</h2>
+        <table id="count-table">
+            <thead>
+                <tr>
+                    <th>Street Name</th>
+                    <th class="rotate">P2P (30m)</th>
+                    <th class="rotate">P2P (50m)</th>
+                    <th class="rotate">P2P (100m)</th>
+                    <th class="rotate">Grid 50m</th>
+                    <th class="rotate">Grid 100m</th>
+                    <th class="rotate">Grid 200m</th>
+                    <th class="rotate">EP Only (30m)</th>
+                    <th class="rotate">EP Only (100m)</th>
+                    <th class="rotate">EP Adaptive</th>
+                </tr>
+            </thead>
+            <tbody id="count-tbody"></tbody>
+        </table>
+
+        <h2 class="section-title">Method Timing (seconds)</h2>
+        <table id="timing-table">
+            <thead>
+                <tr>
+                    <th>Street Name</th>
+                    <th>P2P (30m)</th>
+                    <th>P2P (50m)</th>
+                    <th>P2P (100m)</th>
+                    <th>Grid 50m</th>
+                    <th>Grid 100m</th>
+                    <th>Grid 200m</th>
+                    <th>EP Only (30m)</th>
+                    <th>EP Only (100m)</th>
+                    <th>EP Adaptive</th>
+                </tr>
+            </thead>
+            <tbody id="timing-tbody"></tbody>
+        </table>
+
+        <h2 class="section-title">Method Disagreements</h2>
+        <div id="disagreements"></div>
+    </div>
+
+    <script>
+        async function loadData() {
+            const response = await fetch('data/method_comparison.json');
+            const data = await response.json();
+
+            const streets = data.streets;
+            const results = data.results;
+            const methods = [
+                'Point-to-Point (30m)',
+                'Point-to-Point (50m)',
+                'Point-to-Point (100m)',
+                'Grid 50m + Flood Fill',
+                'Grid 100m + Flood Fill',
+                'Grid 200m + Flood Fill',
+                'Endpoint Only (30m)',
+                'Endpoint Only (100m)',
+                'Endpoint Adaptive'
+            ];
+
+            // Calculate stats
+            let totalStreets = streets.length;
+            let perfectAgreement = 0;
+            let totalTime = methods.reduce((sum, m) => {
+                return sum + streets.reduce((s, street) => {
+                    return s + (results[street]?.[m]?.time || 0);
+                }, 0);
+            }, 0);
+
+            streets.forEach(street => {
+                const counts = methods.map(m => results[street][m].count);
+                if (new Set(counts).size === 1) perfectAgreement++;
+            });
+
+            document.getElementById('stats').innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-value">${totalStreets}</div>
+                    <div class="stat-label">Streets Tested</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${perfectAgreement}</div>
+                    <div class="stat-label">Perfect Agreement</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${totalTime.toFixed(1)}s</div>
+                    <div class="stat-label">Total Computation Time</div>
+                </div>
+            `;
+
+            // Populate count table
+            const countTbody = document.getElementById('count-tbody');
+            streets.forEach(street => {
+                if (!results[street]) return;
+                const row = document.createElement('tr');
+                const counts = methods.map(m => results[street][m].count);
+                const hasDisagreement = new Set(counts).size > 1;
+
+                let html = `<td class="street-name">${street}</td>`;
+                methods.forEach((method, idx) => {
+                    const count = results[street][method].count;
+                    const className = hasDisagreement ? 'count-cell disagreement' : 'count-cell';
+                    html += `<td class="${className}">${count}</td>`;
+                });
+                row.innerHTML = html;
+                countTbody.appendChild(row);
+            });
+
+            // Populate timing table
+            const timingTbody = document.getElementById('timing-tbody');
+            streets.forEach(street => {
+                if (!results[street]) return;
+                const row = document.createElement('tr');
+                let html = `<td class="street-name">${street}</td>`;
+
+                const times = methods.map(m => results[street][m].time);
+                const minTime = Math.min(...times);
+
+                methods.forEach((method, idx) => {
+                    const time = results[street][method].time;
+                    const isBest = time === minTime;
+                    const className = isBest ? 'time-cell best' : 'time-cell';
+                    html += `<td class="${className}">${time.toFixed(3)}s</td>`;
+                });
+                row.innerHTML = html;
+                timingTbody.appendChild(row);
+            });
+
+            // Add total row
+            const totalRow = document.createElement('tr');
+            totalRow.className = 'timing-row';
+            let totalHtml = `<td class="street-name">TOTAL</td>`;
+            const methodTotals = methods.map(method => {
+                return streets.reduce((sum, street) => {
+                    return sum + (results[street]?.[method]?.time || 0);
+                }, 0);
+            });
+            const minTotal = Math.min(...methodTotals);
+
+            methodTotals.forEach((total, idx) => {
+                const isBest = total === minTotal;
+                const className = isBest ? 'time-cell best' : 'time-cell';
+                totalHtml += `<td class="${className}">${total.toFixed(3)}s</td>`;
+            });
+            totalRow.innerHTML = totalHtml;
+            timingTbody.appendChild(totalRow);
+
+            // Show disagreements
+            const disagreementsDiv = document.getElementById('disagreements');
+            const disagreementStreets = streets.filter(street => {
+                const counts = methods.map(m => results[street][m].count);
+                return new Set(counts).size > 1;
+            });
+
+            if (disagreementStreets.length > 0) {
+                let html = '<p style="margin-bottom: 1rem;">The following streets show differences across methods:</p>';
+                disagreementStreets.forEach(street => {
+                    const counts = methods.map(m => `${m}: ${results[street][m].count}`);
+                    html += `<div style="margin-bottom: 1rem;"><strong>${street}</strong><br>`;
+                    html += counts.map(c => `<span style="margin-right: 1.5rem; font-size: 0.9rem; color: #7f8c8d;">${c}</span>`).join('');
+                    html += '</div>';
+                });
+                disagreementsDiv.innerHTML = html;
+            } else {
+                disagreementsDiv.innerHTML = '<p>All methods agree on all streets!</p>';
+            }
+        }
+
+        loadData();
+    </script>
+</body>
+</html>

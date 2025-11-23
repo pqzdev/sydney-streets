@@ -114,6 +114,9 @@ document.getElementById('load-data').addEventListener('click', loadData);
 document.getElementById('name-filter').addEventListener('input', filterStreets);
 document.getElementById('category').addEventListener('change', filterStreets);
 
+// Update viewport stats when map moves
+map.on('moveend', updateViewportStats);
+
 async function loadData() {
     const source = document.getElementById('data-source').value;
     const button = document.getElementById('load-data');
@@ -334,45 +337,118 @@ function filterStreets() {
 function updateStats() {
     if (!allStreets.length) return;
 
-    // Count unique streets by base name + location (proxy for suburb)
-    // Since we don't have suburb data, we cluster by geographic proximity
+    // Count unique streets using tight grid with adjacency chains
     function countUniqueStreets(streets) {
-        const uniqueStreets = new Map();
+        // Grid size: 0.001 degrees ≈ 100 meters
+        const GRID_SIZE = 0.001;
 
+        // Group streets by base name first
+        const streetsByName = {};
         streets.forEach(street => {
             const baseName = street.baseName.toLowerCase();
-            const coords = street.geometry.coordinates;
-
-            if (!coords || coords.length === 0) return;
-
-            // Get middle point of linestring as location identifier
-            const midIdx = Math.floor(coords.length / 2);
-            const location = coords[midIdx];
-
-            // Create unique key: baseName_location
-            // Round coordinates to cluster nearby segments (within ~500m)
-            const roundedLat = Math.round(location[1] / 0.005) * 0.005;
-            const roundedLng = Math.round(location[0] / 0.005) * 0.005;
+            const fullName = street.name.toLowerCase();
 
             // Special case: highways are always singular
-            const fullName = street.name.toLowerCase();
-            const key = (fullName.includes('highway') || fullName.includes('hwy'))
-                ? baseName  // Highway = one entry regardless of location
-                : `${baseName}_${roundedLat}_${roundedLng}`;  // Street = one per location
-
-            uniqueStreets.set(key, {
-                baseName: baseName,
-                fullName: street.name,
-                location: location
-            });
+            if (fullName.includes('highway') || fullName.includes('hwy')) {
+                streetsByName[baseName] = streetsByName[baseName] || [];
+                streetsByName[baseName].push({
+                    coords: street.geometry.coordinates,
+                    isHighway: true
+                });
+            } else {
+                streetsByName[baseName] = streetsByName[baseName] || [];
+                streetsByName[baseName].push({
+                    coords: street.geometry.coordinates,
+                    isHighway: false
+                });
+            }
         });
 
-        // Count how many unique instances of each base name
+        // For each base name, find connected chains of segments
         const nameCounts = {};
-        uniqueStreets.forEach(street => {
-            const base = street.baseName;
-            nameCounts[base] = (nameCounts[base] || 0) + 1;
-        });
+
+        for (const [baseName, segments] of Object.entries(streetsByName)) {
+            // Highways always count as 1
+            if (segments.length > 0 && segments[0].isHighway) {
+                nameCounts[baseName] = 1;
+                continue;
+            }
+
+            // Build grid cells for all segments of this street name
+            const cellSegments = new Map(); // cellKey -> segment indices
+
+            segments.forEach((segment, segIdx) => {
+                const coords = segment.coords;
+                if (!coords || coords.length === 0) return;
+
+                // Get all grid cells this segment touches
+                const cells = new Set();
+                coords.forEach(coord => {
+                    const lat = coord[1];
+                    const lng = coord[0];
+                    const cellLat = Math.round(lat / GRID_SIZE) * GRID_SIZE;
+                    const cellLng = Math.round(lng / GRID_SIZE) * GRID_SIZE;
+                    const cellKey = `${cellLat},${cellLng}`;
+                    cells.add(cellKey);
+                });
+
+                // Add this segment to all cells it touches
+                cells.forEach(cellKey => {
+                    if (!cellSegments.has(cellKey)) {
+                        cellSegments.set(cellKey, new Set());
+                    }
+                    cellSegments.get(cellKey).add(segIdx);
+                });
+            });
+
+            // Find connected chains using adjacency
+            const visited = new Set();
+            let chainCount = 0;
+
+            function getAdjacentCells(cellKey) {
+                const [lat, lng] = cellKey.split(',').map(Number);
+                const adjacent = [];
+                // Check 8 adjacent cells + current cell
+                for (let dLat = -GRID_SIZE; dLat <= GRID_SIZE; dLat += GRID_SIZE) {
+                    for (let dLng = -GRID_SIZE; dLng <= GRID_SIZE; dLng += GRID_SIZE) {
+                        const adjLat = lat + dLat;
+                        const adjLng = lng + dLng;
+                        const adjKey = `${adjLat},${adjLng}`;
+                        if (cellSegments.has(adjKey)) {
+                            adjacent.push(adjKey);
+                        }
+                    }
+                }
+                return adjacent;
+            }
+
+            function exploreChain(startCell) {
+                const queue = [startCell];
+                visited.add(startCell);
+
+                while (queue.length > 0) {
+                    const cell = queue.shift();
+                    const adjacent = getAdjacentCells(cell);
+
+                    for (const adjCell of adjacent) {
+                        if (!visited.has(adjCell)) {
+                            visited.add(adjCell);
+                            queue.push(adjCell);
+                        }
+                    }
+                }
+            }
+
+            // Count chains by exploring from unvisited cells
+            for (const cellKey of cellSegments.keys()) {
+                if (!visited.has(cellKey)) {
+                    exploreChain(cellKey);
+                    chainCount++;
+                }
+            }
+
+            nameCounts[baseName] = chainCount;
+        }
 
         return nameCounts;
     }
