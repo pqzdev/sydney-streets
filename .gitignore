@@ -1,11 +1,14 @@
 # Data files (can be large)
 data/*.geojson
-data/*.json
 data/*.shp
 data/*.zip
 
-# Keep data directory
+# Keep data directory and important JSON files
 !data/.gitkeep
+!data/street_counts_grid200.json
+!data/method_comparison.json
+!data/method_comparison_detailed.json
+!data/summary.json
 
 # OS files
 .DS_Store
