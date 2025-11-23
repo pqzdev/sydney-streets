@@ -59,9 +59,6 @@ const categories = {
 document.getElementById('name-filter').addEventListener('input', filterStreets);
 document.getElementById('category').addEventListener('change', filterStreets);
 
-// Update viewport stats when map moves
-map.on('moveend', updateViewportStats);
-
 // Auto-load data on page load
 window.addEventListener('DOMContentLoaded', () => {
     loadData();
