@@ -227,7 +227,7 @@ function setupEventListeners() {
 }
 
 function handleSearchInput(e) {
-    const query = e.target.value.toLowerCase().trim();
+    const query = e.target.value.trim();
     const autocompleteList = document.getElementById('autocomplete-list');
 
     if (query.length < 2) {
@@ -235,17 +235,35 @@ function handleSearchInput(e) {
         return;
     }
 
-    // Find matching streets (get all matches, not just first 10)
-    const allMatches = uniqueStreetNames
-        .filter(name => name.toLowerCase().includes(query));
+    let allMatches;
+
+    // Check if query is wrapped in quotes for exact match
+    if (query.startsWith('"') && query.endsWith('"')) {
+        const exactQuery = query.slice(1, -1).toLowerCase();
+        allMatches = uniqueStreetNames.filter(name =>
+            name.toLowerCase() === exactQuery
+        );
+    } else {
+        // Try to use as regex, fall back to simple contains if invalid
+        try {
+            const regex = new RegExp(query, 'i');
+            allMatches = uniqueStreetNames.filter(name => regex.test(name));
+        } catch (e) {
+            // Invalid regex, fall back to simple contains
+            const lowerQuery = query.toLowerCase();
+            allMatches = uniqueStreetNames.filter(name =>
+                name.toLowerCase().includes(lowerQuery)
+            );
+        }
+    }
 
     if (allMatches.length === 0) {
         hideAutocomplete();
         return;
     }
 
-    // Show first 10 for display
-    const displayMatches = allMatches.slice(0, 10);
+    // Show all matches (with scrolling)
+    const displayMatches = allMatches.slice(0, 100); // Show up to 100 results
 
     // Show autocomplete with header
     const header = `

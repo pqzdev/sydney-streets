@@ -420,10 +420,20 @@
             gap: 0.5rem;
             padding: 0.5rem 0;
             border-bottom: 1px solid #f0f0f0;
+            cursor: move;
+            transition: opacity 0.2s;
         }
 
         .street-list-item:last-child {
             border-bottom: none;
+        }
+
+        .street-list-item.dragging {
+            opacity: 0.5;
+        }
+
+        .street-list-item.drag-over {
+            border-top: 2px solid #3498db;
         }
 
         .color-presets {
@@ -506,7 +516,7 @@
             background: white;
             border: 1px solid #dee2e6;
             border-top: none;
-            max-height: 200px;
+            max-height: 400px;
             overflow-y: auto;
             width: calc(100% - 3rem);
             z-index: 1000;
@@ -597,7 +607,7 @@
                     <div class="dropdown-item" data-list="suburbs">Suburbs</div>
                     <div class="dropdown-item" data-list="famous">Famous People</div>
                 </div>
-                <input type="text" id="street-search" placeholder="Type to search streets...">
+                <input type="text" id="street-search" placeholder="Search streets (regex supported, use &quot;&quot; for exact)...">
                 <div id="autocomplete-list" class="autocomplete-list"></div>
                 <div id="selected-streets" class="selected-streets"></div>
                 <button class="clear-button" id="clear-streets">Clear all</button>
