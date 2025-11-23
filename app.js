@@ -39,9 +39,11 @@ const greaterSydneyLGAs = [
 const categories = {
     trees: ['oak', 'pine', 'elm', 'maple', 'ash', 'birch', 'cedar', 'willow', 'plane', 'poplar',
             'fig', 'wattle', 'eucalyptus', 'gum', 'acacia', 'banksia', 'fir', 'spruce', 'cypress'],
-    royalty: ['george', 'victoria', 'elizabeth', 'william', 'albert', 'edward', 'mary', 'anne',
-              'charlotte', 'margaret', 'adelaide', 'alice', 'henry', 'charles', 'philip', 'andrew',
-              'queen', 'king', 'prince', 'princess', 'duke', 'duchess'],
+    royalty: ['george street', 'george road', 'victoria street', 'victoria road', 'elizabeth street', 'elizabeth road',
+              'william street', 'albert street', 'edward street', 'mary street', 'anne street',
+              'charlotte street', 'margaret street', 'adelaide street', 'alice street', 'henry street',
+              'charles street', 'philip street', 'andrew street', 'queen street', 'king street',
+              'prince street', 'princess street', 'duke street', 'duchess street'],
     famous: ['cook', 'macquarie', 'phillip', 'bligh', 'hunter', 'darling', 'bourke', 'fitzroy',
              'wentworth', 'lawson', 'blaxland', 'hume', 'parkes', 'bradfield', 'banks', 'flinders',
              'sturt', 'mitchell', 'oxley', 'cunningham'],
@@ -107,6 +109,17 @@ function setupEventListeners() {
         }
     });
 
+    // Clear button
+    document.getElementById('clear-streets').addEventListener('click', () => {
+        selectedStreetNames = [];
+        streetColors = {};
+        saveSearch();
+        updateSelectedStreetsUI();
+        updateStreetColorsUI();
+        updateMap();
+        updateStats();
+    });
+
     // Collapsible compare menu
     document.getElementById('compare-toggle').addEventListener('click', () => {
         const content = document.getElementById('compare-content');
@@ -120,6 +133,33 @@ function setupEventListeners() {
 
     document.getElementById('view-grid').addEventListener('click', () => {
         setViewMode('grid');
+    });
+
+    // Sidebar resizer
+    const resizer = document.querySelector('.resizer');
+    const sidebar = document.getElementById('sidebar');
+    let isResizing = false;
+
+    resizer.addEventListener('mousedown', (e) => {
+        isResizing = true;
+        document.body.style.cursor = 'col-resize';
+        e.preventDefault();
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (!isResizing) return;
+
+        const newWidth = e.clientX;
+        if (newWidth >= 250 && newWidth <= 600) {
+            sidebar.style.width = newWidth + 'px';
+        }
+    });
+
+    document.addEventListener('mouseup', () => {
+        if (isResizing) {
+            isResizing = false;
+            document.body.style.cursor = 'default';
+        }
     });
 }
 
