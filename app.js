@@ -25,61 +25,6 @@ const colors = {
     famous: '#f1c40f'
 };
 
-// Sample data for demonstration
-const sampleData = {
-    type: "FeatureCollection",
-    features: [
-        {
-            type: "Feature",
-            properties: {
-                name: "George Street",
-                type: "Street",
-                suburb: "Sydney"
-            },
-            geometry: {
-                type: "LineString",
-                coordinates: [
-                    [151.2073, -33.8688],
-                    [151.2078, -33.8698],
-                    [151.2083, -33.8708]
-                ]
-            }
-        },
-        {
-            type: "Feature",
-            properties: {
-                name: "Park Road",
-                type: "Road",
-                suburb: "Bondi"
-            },
-            geometry: {
-                type: "LineString",
-                coordinates: [
-                    [151.2643, -33.8915],
-                    [151.2653, -33.8925],
-                    [151.2663, -33.8935]
-                ]
-            }
-        },
-        {
-            type: "Feature",
-            properties: {
-                name: "Oak Avenue",
-                type: "Avenue",
-                suburb: "Newtown"
-            },
-            geometry: {
-                type: "LineString",
-                coordinates: [
-                    [151.1793, -33.8988],
-                    [151.1803, -33.8998],
-                    [151.1813, -33.9008]
-                ]
-            }
-        }
-    ]
-};
-
 // Greater Sydney LGAs (official NSW Government definition)
 // Source: Greater Sydney Commission & Environmental Planning and Assessment Order 2017
 const greaterSydneyLGAs = [
@@ -111,20 +56,18 @@ const categories = {
 };
 
 // Initialize UI
-document.getElementById('load-data').addEventListener('click', loadData);
 document.getElementById('name-filter').addEventListener('input', filterStreets);
 document.getElementById('category').addEventListener('change', filterStreets);
 
 // Update viewport stats when map moves
 map.on('moveend', updateViewportStats);
 
+// Auto-load data on page load
+window.addEventListener('DOMContentLoaded', () => {
+    loadData();
+});
+
 async function loadData() {
-    const source = document.getElementById('data-source').value;
-    const button = document.getElementById('load-data');
-
-    button.disabled = true;
-    button.textContent = 'Loading...';
-
     try {
         // Try to load pre-computed counts (Grid 200m method)
         try {
@@ -137,47 +80,21 @@ async function loadData() {
             console.log('Pre-computed counts not available, will use client-side counting');
         }
 
-        if (source === 'sample') {
-            streetData = sampleData;
-            processStreetData();
-            visibleStreets = [...allStreets];
-            displayStreets(streetData.features);
-            updateStats();
-            // Apply any active filters
-            filterStreets();
-        } else if (source === 'osm') {
-            // Load full OSM dataset
-            const response = await fetch('data/sydney-roads-osm.geojson');
-            if (!response.ok) {
-                throw new Error('Failed to load data. Make sure data file exists.');
-            }
-            streetData = await response.json();
-            processStreetData();
-            visibleStreets = [...allStreets];
-            displayStreets(streetData.features);
-            updateStats();
-            // Apply any active filters
-            filterStreets();
-        } else if (source === 'osm-sample') {
-            // Load sample for testing
-            const response = await fetch('data/sydney-roads-sample.geojson');
-            if (!response.ok) {
-                throw new Error('Failed to load sample data.');
-            }
-            streetData = await response.json();
-            processStreetData();
-            visibleStreets = [...allStreets];
-            displayStreets(streetData.features);
-            updateStats();
-            // Apply any active filters
-            filterStreets();
+        // Load full OSM dataset
+        const response = await fetch('data/sydney-roads-osm.geojson');
+        if (!response.ok) {
+            throw new Error('Failed to load data. Make sure data file exists.');
         }
+        streetData = await response.json();
+        processStreetData();
+        visibleStreets = [...allStreets];
+        displayStreets(streetData.features);
+        updateStats();
+        // Apply any active filters
+        filterStreets();
     } catch (error) {
         alert(`Error loading data: ${error.message}`);
         console.error(error);
-    } finally {
-        button.disabled = false;
-        button.textContent = 'Load Data';
     }
 }
 
