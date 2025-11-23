@@ -364,8 +364,8 @@ function updateStreetColorsUI() {
     const container = document.getElementById('street-colors');
     const presetColors = ['#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c', '#34495e', '#e67e22', '#e91e63', '#00bcd4'];
 
-    container.innerHTML = selectedStreetNames.map(name => `
-        <div class="street-list-item">
+    container.innerHTML = selectedStreetNames.map((name, index) => `
+        <div class="street-list-item" draggable="true" data-index="${index}" data-street="${name}">
             <div class="color-presets">
                 ${presetColors.map(color => `
                     <div class="color-preset" style="background: ${color}"
@@ -398,6 +398,72 @@ function updateStreetColorsUI() {
             updateMap();
         });
     });
+
+    // Add drag-and-drop handlers
+    const items = container.querySelectorAll('.street-list-item');
+    items.forEach(item => {
+        item.addEventListener('dragstart', handleDragStart);
+        item.addEventListener('dragend', handleDragEnd);
+        item.addEventListener('dragover', handleDragOver);
+        item.addEventListener('drop', handleDrop);
+        item.addEventListener('dragenter', handleDragEnter);
+        item.addEventListener('dragleave', handleDragLeave);
+    });
+}
+
+let draggedItem = null;
+
+function handleDragStart(e) {
+    draggedItem = this;
+    this.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/html', this.innerHTML);
+}
+
+function handleDragEnd(e) {
+    this.classList.remove('dragging');
+    const items = document.querySelectorAll('.street-list-item');
+    items.forEach(item => item.classList.remove('drag-over'));
+}
+
+function handleDragOver(e) {
+    if (e.preventDefault) {
+        e.preventDefault();
+    }
+    e.dataTransfer.dropEffect = 'move';
+    return false;
+}
+
+function handleDragEnter(e) {
+    if (this !== draggedItem) {
+        this.classList.add('drag-over');
+    }
+}
+
+function handleDragLeave(e) {
+    this.classList.remove('drag-over');
+}
+
+function handleDrop(e) {
+    if (e.stopPropagation) {
+        e.stopPropagation();
+    }
+
+    if (draggedItem !== this) {
+        const fromIndex = parseInt(draggedItem.dataset.index);
+        const toIndex = parseInt(this.dataset.index);
+
+        // Reorder the array
+        const item = selectedStreetNames.splice(fromIndex, 1)[0];
+        selectedStreetNames.splice(toIndex, 0, item);
+
+        // Update UI and map
+        updateStreetColorsUI();
+        updateMap();
+        saveSearch();
+    }
+
+    return false;
 }
 
 function loadList(listType) {
