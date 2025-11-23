@@ -64,7 +64,61 @@ def method_grid_flood_fill(segments, grid_size):
             components.append(list(new_segments))
             visited_segments.update(new_segments)
 
+    # Post-process: merge components that share endpoints
+    components = merge_components_by_endpoints(segments, components)
+
     return components
+
+
+def merge_components_by_endpoints(segments, components):
+    """
+    Merge components that share any endpoint coordinates.
+    This handles the case where segments connect but fall in different grid cells.
+    """
+    if len(components) <= 1:
+        return components
+
+    # Build endpoint -> component mapping
+    endpoint_to_components = defaultdict(set)
+
+    for comp_idx, component in enumerate(components):
+        for seg_idx in component:
+            coords = segments[seg_idx]
+            if coords:
+                # Get first and last point
+                start = tuple(coords[0])  # (lng, lat)
+                end = tuple(coords[-1])
+                endpoint_to_components[start].add(comp_idx)
+                endpoint_to_components[end].add(comp_idx)
+
+    # Find components that need to be merged (share endpoints)
+    # Use union-find to group connected components
+    parent = list(range(len(components)))
+
+    def find(x):
+        if parent[x] != x:
+            parent[x] = find(parent[x])
+        return parent[x]
+
+    def union(x, y):
+        px, py = find(x), find(y)
+        if px != py:
+            parent[px] = py
+
+    # Union components that share endpoints
+    for endpoint, comp_indices in endpoint_to_components.items():
+        if len(comp_indices) > 1:
+            comp_list = list(comp_indices)
+            for i in range(len(comp_list) - 1):
+                union(comp_list[i], comp_list[i + 1])
+
+    # Group segments by their merged component
+    merged = defaultdict(list)
+    for comp_idx, component in enumerate(components):
+        root = find(comp_idx)
+        merged[root].extend(component)
+
+    return list(merged.values())
 
 
 def add_instance_ids(input_file, output_file):
