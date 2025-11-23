@@ -131,23 +131,42 @@ function handleSearchInput(e) {
         return;
     }
 
-    // Find matching streets
-    const matches = uniqueStreetNames
-        .filter(name => name.toLowerCase().includes(query))
-        .slice(0, 10);
+    // Find matching streets (get all matches, not just first 10)
+    const allMatches = uniqueStreetNames
+        .filter(name => name.toLowerCase().includes(query));
 
-    if (matches.length === 0) {
+    if (allMatches.length === 0) {
         hideAutocomplete();
         return;
     }
 
-    // Show autocomplete
-    autocompleteList.innerHTML = matches.map(name =>
+    // Show first 10 for display
+    const displayMatches = allMatches.slice(0, 10);
+
+    // Show autocomplete with header
+    const header = `
+        <div class="autocomplete-header">
+            <span>${allMatches.length} result${allMatches.length !== 1 ? 's' : ''}</span>
+            <a href="#" class="select-all-link" id="select-all-autocomplete">Select all</a>
+        </div>
+    `;
+
+    const items = displayMatches.map(name =>
         `<div class="autocomplete-item" data-street="${name}">${name}</div>`
     ).join('');
+
+    autocompleteList.innerHTML = header + items;
     autocompleteList.style.display = 'block';
 
-    // Add click handlers
+    // Add click handler for "Select all"
+    document.getElementById('select-all-autocomplete').addEventListener('click', (e) => {
+        e.preventDefault();
+        allMatches.forEach(street => addStreetToSelection(street));
+        document.getElementById('street-search').value = '';
+        hideAutocomplete();
+    });
+
+    // Add click handlers for individual items
     autocompleteList.querySelectorAll('.autocomplete-item').forEach(item => {
         item.addEventListener('click', () => {
             addStreetToSelection(item.dataset.street);
