@@ -69,8 +69,20 @@ function generateColorPalette(count) {
 
 // Auto-load data on page load
 window.addEventListener('DOMContentLoaded', () => {
-    // Initialize map centered on Sydney
-    map = L.map('map').setView([-33.8688, 151.2093], 12);
+    // Define Greater Sydney bounds (approximately)
+    // Southwest: Blue Mountains area, Northwest: Hawkesbury, Southeast: Royal National Park, Northeast: Northern Beaches
+    const sydneyBounds = L.latLngBounds(
+        L.latLng(-34.15, 150.5),  // Southwest corner (southwest of Sydney)
+        L.latLng(-33.4, 151.35)    // Northeast corner (northeast of Sydney)
+    );
+
+    // Initialize map centered on Sydney with bounds restriction
+    map = L.map('map', {
+        maxBounds: sydneyBounds,
+        maxBoundsViscosity: 1.0,  // Prevent dragging outside bounds
+        minZoom: 10,
+        maxZoom: 18
+    }).setView([-33.8688, 151.2093], 12);
 
     // Add CartoDB Positron tile layer
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
@@ -1052,11 +1064,9 @@ function renderGridView(selectedFeatures) {
                 // Add to grid maps array
                 gridMaps.push(gridMap);
 
-                // Add sync event listeners if more than one map
-                if (gridMapsSync) {
-                    gridMap.on('moveend', () => syncGridMapView(gridMap));
-                    gridMap.on('zoomend', () => syncGridMapView(gridMap));
-                }
+                // Always add sync event listeners (they check gridMapsSync internally)
+                gridMap.on('moveend', () => syncGridMapView(gridMap));
+                gridMap.on('zoomend', () => syncGridMapView(gridMap));
             }
         });
     }, 100);
