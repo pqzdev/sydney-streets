@@ -209,16 +209,51 @@ function getStreetColor(feature) {
 function filterStreets() {
     if (!streetData) return;
 
-    const nameFilter = document.getElementById('name-filter').value.toLowerCase();
+    const nameFilterRaw = document.getElementById('name-filter').value;
     const category = document.getElementById('category').value;
+
+    // Check if exact search (quoted)
+    const isExactSearch = nameFilterRaw.startsWith('"') && nameFilterRaw.endsWith('"');
+    const nameFilter = isExactSearch
+        ? nameFilterRaw.slice(1, -1).toLowerCase().trim()
+        : nameFilterRaw.toLowerCase().trim();
+
+    // Normalize abbreviations for comparison
+    function normalizeStreetName(name) {
+        return name
+            .replace(/\bstreet\b/gi, 'st')
+            .replace(/\broad\b/gi, 'rd')
+            .replace(/\bhighway\b/gi, 'hwy')
+            .replace(/\bavenue\b/gi, 'ave')
+            .replace(/\bdrive\b/gi, 'dr')
+            .replace(/\blane\b/gi, 'ln')
+            .replace(/\bplace\b/gi, 'pl')
+            .replace(/\bcircuit\b/gi, 'cct')
+            .replace(/\bcrescent\b/gi, 'cres')
+            .replace(/\bcourt\b/gi, 'ct')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
 
     let filtered = streetData.features.filter(feature => {
         const name = (feature.properties.name || '').toLowerCase();
         const baseName = getBaseName(feature.properties.name || '').toLowerCase();
 
         // Apply name filter
-        if (nameFilter && !name.includes(nameFilter)) {
-            return false;
+        if (nameFilter) {
+            if (isExactSearch) {
+                // Exact match: normalize both and compare
+                const normalizedName = normalizeStreetName(name);
+                const normalizedFilter = normalizeStreetName(nameFilter);
+                if (normalizedName !== normalizedFilter) {
+                    return false;
+                }
+            } else {
+                // Partial match (default behavior)
+                if (!name.includes(nameFilter)) {
+                    return false;
+                }
+            }
         }
 
         // Apply category filter - only show streets matching the category
