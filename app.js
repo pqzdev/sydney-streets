@@ -1,4 +1,4 @@
-// Sydney Streets - Interactive Visualization
+// Australian Capital Cities Street Names - Interactive Visualization
 // Global variables
 let map;
 let allStreets = [];
@@ -14,6 +14,7 @@ let uniqueStreetNames = []; // All unique street names in dataset
 let legendVisible = false; // Legend toggle state
 let gridMapsSync = false; // Whether grid maps pan/zoom together
 let gridMaps = []; // Array of grid map instances
+let currentCity = 'sydney'; // Currently selected city
 
 // Default colors for streets - 11 maximally distinguishable colors (Kelly's color set + additions)
 // Source: Kelly, K. L. (1965) "Color designation and specification"
@@ -41,17 +42,29 @@ const colors = {
     famous: '#f1c40f'
 };
 
-// Greater Sydney LGAs (official NSW Government definition)
-const greaterSydneyLGAs = [
-    'bayside', 'burwood', 'canada bay', 'inner west', 'randwick', 'strathfield',
-    'sydney', 'waverley', 'woollahra',
-    'blacktown', 'cumberland', 'parramatta', 'the hills shire', 'the hills',
-    'camden', 'campbelltown', 'blue mountains', 'fairfield', 'hawkesbury',
-    'liverpool', 'penrith', 'wollondilly',
-    'hornsby', 'hunters hill', 'ku-ring-gai', 'lane cove', 'mosman', 'north sydney',
-    'northern beaches', 'ryde', 'willoughby',
-    'canterbury-bankstown', 'georges river', 'sutherland'
-];
+// City configurations
+const cityConfigs = {
+    sydney: {
+        name: 'Sydney',
+        center: [-33.8688, 151.2093],
+        zoom: 12,
+        bounds: [[-34.3, 150.35], [-33.25, 151.5]],
+        dataFile: 'data/sydney-roads-web.geojson',
+        countsFile: 'data/street_counts_grid200.json',
+        lgas: [
+            'bayside', 'burwood', 'canada bay', 'inner west', 'randwick', 'strathfield',
+            'sydney', 'waverley', 'woollahra',
+            'blacktown', 'cumberland', 'parramatta', 'the hills shire', 'the hills',
+            'camden', 'campbelltown', 'blue mountains', 'fairfield', 'hawkesbury',
+            'liverpool', 'penrith', 'wollondilly',
+            'hornsby', 'hunters hill', 'ku-ring-gai', 'lane cove', 'mosman', 'north sydney',
+            'northern beaches', 'ryde', 'willoughby',
+            'canterbury-bankstown', 'georges river', 'sutherland'
+        ]
+    }
+    // Additional cities will be added here when data is available
+};
+
 
 // Categories and patterns (base names only)
 const categories = {
@@ -82,21 +95,22 @@ function generateColorPalette(count) {
 
 // Auto-load data on page load
 window.addEventListener('DOMContentLoaded', () => {
-    // Define Greater Sydney bounds with buffer (approximately)
-    // Southwest: Blue Mountains area, Northwest: Hawkesbury, Southeast: Royal National Park, Northeast: Northern Beaches
-    // Added 0.15 degree buffer (~15km) on all sides to ensure edges are visible
-    const sydneyBounds = L.latLngBounds(
-        L.latLng(-34.3, 150.35),  // Southwest corner with buffer
-        L.latLng(-33.25, 151.5)   // Northeast corner with buffer
+    // Get city config
+    const cityConfig = cityConfigs[currentCity];
+
+    // Define city bounds with buffer
+    const cityBounds = L.latLngBounds(
+        L.latLng(cityConfig.bounds[0][0], cityConfig.bounds[0][1]),
+        L.latLng(cityConfig.bounds[1][0], cityConfig.bounds[1][1])
     );
 
-    // Initialize map centered on Sydney with bounds restriction
+    // Initialize map centered on selected city with bounds restriction
     map = L.map('map', {
-        maxBounds: sydneyBounds,
+        maxBounds: cityBounds,
         maxBoundsViscosity: 1.0,  // Prevent dragging outside bounds
         minZoom: 10,
         maxZoom: 18
-    }).setView([-33.8688, 151.2093], 12);
+    }).setView(cityConfig.center, cityConfig.zoom);
 
     // Add CartoDB Positron tile layer
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
@@ -113,6 +127,16 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 function setupEventListeners() {
+    // City selector
+    document.getElementById('city-selector').addEventListener('change', (e) => {
+        const newCity = e.target.value;
+        if (newCity !== currentCity && cityConfigs[newCity]) {
+            currentCity = newCity;
+            // Reload the page to apply new city
+            window.location.reload();
+        }
+    });
+
     // Lists dropdown
     document.getElementById('lists-toggle').addEventListener('click', (e) => {
         e.preventDefault();
@@ -747,28 +771,26 @@ async function loadData() {
     const loadingBar = document.getElementById('loading-bar');
     loadingBar.classList.add('show');
 
+    const cityConfig = cityConfigs[currentCity];
+
     try {
         // Try to load pre-computed counts
-        try {
-            const countsResponse = await fetch('data/street_counts_grid200.json');
-            if (countsResponse.ok) {
-                precomputedCounts = await countsResponse.json();
-                console.log('Loaded pre-computed street counts (Grid 200m + Highway-Aware)');
+        if (cityConfig.countsFile) {
+            try {
+                const countsResponse = await fetch(cityConfig.countsFile);
+                if (countsResponse.ok) {
+                    precomputedCounts = await countsResponse.json();
+                    console.log(`Loaded pre-computed street counts for ${cityConfig.name} (Grid 200m + Highway-Aware)`);
+                }
+            } catch (e) {
+                console.log('Pre-computed counts not available');
             }
-        } catch (e) {
-            console.log('Pre-computed counts not available');
         }
 
         // Load street data
-        let response = await fetch('data/sydney-roads-web.geojson');
+        const response = await fetch(cityConfig.dataFile);
         if (!response.ok) {
-            response = await fetch('data/sydney-roads-osm.geojson');
-            if (!response.ok) {
-                response = await fetch('data/sydney-roads-sample.geojson');
-                if (!response.ok) {
-                    throw new Error('Failed to load data');
-                }
-            }
+            throw new Error(`Failed to load data for ${cityConfig.name}`);
         }
 
         streetData = await response.json();
@@ -794,13 +816,15 @@ async function loadData() {
 function processStreetData() {
     if (!streetData) return;
 
-    // Filter to Greater Sydney if LGA data available
+    const cityConfig = cityConfigs[currentCity];
+
+    // Filter to city area if LGA data available
     let filteredFeatures = streetData.features;
-    if (streetData.features.length > 0 &&
+    if (cityConfig.lgas && streetData.features.length > 0 &&
         (streetData.features[0].properties.lga || streetData.features[0].properties.LGA)) {
         filteredFeatures = streetData.features.filter(feature => {
             const lga = (feature.properties.lga || feature.properties.LGA || '').toLowerCase();
-            return greaterSydneyLGAs.some(validLga => lga.includes(validLga));
+            return cityConfig.lgas.some(validLga => lga.includes(validLga));
         });
     }
 
