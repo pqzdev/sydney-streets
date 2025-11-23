@@ -27,6 +27,19 @@
             color: white;
             padding: 1rem 2rem;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left {
+            flex: 1;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
         }
 
         h1 {
@@ -38,6 +51,42 @@
             font-size: 0.9rem;
             opacity: 0.8;
             margin-top: 0.25rem;
+        }
+
+        .name-mode-toggle {
+            display: flex;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .name-mode-toggle button {
+            background: transparent;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: background 0.2s;
+        }
+
+        .name-mode-toggle button.active {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .name-mode-toggle button:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .header-link {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .header-link:hover {
+            color: white;
+            text-decoration: underline;
         }
 
         .container {
@@ -419,8 +468,17 @@
 </head>
 <body>
     <header>
-        <h1>Sydney Streets</h1>
-        <div class="subtitle">Interactive visualization of street names and patterns across Sydney</div>
+        <div class="header-left">
+            <h1>Sydney Streets</h1>
+            <div class="subtitle">Interactive visualization of street names and patterns across Sydney</div>
+        </div>
+        <div class="header-right">
+            <div class="name-mode-toggle">
+                <button id="mode-name-only" class="active">Name Only</button>
+                <button id="mode-name-type">Name + Type</button>
+            </div>
+            <a href="https://www.openstreetmap.org" target="_blank" class="header-link">OpenStreetMap</a>
+        </div>
     </header>
 
     <div class="container">

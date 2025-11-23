@@ -7,7 +7,9 @@ let streetColors = {}; // Map of street name to color
 let currentLayer = null;
 let streetData = null;
 let precomputedCounts = null;
+let baseNameCountsCache = {}; // Cache for base name counts in name-only mode
 let viewMode = 'overlay'; // 'overlay' or 'grid'
+let nameMode = 'name-only'; // 'name-only' or 'name-type'
 let uniqueStreetNames = []; // All unique street names in dataset
 
 // Default colors for streets
@@ -49,6 +51,20 @@ const categories = {
              'sturt', 'mitchell', 'oxley', 'cunningham'],
     suburbs: ['sydney', 'parramatta', 'bondi', 'manly', 'penrith', 'liverpool', 'blacktown']
 };
+
+// Generate distinct colors for visualizing multiple occurrences
+function generateColorPalette(count) {
+    if (count <= 8) {
+        return defaultColors.slice(0, count);
+    }
+    // Generate HSL color gradient for larger counts
+    const colors = [];
+    for (let i = 0; i < count; i++) {
+        const hue = (i * 360 / count) % 360;
+        colors.push(`hsl(${hue}, 70%, 50%)`);
+    }
+    return colors;
+}
 
 // Auto-load data on page load
 window.addEventListener('DOMContentLoaded', () => {
@@ -133,6 +149,15 @@ function setupEventListeners() {
 
     document.getElementById('view-grid').addEventListener('click', () => {
         setViewMode('grid');
+    });
+
+    // Name mode buttons
+    document.getElementById('mode-name-only').addEventListener('click', () => {
+        setNameMode('name-only');
+    });
+
+    document.getElementById('mode-name-type').addEventListener('click', () => {
+        setNameMode('name-type');
     });
 
     // Sidebar resizer
@@ -250,6 +275,7 @@ function addStreetToSelection(streetName) {
     updateSelectedStreetsUI();
     updateStreetColorsUI();
     updateMap();
+    updateStats();
 }
 
 function removeStreetFromSelection(streetName) {
@@ -258,6 +284,7 @@ function removeStreetFromSelection(streetName) {
     updateSelectedStreetsUI();
     updateStreetColorsUI();
     updateMap();
+    updateStats();
 }
 
 function updateSelectedStreetsUI() {
@@ -299,44 +326,38 @@ function loadList(listType) {
     let streets = [];
 
     if (listType === 'top10') {
-        // Get top 10 most common street BASE NAMES (not counting full names)
-        const baseNameCounts = {};
-
-        // Count by base name
-        uniqueStreetNames.forEach(fullName => {
-            const baseName = getBaseName(fullName);
-            if (baseName) {
-                // Get the count for this specific full street name
+        if (nameMode === 'name-only') {
+            // In name-only mode, directly use the base name counts cache
+            streets = Object.entries(baseNameCountsCache)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10)
+                .map(([baseName]) => baseName);
+        } else {
+            // In name-type mode, get top 10 full names
+            const fullNameCounts = {};
+            uniqueStreetNames.forEach(fullName => {
                 const count = getStreetCount(fullName);
-
-                // Add to base name total
-                if (!baseNameCounts[baseName]) {
-                    baseNameCounts[baseName] = { total: 0, examples: [] };
+                if (count > 0) {
+                    fullNameCounts[fullName] = count;
                 }
-                baseNameCounts[baseName].total += count;
-                baseNameCounts[baseName].examples.push({ fullName, count });
-            }
-        });
+            });
 
-        // Get top 10 base names by total count
-        const top10BaseNames = Object.entries(baseNameCounts)
-            .sort((a, b) => b[1].total - a[1].total)
-            .slice(0, 10)
-            .map(entry => entry[0]);
-
-        // For each top base name, find the most common full variation
-        streets = top10BaseNames.map(baseName => {
-            const info = baseNameCounts[baseName];
-            // Sort examples by count and take the most common one
-            const mostCommon = info.examples.sort((a, b) => b.count - a.count)[0];
-            return mostCommon.fullName;
-        });
+            streets = Object.entries(fullNameCounts)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10)
+                .map(([name]) => name);
+        }
     } else if (categories[listType]) {
         // Get streets matching category
         const pattern = categories[listType];
-        streets = uniqueStreetNames.filter(name =>
-            pattern.some(word => name.toLowerCase().includes(word))
-        ).slice(0, 20); // Limit to 20 streets
+        streets = uniqueStreetNames.filter(name => {
+            const nameLower = name.toLowerCase();
+            return pattern.some(word => {
+                // Use word boundary regex to match exact words only
+                const regex = new RegExp(`\\b${word.toLowerCase()}\\b`);
+                return regex.test(nameLower);
+            });
+        }); // Don't limit - show all matches
     }
 
     // Clear current selection and add new streets
@@ -352,27 +373,132 @@ function setViewMode(mode) {
     document.getElementById('view-overlay').classList.toggle('active', mode === 'overlay');
     document.getElementById('view-grid').classList.toggle('active', mode === 'grid');
 
+    saveSearch(); // Save view mode to URL
     updateMap();
 }
 
+function setNameMode(mode) {
+    nameMode = mode;
+
+    // Update button states
+    document.getElementById('mode-name-only').classList.toggle('active', mode === 'name-only');
+    document.getElementById('mode-name-type').classList.toggle('active', mode === 'name-type');
+
+    // Rebuild unique names list based on mode
+    processStreetData();
+
+    // Clear and reload current selection with new mode
+    const currentStreets = [...selectedStreetNames];
+    selectedStreetNames = [];
+    streetColors = {};
+
+    currentStreets.forEach(street => {
+        const displayName = getDisplayName(street, mode);
+        if (!selectedStreetNames.includes(displayName)) {
+            addStreetToSelection(displayName);
+        }
+    });
+
+    saveSearch();
+    updateSelectedStreetsUI();
+    updateStreetColorsUI();
+    updateMap();
+    updateStats();
+}
+
+function getDisplayName(fullName, mode = nameMode) {
+    if (mode === 'name-only') {
+        // Return just the base name (e.g., "Victoria Street" -> "Victoria")
+        return getBaseName(fullName);
+    }
+    // Return full name (e.g., "Victoria Street")
+    return fullName;
+}
+
 function saveSearch() {
+    // Save to localStorage
     localStorage.setItem('sydney-streets-search', JSON.stringify(selectedStreetNames));
     localStorage.setItem('sydney-streets-colors', JSON.stringify(streetColors));
+    localStorage.setItem('sydney-streets-viewmode', viewMode);
+    localStorage.setItem('sydney-streets-namemode', nameMode);
+
+    // Update URL parameters
+    const params = new URLSearchParams();
+    if (selectedStreetNames.length > 0) {
+        params.set('streets', selectedStreetNames.join('|'));
+    }
+    if (viewMode !== 'overlay') {
+        params.set('view', viewMode);
+    }
+    if (nameMode !== 'name-only') {
+        params.set('mode', nameMode);
+    }
+
+    // Update URL without reloading page
+    const newUrl = params.toString() ? `${window.location.pathname}?${params.toString()}` : window.location.pathname;
+    window.history.replaceState({}, '', newUrl);
 }
 
 function loadSearch() {
-    const saved = localStorage.getItem('sydney-streets-search');
-    const savedColors = localStorage.getItem('sydney-streets-colors');
+    // Try URL parameters first
+    const urlParams = new URLSearchParams(window.location.search);
+    const streetsParam = urlParams.get('streets');
+    const viewParam = urlParams.get('view');
+    const modeParam = urlParams.get('mode');
 
-    if (saved) {
-        selectedStreetNames = JSON.parse(saved);
-        if (savedColors) {
-            streetColors = JSON.parse(savedColors);
+    // Load name mode first (before processing streets)
+    if (modeParam && (modeParam === 'name-only' || modeParam === 'name-type')) {
+        nameMode = modeParam;
+        document.getElementById('mode-name-only').classList.toggle('active', nameMode === 'name-only');
+        document.getElementById('mode-name-type').classList.toggle('active', nameMode === 'name-type');
+        processStreetData(); // Rebuild street names with correct mode
+    }
+
+    if (streetsParam) {
+        // Load from URL
+        selectedStreetNames = streetsParam.split('|').filter(name =>
+            uniqueStreetNames.some(n => n.toLowerCase() === name.toLowerCase())
+        );
+
+        // Assign colors
+        selectedStreetNames.forEach((name, index) => {
+            if (!streetColors[name]) {
+                streetColors[name] = defaultColors[index % defaultColors.length];
+            }
+        });
+
+        // Load view mode from URL
+        if (viewParam && (viewParam === 'overlay' || viewParam === 'grid')) {
+            viewMode = viewParam;
         }
     } else {
-        // Default: add Victoria Street
-        if (uniqueStreetNames.includes('Victoria Street')) {
-            addStreetToSelection('Victoria Street');
+        // Fallback to localStorage
+        const saved = localStorage.getItem('sydney-streets-search');
+        const savedColors = localStorage.getItem('sydney-streets-colors');
+        const savedViewMode = localStorage.getItem('sydney-streets-viewmode');
+        const savedNameMode = localStorage.getItem('sydney-streets-namemode');
+
+        if (savedNameMode && (savedNameMode === 'name-only' || savedNameMode === 'name-type')) {
+            nameMode = savedNameMode;
+            document.getElementById('mode-name-only').classList.toggle('active', nameMode === 'name-only');
+            document.getElementById('mode-name-type').classList.toggle('active', nameMode === 'name-type');
+            processStreetData();
+        }
+
+        if (saved) {
+            selectedStreetNames = JSON.parse(saved);
+            if (savedColors) {
+                streetColors = JSON.parse(savedColors);
+            }
+            if (savedViewMode) {
+                viewMode = savedViewMode;
+            }
+        } else {
+            // Default: add Victoria Street (or just Victoria in name-only mode)
+            const defaultStreet = nameMode === 'name-only' ? 'Victoria' : 'Victoria Street';
+            if (uniqueStreetNames.some(n => n.toLowerCase() === defaultStreet.toLowerCase())) {
+                addStreetToSelection(defaultStreet);
+            }
         }
     }
 
@@ -433,6 +559,36 @@ function processStreetData() {
         });
     }
 
+    // Filter out non-street entities (exits, ramps, cycleways, paths, etc.)
+    const excludePatterns = [
+        /\b(exit|offramp|onramp|on-ramp|off-ramp|on ramp|off ramp)\b/i,
+        /\bcycleway\b/i,
+        /\bshared path\b/i,
+        /\bpaid area\b/i,
+        /\bservice road\b/i,
+        /\bunderpass\b/i,
+        /\bcrossing\b/i,
+        /\btunnel\b/i
+    ];
+
+    filteredFeatures = filteredFeatures.filter(feature => {
+        const name = feature.properties.name || '';
+        const highway = feature.properties.highway || '';
+
+        // Exclude based on name patterns
+        if (excludePatterns.some(pattern => pattern.test(name))) {
+            return false;
+        }
+
+        // Exclude based on highway type
+        const excludeHighwayTypes = ['cycleway', 'footway', 'path', 'steps', 'pedestrian', 'track'];
+        if (excludeHighwayTypes.includes(highway.toLowerCase())) {
+            return false;
+        }
+
+        return true;
+    });
+
     // Build list of all streets
     allStreets = filteredFeatures.map(feature => ({
         name: feature.properties.name || 'Unnamed',
@@ -442,11 +598,18 @@ function processStreetData() {
         geometry: feature.geometry
     }));
 
-    // Get unique street names (full names, not base names)
+    // Get unique street names based on current name mode
     const nameSet = new Set();
     allStreets.forEach(street => {
         if (street.name && street.name !== 'Unnamed') {
-            nameSet.add(street.name);
+            if (nameMode === 'name-only') {
+                const baseName = getBaseName(street.name);
+                if (baseName) {
+                    nameSet.add(baseName);
+                }
+            } else {
+                nameSet.add(street.name);
+            }
         }
     });
     uniqueStreetNames = Array.from(nameSet).sort();
@@ -456,6 +619,33 @@ function processStreetData() {
         type: "FeatureCollection",
         features: filteredFeatures
     };
+
+    // Pre-compute base name counts for name-only mode performance
+    if (nameMode === 'name-only') {
+        baseNameCountsCache = {};
+
+        // Use Grid 200m precomputed counts if available
+        if (precomputedCounts && precomputedCounts.counts) {
+            // Aggregate Grid 200m counts by base name
+            for (const [fullName, count] of Object.entries(precomputedCounts.counts)) {
+                const baseName = getBaseName(fullName).toLowerCase();
+                baseNameCountsCache[baseName] = (baseNameCountsCache[baseName] || 0) + count;
+            }
+            console.log(`Pre-computed ${Object.keys(baseNameCountsCache).length} base name counts (Grid 200m)`);
+        } else {
+            // Fallback: count segments (not ideal, but better than nothing)
+            filteredFeatures.forEach(feature => {
+                const fullName = feature.properties.name || '';
+                if (fullName && fullName !== 'Unnamed') {
+                    const baseName = getBaseName(fullName).toLowerCase();
+                    baseNameCountsCache[baseName] = (baseNameCountsCache[baseName] || 0) + 1;
+                }
+            });
+            console.log(`Pre-computed ${Object.keys(baseNameCountsCache).length} base name counts (segment fallback - not Grid 200m)`);
+        }
+    } else {
+        baseNameCountsCache = {};
+    }
 }
 
 function updateMap() {
@@ -475,9 +665,18 @@ function updateMap() {
     // Filter features to only selected streets
     const selectedFeatures = streetData.features.filter(feature => {
         const name = feature.properties.name || '';
-        return selectedStreetNames.some(selectedName =>
-            name.toLowerCase() === selectedName.toLowerCase()
-        );
+        if (nameMode === 'name-only') {
+            // Match by base name
+            const baseName = getBaseName(name);
+            return selectedStreetNames.some(selectedName =>
+                baseName.toLowerCase() === selectedName.toLowerCase()
+            );
+        } else {
+            // Match by full name
+            return selectedStreetNames.some(selectedName =>
+                name.toLowerCase() === selectedName.toLowerCase()
+            );
+        }
     });
 
     if (viewMode === 'overlay') {
@@ -489,9 +688,22 @@ function updateMap() {
         currentLayer = L.geoJSON(selectedFeatures, {
             style: function(feature) {
                 const name = feature.properties.name || '';
-                const color = streetColors[selectedStreetNames.find(s =>
-                    s.toLowerCase() === name.toLowerCase()
-                )] || '#3498db';
+                let matchingStreet;
+
+                if (nameMode === 'name-only') {
+                    // Match by base name
+                    const baseName = getBaseName(name);
+                    matchingStreet = selectedStreetNames.find(s =>
+                        baseName.toLowerCase() === s.toLowerCase()
+                    );
+                } else {
+                    // Match by full name
+                    matchingStreet = selectedStreetNames.find(s =>
+                        name.toLowerCase() === s.toLowerCase()
+                    );
+                }
+
+                const color = streetColors[matchingStreet] || '#3498db';
 
                 return {
                     color: color,
@@ -521,14 +733,30 @@ function updateMap() {
 function renderGridView(selectedFeatures) {
     const gridView = document.getElementById('grid-view');
 
-    // Group features by street name
+    // Group features by selected street name (base name or full name depending on mode)
     const streetGroups = {};
     selectedFeatures.forEach(feature => {
         const name = feature.properties.name || '';
-        if (!streetGroups[name]) {
-            streetGroups[name] = [];
+
+        // Find which selected street this feature belongs to
+        let matchingStreet;
+        if (nameMode === 'name-only') {
+            const baseName = getBaseName(name);
+            matchingStreet = selectedStreetNames.find(s =>
+                baseName.toLowerCase() === s.toLowerCase()
+            );
+        } else {
+            matchingStreet = selectedStreetNames.find(s =>
+                name.toLowerCase() === s.toLowerCase()
+            );
         }
-        streetGroups[name].push(feature);
+
+        if (matchingStreet) {
+            if (!streetGroups[matchingStreet]) {
+                streetGroups[matchingStreet] = [];
+            }
+            streetGroups[matchingStreet].push(feature);
+        }
     });
 
     // Create grid items
@@ -544,7 +772,7 @@ function renderGridView(selectedFeatures) {
                         <div class="grid-item-header">
                             <div class="grid-item-color" style="background: ${color}"></div>
                             <div class="grid-item-name">${streetName}</div>
-                            <div class="grid-item-count">${count} instance${count !== 1 ? 's' : ''}</div>
+                            <div class="grid-item-count">${count} street${count !== 1 ? 's' : ''}</div>
                         </div>
                         <div class="grid-item-map" id="grid-map-${streetName.replace(/[^a-zA-Z0-9]/g, '-')}"></div>
                     </div>
@@ -613,29 +841,36 @@ function updateStats() {
     }
 }
 
-function getStreetCount(fullStreetName) {
-    // Use pre-computed counts if available
-    if (precomputedCounts && precomputedCounts.counts) {
-        // Try exact match first
-        if (precomputedCounts.counts[fullStreetName]) {
-            return precomputedCounts.counts[fullStreetName];
+function getStreetCount(streetName) {
+    if (nameMode === 'name-only') {
+        // In name-only mode, use pre-computed cache for instant lookup
+        const key = streetName.toLowerCase();
+        return baseNameCountsCache[key] || 0;
+    } else {
+        // In name-type mode, count only exact matches
+        // Use pre-computed counts if available
+        if (precomputedCounts && precomputedCounts.counts) {
+            // Try exact match first
+            if (precomputedCounts.counts[streetName]) {
+                return precomputedCounts.counts[streetName];
+            }
+
+            // Try case-insensitive match
+            const key = Object.keys(precomputedCounts.counts).find(
+                k => k.toLowerCase() === streetName.toLowerCase()
+            );
+            if (key) {
+                return precomputedCounts.counts[key];
+            }
         }
 
-        // Try case-insensitive match
-        const key = Object.keys(precomputedCounts.counts).find(
-            k => k.toLowerCase() === fullStreetName.toLowerCase()
-        );
-        if (key) {
-            return precomputedCounts.counts[key];
-        }
+        // Fallback: count from features
+        const count = streetData.features.filter(feature =>
+            (feature.properties.name || '').toLowerCase() === streetName.toLowerCase()
+        ).length;
+
+        return count;
     }
-
-    // Fallback: count from features
-    const count = streetData.features.filter(feature =>
-        (feature.properties.name || '').toLowerCase() === fullStreetName.toLowerCase()
-    ).length;
-
-    return count;
 }
 
 function countAllStreets() {
