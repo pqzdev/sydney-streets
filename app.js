@@ -382,35 +382,81 @@ function updateStreetColorsUI() {
 
     container.innerHTML = selectedStreetNames.map((name, index) => `
         <div class="street-list-item" draggable="true" data-index="${index}" data-street="${name}">
-            <div class="color-presets">
-                ${presetColors.map(color => `
-                    <div class="color-preset" style="background: ${color}"
-                         data-street="${name}" data-color="${color}"></div>
-                `).join('')}
-            </div>
             <div class="street-list-item-row">
-                <input type="color" class="color-picker" value="${streetColors[name]}" data-street="${name}">
+                <div style="position: relative;">
+                    <div class="current-color-button" style="background: ${streetColors[name]}" data-street="${name}"></div>
+                    <div class="color-presets" data-street="${name}">
+                        ${presetColors.map(color => `
+                            <div class="color-preset" style="background: ${color}"
+                                 data-street="${name}" data-color="${color}"></div>
+                        `).join('')}
+                        <div class="color-preset custom" data-street="${name}"></div>
+                    </div>
+                    <input type="color" class="color-picker" value="${streetColors[name]}" data-street="${name}" style="display: none;">
+                </div>
                 <div class="street-name">${name}</div>
             </div>
         </div>
     `).join('');
 
+    // Add current color button click handlers (toggle dropdown)
+    container.querySelectorAll('.current-color-button').forEach(button => {
+        button.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const street = button.dataset.street;
+            const dropdown = container.querySelector(`.color-presets[data-street="${street}"]`);
+
+            // Close all other dropdowns
+            container.querySelectorAll('.color-presets').forEach(d => {
+                if (d !== dropdown) d.classList.remove('show');
+            });
+
+            // Toggle this dropdown
+            dropdown.classList.toggle('show');
+        });
+    });
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.street-list-item')) {
+            container.querySelectorAll('.color-presets').forEach(d => d.classList.remove('show'));
+        }
+    });
+
     // Add preset click handlers
-    container.querySelectorAll('.color-preset').forEach(preset => {
+    container.querySelectorAll('.color-preset:not(.custom)').forEach(preset => {
         preset.addEventListener('click', (e) => {
+            e.stopPropagation();
             const street = e.target.dataset.street;
             const color = e.target.dataset.color;
             streetColors[street] = color;
-            // Update the color picker
-            container.querySelector(`input[data-street="${street}"]`).value = color;
+            // Update the button color
+            container.querySelector(`.current-color-button[data-street="${street}"]`).style.background = color;
+            // Close dropdown
+            container.querySelector(`.color-presets[data-street="${street}"]`).classList.remove('show');
             updateMap();
+        });
+    });
+
+    // Add custom color (color wheel) handler
+    container.querySelectorAll('.color-preset.custom').forEach(customBtn => {
+        customBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const street = customBtn.dataset.street;
+            const picker = container.querySelector(`input[data-street="${street}"]`);
+            picker.click();
+            // Close dropdown
+            container.querySelector(`.color-presets[data-street="${street}"]`).classList.remove('show');
         });
     });
 
     // Add color picker change handlers
     container.querySelectorAll('.color-picker').forEach(picker => {
         picker.addEventListener('change', (e) => {
-            streetColors[e.target.dataset.street] = e.target.value;
+            const street = e.target.dataset.street;
+            streetColors[street] = e.target.value;
+            // Update the button color
+            container.querySelector(`.current-color-button[data-street="${street}"]`).style.background = e.target.value;
             updateMap();
         });
     });
