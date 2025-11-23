@@ -955,35 +955,31 @@ function updateMap() {
 
         // Check if only one street selected for multi-color visualization
         if (selectedStreetNames.length === 1) {
-            // Group features into distinct street instances (clusters)
-            const streetInstances = groupFeaturesIntoClusters(selectedFeatures);
-            const colorPalette = generateColorPalette(streetInstances.length);
+            // Color each segment differently
+            const colorPalette = generateColorPalette(selectedFeatures.length);
 
-            // Create a map from feature to its cluster index
-            const featureToCluster = new Map();
-            streetInstances.forEach((cluster, clusterIndex) => {
-                cluster.forEach(feature => {
-                    featureToCluster.set(feature, clusterIndex);
-                });
+            // Assign a unique index to each segment
+            selectedFeatures.forEach((feature, index) => {
+                feature.properties._segmentIndex = index;
             });
 
             currentLayer = L.geoJSON(selectedFeatures, {
                 style: function(feature) {
-                    const clusterIndex = featureToCluster.get(feature) || 0;
+                    const segmentIndex = feature.properties._segmentIndex || 0;
                     return {
-                        color: colorPalette[clusterIndex % colorPalette.length],
+                        color: colorPalette[segmentIndex % colorPalette.length],
                         weight: 3,
                         opacity: 0.7
                     };
                 },
                 onEachFeature: function(feature, layer) {
-                    const clusterIndex = featureToCluster.get(feature) || 0;
-                    layer.bindPopup(`<b>${selectedStreetNames[0]}</b><br>Instance #${clusterIndex + 1}`);
+                    const segmentIndex = feature.properties._segmentIndex || 0;
+                    layer.bindPopup(`<b>${selectedStreetNames[0]}</b><br>Segment #${segmentIndex + 1}`);
                 }
             }).addTo(map);
 
             // Show legend for single street
-            showSingleStreetLegend(selectedStreetNames[0], streetInstances.length, colorPalette);
+            showSingleStreetLegend(selectedStreetNames[0], selectedFeatures.length, colorPalette);
         } else {
             // Multiple streets: use assigned colors
             currentLayer = L.geoJSON(selectedFeatures, {
