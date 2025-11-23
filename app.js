@@ -80,10 +80,15 @@ async function loadData() {
             console.log('Pre-computed counts not available, will use client-side counting');
         }
 
-        // Load full OSM dataset
-        const response = await fetch('data/sydney-roads-osm.geojson');
+        // Load OSM dataset (sample for GitHub Pages, full for local)
+        // Try full dataset first, fall back to sample if not available
+        let response = await fetch('data/sydney-roads-osm.geojson');
         if (!response.ok) {
-            throw new Error('Failed to load data. Make sure data file exists.');
+            console.log('Full dataset not available, loading sample dataset');
+            response = await fetch('data/sydney-roads-sample.geojson');
+            if (!response.ok) {
+                throw new Error('Failed to load data. Make sure data file exists.');
+            }
         }
         streetData = await response.json();
         processStreetData();
