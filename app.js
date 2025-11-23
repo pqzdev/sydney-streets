@@ -456,10 +456,6 @@ function updateMap() {
 function updateStats() {
     if (!allStreets.length) return;
 
-    // Total streets in dataset
-    const nameCounts = countAllStreets();
-    const totalInstances = Object.values(nameCounts).reduce((sum, count) => sum + count, 0);
-
     // Count instances for selected streets only
     const selectedCounts = {};
     if (selectedStreetNames.length > 0) {
@@ -468,11 +464,6 @@ function updateStats() {
             selectedCounts[streetName] = count;
         });
     }
-
-    const visibleInstances = Object.values(selectedCounts).reduce((sum, count) => sum + count, 0);
-
-    document.getElementById('stat-total').textContent = totalInstances;
-    document.getElementById('stat-visible').textContent = visibleInstances;
 
     // Update street count list for selected streets
     const countEl = document.getElementById('street-count');
