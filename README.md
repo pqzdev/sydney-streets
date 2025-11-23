@@ -1,19 +1,26 @@
-# Sydney Streets
+# Australian Capital Cities Street Names
 
-Interactive visualization of Sydney street names and patterns, featuring advanced street counting algorithms.
+Interactive visualization of street names and patterns across Australia's capital cities, featuring advanced street counting algorithms.
 
-**[Live Demo](https://pqzdev.github.io/sydney-streets/)** | **[Research Methodology](https://pqzdev.github.io/sydney-streets/METHODOLOGY.html)**
+**[Live Demo](https://australian-streets.pages.dev/)** | **[Research Methodology](./METHODOLOGY.md)**
 
 ## Overview
 
-This project visualizes street data across **Greater Sydney** (as officially defined by the NSW Government) to explore interesting patterns in street naming:
+This project visualizes street data across **Australia's capital cities** to explore interesting patterns in street naming:
 - Most popular street names (counted using Grid 200m algorithm)
 - Streets named after suburbs
 - Tree-themed street names
 - Royalty-themed street names
 - Geographic clustering of name patterns
+- Compare naming patterns across different cities
 
-**Geographic Scope**: This project uses the official NSW Government definition of Greater Sydney, comprising 33 Local Government Areas across 5 planning districts. See [SCOPE.md](SCOPE.md) for the complete list and sources.
+### Currently Available Cities
+
+- **Sydney** - Greater Sydney (33 LGAs, NSW Government definition)
+- **Melbourne** - Greater Melbourne (31 LGAs, Victorian Government definition) 🚧 _Coming soon_
+- Brisbane, Perth, Adelaide, Hobart, Darwin, Canberra - _Planned_
+
+**Geographic Scope**: Each city uses official government definitions of "Greater [City]" boundaries. See [SCOPE.md](SCOPE.md) for the complete list of LGAs and sources.
 
 ## Street Counting Methodology
 
@@ -163,15 +170,17 @@ From our methodology research:
 
 ## Deployment
 
-This site is deployed on GitHub Pages:
+This site is deployed on Cloudflare Pages:
 
-**Live Site**: [https://pqzdev.github.io/sydney-streets/](https://pqzdev.github.io/sydney-streets/)
+**Live Site**: [https://australian-streets.pages.dev/](https://australian-streets.pages.dev/)
 
 To deploy your own version:
 1. Fork this repository
-2. Enable GitHub Pages in Settings → Pages
-3. Select "main" branch as source
-4. Your site will be live at `https://yourusername.github.io/sydney-streets/`
+2. Connect to Cloudflare Pages via the dashboard
+3. Set build settings:
+   - Build command: (none - static site)
+   - Build output directory: `/`
+4. Your site will be live at `https://your-project.pages.dev/`
 
 ## Performance
 

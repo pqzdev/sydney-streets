@@ -1,6 +1,8 @@
 # Data files (can be large)
 data/sydney-roads-osm.geojson
 data/sydney-roads-optimized*.geojson
+data/melbourne-roads-osm.geojson
+data/melbourne-roads-optimized*.geojson
 data/*.shp
 data/*.zip
 
@@ -8,7 +10,9 @@ data/*.zip
 !data/.gitkeep
 !data/sydney-roads-web.geojson
 !data/sydney-roads-sample.geojson
+!data/melbourne-roads-web.geojson
 !data/street_counts_grid200.json
+!data/melbourne_street_counts_grid200.json
 !data/method_comparison.json
 !data/method_comparison_detailed.json
 !data/summary.json
