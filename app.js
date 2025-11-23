@@ -15,8 +15,21 @@ let legendVisible = false; // Legend toggle state
 let gridMapsSync = false; // Whether grid maps pan/zoom together
 let gridMaps = []; // Array of grid map instances
 
-// Default colors for streets
-const defaultColors = ['#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c', '#34495e', '#e67e22'];
+// Default colors for streets - 11 maximally distinguishable colors (Kelly's color set + additions)
+// Source: Kelly, K. L. (1965) "Color designation and specification"
+const defaultColors = [
+    '#F3C300', // Vivid Yellow
+    '#875692', // Strong Purple
+    '#F38400', // Vivid Orange
+    '#A1CAF1', // Very Light Blue
+    '#BE0032', // Vivid Red
+    '#C2B280', // Grayish Yellow
+    '#848482', // Medium Gray
+    '#008856', // Vivid Green
+    '#E68FAC', // Strong Purplish Pink
+    '#0067A5', // Strong Blue
+    '#F99379'  // Strong Yellowish Pink
+];
 
 // Color schemes for different categories
 const colors = {
@@ -69,11 +82,12 @@ function generateColorPalette(count) {
 
 // Auto-load data on page load
 window.addEventListener('DOMContentLoaded', () => {
-    // Define Greater Sydney bounds (approximately)
+    // Define Greater Sydney bounds with buffer (approximately)
     // Southwest: Blue Mountains area, Northwest: Hawkesbury, Southeast: Royal National Park, Northeast: Northern Beaches
+    // Added 0.15 degree buffer (~15km) on all sides to ensure edges are visible
     const sydneyBounds = L.latLngBounds(
-        L.latLng(-34.15, 150.5),  // Southwest corner (southwest of Sydney)
-        L.latLng(-33.4, 151.35)    // Northeast corner (northeast of Sydney)
+        L.latLng(-34.3, 150.35),  // Southwest corner with buffer
+        L.latLng(-33.25, 151.5)   // Northeast corner with buffer
     );
 
     // Initialize map centered on Sydney with bounds restriction
@@ -390,7 +404,8 @@ function updateSelectedStreetsUI() {
 
 function updateStreetColorsUI() {
     const container = document.getElementById('street-colors');
-    const presetColors = ['#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c', '#34495e', '#e67e22', '#e91e63', '#00bcd4'];
+    // Use the same 11 maximally distinguishable colors as defaultColors
+    const presetColors = defaultColors;
 
     container.innerHTML = selectedStreetNames.map((name, index) => `
         <div class="street-list-item" draggable="true" data-index="${index}" data-street="${name}">
@@ -728,6 +743,10 @@ function loadSearch() {
 }
 
 async function loadData() {
+    // Show loading bar
+    const loadingBar = document.getElementById('loading-bar');
+    loadingBar.classList.add('show');
+
     try {
         // Try to load pre-computed counts
         try {
@@ -761,7 +780,12 @@ async function loadData() {
         // Update map with selected streets
         updateMap();
         updateStats();
+
+        // Hide loading bar
+        loadingBar.classList.remove('show');
     } catch (error) {
+        // Hide loading bar on error too
+        loadingBar.classList.remove('show');
         alert(`Error loading data: ${error.message}`);
         console.error(error);
     }
@@ -907,25 +931,35 @@ function updateMap() {
 
         // Check if only one street selected for multi-color visualization
         if (selectedStreetNames.length === 1) {
-            const colorPalette = generateColorPalette(selectedFeatures.length);
+            // Group features into distinct street instances (clusters)
+            const streetInstances = groupFeaturesIntoClusters(selectedFeatures);
+            const colorPalette = generateColorPalette(streetInstances.length);
+
+            // Create a map from feature to its cluster index
+            const featureToCluster = new Map();
+            streetInstances.forEach((cluster, clusterIndex) => {
+                cluster.forEach(feature => {
+                    featureToCluster.set(feature, clusterIndex);
+                });
+            });
 
             currentLayer = L.geoJSON(selectedFeatures, {
                 style: function(feature) {
-                    const index = selectedFeatures.indexOf(feature);
+                    const clusterIndex = featureToCluster.get(feature) || 0;
                     return {
-                        color: colorPalette[index % colorPalette.length],
+                        color: colorPalette[clusterIndex % colorPalette.length],
                         weight: 3,
                         opacity: 0.7
                     };
                 },
                 onEachFeature: function(feature, layer) {
-                    const index = selectedFeatures.indexOf(feature);
-                    layer.bindPopup(`<b>${selectedStreetNames[0]}</b><br>Occurrence #${index + 1}`);
+                    const clusterIndex = featureToCluster.get(feature) || 0;
+                    layer.bindPopup(`<b>${selectedStreetNames[0]}</b><br>Instance #${clusterIndex + 1}`);
                 }
             }).addTo(map);
 
             // Show legend for single street
-            showSingleStreetLegend(selectedStreetNames[0], selectedFeatures.length, colorPalette);
+            showSingleStreetLegend(selectedStreetNames[0], streetInstances.length, colorPalette);
         } else {
             // Multiple streets: use assigned colors
             currentLayer = L.geoJSON(selectedFeatures, {
@@ -1180,12 +1214,82 @@ function getBaseName(fullName) {
     return base.trim();
 }
 
+// Group features into geographically distinct clusters (street instances)
+// Features that are close together belong to the same instance
+function groupFeaturesIntoClusters(features) {
+    if (features.length === 0) return [];
+
+    // Distance threshold in degrees (~200m at Sydney's latitude)
+    const DISTANCE_THRESHOLD = 0.002;
+
+    // Calculate centroid of a feature
+    function getCentroid(feature) {
+        const coords = feature.geometry.coordinates;
+        if (feature.geometry.type === 'LineString') {
+            // Get midpoint of linestring
+            const mid = Math.floor(coords.length / 2);
+            return coords[mid];
+        } else if (feature.geometry.type === 'MultiLineString') {
+            // Get first line's midpoint
+            const firstLine = coords[0];
+            const mid = Math.floor(firstLine.length / 2);
+            return firstLine[mid];
+        }
+        return coords[0] || [0, 0];
+    }
+
+    // Calculate distance between two points [lon, lat]
+    function distance(p1, p2) {
+        const dx = p1[0] - p2[0];
+        const dy = p1[1] - p2[1];
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    // Features that haven't been assigned to a cluster yet
+    const unassigned = [...features];
+    const clusters = [];
+
+    while (unassigned.length > 0) {
+        // Start a new cluster with the first unassigned feature
+        const cluster = [unassigned.shift()];
+        const clusterCentroids = [getCentroid(cluster[0])];
+
+        // Find all nearby features and add them to this cluster
+        let i = 0;
+        while (i < unassigned.length) {
+            const featureCentroid = getCentroid(unassigned[i]);
+
+            // Check if this feature is close to any feature in the cluster
+            const isNearby = clusterCentroids.some(clusterCentroid =>
+                distance(featureCentroid, clusterCentroid) < DISTANCE_THRESHOLD
+            );
+
+            if (isNearby) {
+                // Add to cluster and remove from unassigned
+                cluster.push(unassigned[i]);
+                clusterCentroids.push(featureCentroid);
+                unassigned.splice(i, 1);
+                // Don't increment i since we removed an element
+            } else {
+                i++;
+            }
+        }
+
+        clusters.push(cluster);
+    }
+
+    return clusters;
+}
+
 // Legend functions
 function showSingleStreetLegend(streetName, count, colors) {
     const legend = document.getElementById('map-legend');
     const toggle = document.getElementById('legend-toggle');
 
-    let html = `<div class="legend-title">${streetName} Occurrences</div>`;
+    let html = `<div class="legend-title">
+        <span>${streetName} Occurrences</span>
+        <span class="legend-close" onclick="hideSingleStreetLegend()">×</span>
+    </div>`;
     for (let i = 0; i < Math.min(count, 20); i++) {
         html += `
             <div class="legend-item">
@@ -1218,7 +1322,10 @@ function toggleLegend() {
     legendVisible = !legendVisible;
 
     if (legendVisible && selectedStreetNames.length > 1) {
-        let html = `<div class="legend-title">Streets</div>`;
+        let html = `<div class="legend-title">
+            <span>Streets</span>
+            <span class="legend-close" onclick="toggleLegend()">×</span>
+        </div>`;
         selectedStreetNames.forEach(street => {
             html += `
                 <div class="legend-item">
