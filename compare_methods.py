@@ -158,7 +158,10 @@ def method2_grid_flood_fill(segments, grid_size=0.0002):
             # Check 8 adjacent cells
             for dlat in [-grid_size, 0, grid_size]:
                 for dlng in [-grid_size, 0, grid_size]:
-                    adj_cell = f"{lat+dlat},{lng+dlng}"
+                    # Round to avoid floating point precision issues
+                    adj_lat = round((lat + dlat) / grid_size) * grid_size
+                    adj_lng = round((lng + dlng) / grid_size) * grid_size
+                    adj_cell = f"{adj_lat},{adj_lng}"
                     if adj_cell in cell_to_segments and adj_cell not in visited_cells:
                         visited_cells.add(adj_cell)
                         queue.append(adj_cell)
@@ -405,30 +408,48 @@ def method5_endpoint_only(segments, threshold=30, segments_with_props=None):
     return list(components.values())
 
 # ============================================================================
-# METHOD 5: Centroid Grid (Simplest)
+# METHOD 6: Highway-Aware (Name-based grouping for major roads)
 # ============================================================================
 
-def method5_centroid_grid(segments, grid_size=0.001):
+def method6_highway_aware(segments_with_props, base_method='grid', threshold=100):
     """
-    Simplest: just group by centroid grid cell
+    Hybrid approach: Use proximity-based grouping, but merge all components
+    that belong to highways/freeways (they should be counted as 1 regardless of gaps)
+
+    segments_with_props: list of dicts with 'coords' and 'feature' (full GeoJSON feature)
+    base_method: 'grid', 'polygon', or 'p2p'
+    threshold: distance threshold in meters
     """
-    grid_to_segments = defaultdict(list)
+    # Extract just coordinates for base method
+    segments = [seg['coords'] for seg in segments_with_props]
 
-    for seg_idx, coords in enumerate(segments):
-        # Calculate centroid
-        lat_sum = sum(c[1] for c in coords)
-        lng_sum = sum(c[0] for c in coords)
-        centroid_lat = lat_sum / len(coords)
-        centroid_lng = lng_sum / len(coords)
+    # Run base proximity method
+    if base_method == 'grid':
+        grid_size = threshold / 111000  # Convert meters to degrees (approx)
+        components = method2_grid_flood_fill(segments, grid_size)
+    elif base_method == 'polygon':
+        components = method4_polygon_buffer(segments, threshold)
+    else:  # p2p
+        components = method1_point_to_point(segments, threshold)
 
-        # Grid cell
-        cell_lat = round(centroid_lat / grid_size) * grid_size
-        cell_lng = round(centroid_lng / grid_size) * grid_size
-        cell_key = f"{cell_lat},{cell_lng}"
+    # Check if this street is a highway/freeway
+    # ONLY merge if it explicitly has "Highway" or "Freeway" in the name
+    # (OSM classifications like trunk/primary are too broad and include regular streets)
+    is_highway = False
+    for seg in segments_with_props:
+        name = seg.get('feature', {}).get('properties', {}).get('name', '')
+        if 'Highway' in name or 'Freeway' in name or 'Motorway' in name:
+            is_highway = True
+            break
 
-        grid_to_segments[cell_key].append(seg_idx)
+    # If it's a highway, merge ALL components into one
+    if is_highway and len(components) > 1:
+        merged = []
+        for comp in components:
+            merged.extend(comp)
+        return [merged]
 
-    return list(grid_to_segments.values())
+    return components
 
 # ============================================================================
 # Main Comparison
@@ -480,9 +501,12 @@ def compare_methods(geojson_path, test_streets):
         ("Grid 200m + Flood Fill", lambda s: method2_grid_flood_fill([seg['coords'] for seg in s], 0.002)),
         ("Polygon Buffer (30m)", lambda s: method4_polygon_buffer([seg['coords'] for seg in s], 30)),
         ("Polygon Buffer (50m)", lambda s: method4_polygon_buffer([seg['coords'] for seg in s], 50)),
+        ("Polygon Buffer (100m)", lambda s: method4_polygon_buffer([seg['coords'] for seg in s], 100)),
         ("Endpoint Only (30m)", lambda s: method5_endpoint_only([seg['coords'] for seg in s], 30)),
         ("Endpoint Only (100m)", lambda s: method5_endpoint_only([seg['coords'] for seg in s], 100)),
         ("Endpoint Adaptive", lambda s: method5_endpoint_only([seg['coords'] for seg in s], 30, s)),
+        ("Highway-Aware (Grid 100m)", lambda s: method6_highway_aware(s, 'grid', 100)),
+        ("Highway-Aware (Polygon 100m)", lambda s: method6_highway_aware(s, 'polygon', 100)),
     ]
 
     for street_name, segments in streets_data.items():
@@ -602,11 +626,11 @@ def compare_methods(geojson_path, test_streets):
 
 if __name__ == "__main__":
     test_streets = [
+        # Regular streets
         "Victoria Street",
         "Regent Street",
         "Short Street",
         "Railway Terrace",
-        "Princes Highway",
         "Park Street",
         "George Street",
         "Elizabeth Street",
@@ -615,9 +639,18 @@ if __name__ == "__main__":
         "Church Street",
         "Windsor Street",
         "Albert Street",
+        # Major roads
         "Parramatta Road",
         "Liverpool Road",
-        "Victoria Road"
+        "Victoria Road",
+        # Highways and Freeways (should each be counted as 1)
+        "Pacific Highway",
+        "Great Western Highway",
+        "Princes Highway",
+        "Hume Highway",
+        "Warringah Freeway",
+        "Central Coast Highway",
+        "Prospect Highway"
     ]
 
     results, streets_data = compare_methods(

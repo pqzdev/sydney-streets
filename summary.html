@@ -162,9 +162,14 @@
                     <th class="rotate">Grid 50m</th>
                     <th class="rotate">Grid 100m</th>
                     <th class="rotate">Grid 200m</th>
+                    <th class="rotate">Poly (30m)</th>
+                    <th class="rotate">Poly (50m)</th>
+                    <th class="rotate">Poly (100m)</th>
                     <th class="rotate">EP Only (30m)</th>
                     <th class="rotate">EP Only (100m)</th>
                     <th class="rotate">EP Adaptive</th>
+                    <th class="rotate">Hwy-Grid</th>
+                    <th class="rotate">Hwy-Poly</th>
                 </tr>
             </thead>
             <tbody id="count-tbody"></tbody>
@@ -181,9 +186,14 @@
                     <th>Grid 50m</th>
                     <th>Grid 100m</th>
                     <th>Grid 200m</th>
+                    <th>Poly (30m)</th>
+                    <th>Poly (50m)</th>
+                    <th>Poly (100m)</th>
                     <th>EP Only (30m)</th>
                     <th>EP Only (100m)</th>
                     <th>EP Adaptive</th>
+                    <th>Hwy-Grid</th>
+                    <th>Hwy-Poly</th>
                 </tr>
             </thead>
             <tbody id="timing-tbody"></tbody>
@@ -207,9 +217,14 @@
                 'Grid 50m + Flood Fill',
                 'Grid 100m + Flood Fill',
                 'Grid 200m + Flood Fill',
+                'Polygon Buffer (30m)',
+                'Polygon Buffer (50m)',
+                'Polygon Buffer (100m)',
                 'Endpoint Only (30m)',
                 'Endpoint Only (100m)',
-                'Endpoint Adaptive'
+                'Endpoint Adaptive',
+                'Highway-Aware (Grid 100m)',
+                'Highway-Aware (Polygon 100m)'
             ];
 
             // Calculate stats
@@ -222,8 +237,8 @@
             }, 0);
 
             streets.forEach(street => {
-                const counts = methods.map(m => results[street][m].count);
-                if (new Set(counts).size === 1) perfectAgreement++;
+                const counts = methods.map(m => results[street]?.[m]?.count).filter(c => c !== undefined);
+                if (counts.length > 0 && new Set(counts).size === 1) perfectAgreement++;
             });
 
             document.getElementById('stats').innerHTML = `
@@ -246,14 +261,18 @@
             streets.forEach(street => {
                 if (!results[street]) return;
                 const row = document.createElement('tr');
-                const counts = methods.map(m => results[street][m].count);
+                const counts = methods.map(m => results[street]?.[m]?.count).filter(c => c !== undefined);
                 const hasDisagreement = new Set(counts).size > 1;
 
                 let html = `<td class="street-name">${street}</td>`;
                 methods.forEach((method, idx) => {
-                    const count = results[street][method].count;
-                    const className = hasDisagreement ? 'count-cell disagreement' : 'count-cell';
-                    html += `<td class="${className}">${count}</td>`;
+                    const count = results[street]?.[method]?.count;
+                    if (count === undefined) {
+                        html += `<td class="count-cell">-</td>`;
+                    } else {
+                        const className = hasDisagreement ? 'count-cell disagreement' : 'count-cell';
+                        html += `<td class="${className}">${count}</td>`;
+                    }
                 });
                 row.innerHTML = html;
                 countTbody.appendChild(row);
@@ -266,14 +285,18 @@
                 const row = document.createElement('tr');
                 let html = `<td class="street-name">${street}</td>`;
 
-                const times = methods.map(m => results[street][m].time);
+                const times = methods.map(m => results[street]?.[m]?.time).filter(t => t !== undefined);
                 const minTime = Math.min(...times);
 
                 methods.forEach((method, idx) => {
-                    const time = results[street][method].time;
-                    const isBest = time === minTime;
-                    const className = isBest ? 'time-cell best' : 'time-cell';
-                    html += `<td class="${className}">${time.toFixed(3)}s</td>`;
+                    const time = results[street]?.[method]?.time;
+                    if (time === undefined) {
+                        html += `<td class="time-cell">-</td>`;
+                    } else {
+                        const isBest = time === minTime;
+                        const className = isBest ? 'time-cell best' : 'time-cell';
+                        html += `<td class="${className}">${time.toFixed(3)}s</td>`;
+                    }
                 });
                 row.innerHTML = html;
                 timingTbody.appendChild(row);

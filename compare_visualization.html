@@ -115,7 +115,6 @@
                 <option value="Regent Street">Regent Street</option>
                 <option value="Short Street">Short Street</option>
                 <option value="Railway Terrace">Railway Terrace</option>
-                <option value="Princes Highway">Princes Highway</option>
                 <option value="Park Street">Park Street</option>
                 <option value="George Street">George Street</option>
                 <option value="Elizabeth Street">Elizabeth Street</option>
@@ -127,6 +126,13 @@
                 <option value="Parramatta Road">Parramatta Road</option>
                 <option value="Liverpool Road">Liverpool Road</option>
                 <option value="Victoria Road">Victoria Road</option>
+                <option value="Pacific Highway">Pacific Highway</option>
+                <option value="Great Western Highway">Great Western Highway</option>
+                <option value="Princes Highway">Princes Highway</option>
+                <option value="Hume Highway">Hume Highway</option>
+                <option value="Warringah Freeway">Warringah Freeway</option>
+                <option value="Central Coast Highway">Central Coast Highway</option>
+                <option value="Prospect Highway">Prospect Highway</option>
             </select>
         </label>
 
@@ -141,9 +147,12 @@
                 <option value="Grid 200m + Flood Fill">Grid 200m + Flood Fill</option>
                 <option value="Polygon Buffer (30m)">Polygon Buffer (30m)</option>
                 <option value="Polygon Buffer (50m)" selected>Polygon Buffer (50m)</option>
+                <option value="Polygon Buffer (100m)">Polygon Buffer (100m)</option>
                 <option value="Endpoint Only (30m)">Endpoint Only (30m)</option>
                 <option value="Endpoint Only (100m)">Endpoint Only (100m)</option>
                 <option value="Endpoint Adaptive">Endpoint Adaptive (30m/500m)</option>
+                <option value="Highway-Aware (Grid 100m)">Highway-Aware (Grid 100m)</option>
+                <option value="Highway-Aware (Polygon 100m)">Highway-Aware (Polygon 100m)</option>
             </select>
         </label>
 
@@ -158,9 +167,12 @@
                 <option value="Grid 200m + Flood Fill">Grid 200m + Flood Fill</option>
                 <option value="Polygon Buffer (30m)">Polygon Buffer (30m)</option>
                 <option value="Polygon Buffer (50m)">Polygon Buffer (50m)</option>
+                <option value="Polygon Buffer (100m)">Polygon Buffer (100m)</option>
                 <option value="Endpoint Only (30m)">Endpoint Only (30m)</option>
                 <option value="Endpoint Only (100m)">Endpoint Only (100m)</option>
                 <option value="Endpoint Adaptive">Endpoint Adaptive (30m/500m)</option>
+                <option value="Highway-Aware (Grid 100m)">Highway-Aware (Grid 100m)</option>
+                <option value="Highway-Aware (Polygon 100m)">Highway-Aware (Polygon 100m)</option>
             </select>
         </label>
 
@@ -175,9 +187,12 @@
                 <option value="Grid 200m + Flood Fill">Grid 200m + Flood Fill</option>
                 <option value="Polygon Buffer (30m)">Polygon Buffer (30m)</option>
                 <option value="Polygon Buffer (50m)">Polygon Buffer (50m)</option>
+                <option value="Polygon Buffer (100m)">Polygon Buffer (100m)</option>
                 <option value="Endpoint Only (30m)">Endpoint Only (30m)</option>
                 <option value="Endpoint Only (100m)">Endpoint Only (100m)</option>
                 <option value="Endpoint Adaptive">Endpoint Adaptive (30m/500m)</option>
+                <option value="Highway-Aware (Grid 100m)">Highway-Aware (Grid 100m)</option>
+                <option value="Highway-Aware (Polygon 100m)">Highway-Aware (Polygon 100m)</option>
             </select>
         </label>
 
@@ -192,9 +207,12 @@
                 <option value="Grid 200m + Flood Fill">Grid 200m + Flood Fill</option>
                 <option value="Polygon Buffer (30m)">Polygon Buffer (30m)</option>
                 <option value="Polygon Buffer (50m)">Polygon Buffer (50m)</option>
+                <option value="Polygon Buffer (100m)">Polygon Buffer (100m)</option>
                 <option value="Endpoint Only (30m)" selected>Endpoint Only (30m)</option>
                 <option value="Endpoint Only (100m)">Endpoint Only (100m)</option>
                 <option value="Endpoint Adaptive">Endpoint Adaptive (30m/500m)</option>
+                <option value="Highway-Aware (Grid 100m)">Highway-Aware (Grid 100m)</option>
+                <option value="Highway-Aware (Polygon 100m)">Highway-Aware (Polygon 100m)</option>
             </select>
         </label>
     </div>
@@ -514,32 +532,46 @@
                 }
             }
 
-            // Add circles around disagreement segments
-            disagreementSegments.forEach(segIdx => {
-                if (segIdx >= streetFeatures.length) return;
+            // Find the smallest disagreement segment and add ONE circle around it
+            if (disagreementSegments.size > 0) {
+                let smallestSegIdx = null;
+                let smallestSegLength = Infinity;
 
-                const coords = streetFeatures[segIdx].geometry.coordinates;
-                if (coords.length === 0) return;
-
-                // Get midpoint of segment
-                const midIdx = Math.floor(coords.length / 2);
-                const midPoint = coords[midIdx];
-                const lat = midPoint[1];
-                const lng = midPoint[0];
-
-                // Add a large circle to all maps
-                maps.forEach((map, idx) => {
-                    const circle = L.circle([lat, lng], {
-                        radius: 200, // 200m radius
-                        color: '#FF6B00',
-                        fillColor: '#FF6B00',
-                        fillOpacity: 0.15,
-                        weight: 3,
-                        opacity: 0.6
-                    }).addTo(map).bindPopup(`<strong>Disagreement</strong><br>Segment ${segIdx}<br>Methods group this differently`);
-                    disagreementLayers[idx].push(circle);
+                disagreementSegments.forEach(segIdx => {
+                    if (segIdx >= streetFeatures.length) return;
+                    const coords = streetFeatures[segIdx].geometry.coordinates;
+                    if (coords.length > 0 && coords.length < smallestSegLength) {
+                        smallestSegLength = coords.length;
+                        smallestSegIdx = segIdx;
+                    }
                 });
-            });
+
+                if (smallestSegIdx !== null) {
+                    const coords = streetFeatures[smallestSegIdx].geometry.coordinates;
+
+                    // Calculate centroid of the smallest segment
+                    let sumLat = 0, sumLng = 0;
+                    coords.forEach(coord => {
+                        sumLat += coord[1];
+                        sumLng += coord[0];
+                    });
+                    const centroidLat = sumLat / coords.length;
+                    const centroidLng = sumLng / coords.length;
+
+                    // Add ONE dashed red circle to all maps
+                    maps.forEach((map, idx) => {
+                        const circle = L.circle([centroidLat, centroidLng], {
+                            radius: 1000, // 1km radius
+                            color: '#FF0000', // Red
+                            fillOpacity: 0, // Transparent fill
+                            dashArray: '10, 10', // Dashed line
+                            weight: 3,
+                            opacity: 0.8
+                        }).addTo(map).bindPopup(`<strong>Disagreement Area</strong><br>Smallest disputed segment: ${smallestSegIdx}<br>${disagreementSegments.size} segments differ between methods`);
+                        disagreementLayers[idx].push(circle);
+                    });
+                }
+            }
 
             // Update info display
             if (disagreementSegments.size > 0) {
