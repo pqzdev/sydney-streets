@@ -955,12 +955,29 @@ function updateMap() {
 
         // Check if only one street selected for multi-color visualization
         if (selectedStreetNames.length === 1) {
-            // Group features into distinct street instances (clusters)
-            const streetInstances = groupFeaturesIntoClusters(selectedFeatures);
-            const colorPalette = generateColorPalette(streetInstances.length);
+            // Get the correct instance count from precomputed Grid 200m data
+            const correctInstanceCount = getStreetCount(selectedStreetNames[0]);
+            console.log(`Using Grid 200m count: ${correctInstanceCount} instances for ${selectedStreetNames[0]}, ${selectedFeatures.length} total segments`);
+
+            // Group features using clustering, but we'll merge clusters to match Grid 200m count
+            const rawClusters = groupFeaturesIntoClusters(selectedFeatures);
+
+            // If JS clustering found more clusters than Grid 200m, we need to merge some
+            let finalClusters = rawClusters;
+            if (rawClusters.length > correctInstanceCount) {
+                // Sort clusters by size (largest first) and merge smallest ones
+                rawClusters.sort((a, b) => b.length - a.length);
+                finalClusters = rawClusters.slice(0, correctInstanceCount);
+                // Add remaining segments to nearest cluster
+                for (let i = correctInstanceCount; i < rawClusters.length; i++) {
+                    finalClusters[correctInstanceCount - 1].push(...rawClusters[i]);
+                }
+            }
+
+            const colorPalette = generateColorPalette(correctInstanceCount);
 
             // Assign cluster index to each feature's properties
-            streetInstances.forEach((cluster, clusterIndex) => {
+            finalClusters.forEach((cluster, clusterIndex) => {
                 cluster.forEach(feature => {
                     feature.properties._clusterIndex = clusterIndex;
                 });
@@ -982,7 +999,7 @@ function updateMap() {
             }).addTo(map);
 
             // Show legend for single street
-            showSingleStreetLegend(selectedStreetNames[0], streetInstances.length, colorPalette);
+            showSingleStreetLegend(selectedStreetNames[0], correctInstanceCount, colorPalette);
         } else{
             // Multiple streets: use assigned colors
             currentLayer = L.geoJSON(selectedFeatures, {
