@@ -555,11 +555,18 @@
                 <button id="mode-name-only" class="active">Name Only</button>
                 <button id="mode-name-type">Name + Type</button>
             </div>
+            <button id="address-search-toggle" class="header-link" style="background: none; border: none; cursor: pointer;">
+                Search Address
+            </button>
             <a href="https://www.openstreetmap.org" target="_blank" class="header-link">OpenStreetMap</a>
         </div>
     </header>
 
     <div class="container">
+        <div id="address-search-box" style="position: absolute; top: 80px; left: 50%; transform: translateX(-50%); z-index: 1000; display: none;">
+            <input type="text" id="address-input" placeholder="Search address in Sydney..."
+                   style="padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; width: 300px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
+        </div>
         <div id="sidebar">
             <div class="resizer"></div>
             <div class="info">
