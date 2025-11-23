@@ -123,6 +123,59 @@
         #map {
             flex: 1;
             height: 100%;
+            position: relative;
+        }
+
+        .map-legend {
+            position: absolute;
+            bottom: 30px;
+            right: 10px;
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1000;
+            min-width: 150px;
+        }
+
+        .legend-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 4px 0;
+            font-size: 0.85rem;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 3px;
+            border-radius: 1px;
+        }
+
+        .legend-toggle {
+            position: absolute;
+            bottom: 30px;
+            right: 10px;
+            background: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            cursor: pointer;
+            z-index: 1000;
+            font-size: 0.85rem;
+        }
+
+        .legend-toggle:hover {
+            background: #f0f0f0;
         }
 
         #grid-view {
@@ -528,7 +581,10 @@
             </div>
         </div>
 
-        <div id="map"></div>
+        <div id="map">
+            <button id="legend-toggle" class="legend-toggle" style="display: none;">Legend</button>
+            <div id="map-legend" class="map-legend" style="display: none;"></div>
+        </div>
         <div id="grid-view"></div>
     </div>
 

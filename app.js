@@ -11,6 +11,7 @@ let baseNameCountsCache = {}; // Cache for base name counts in name-only mode
 let viewMode = 'overlay'; // 'overlay' or 'grid'
 let nameMode = 'name-only'; // 'name-only' or 'name-type'
 let uniqueStreetNames = []; // All unique street names in dataset
+let legendVisible = false; // Legend toggle state
 
 // Default colors for streets
 const defaultColors = ['#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c', '#34495e', '#e67e22'];
@@ -37,15 +38,13 @@ const greaterSydneyLGAs = [
     'canterbury-bankstown', 'georges river', 'sutherland'
 ];
 
-// Categories and patterns
+// Categories and patterns (base names only)
 const categories = {
     trees: ['oak', 'pine', 'elm', 'maple', 'ash', 'birch', 'cedar', 'willow', 'plane', 'poplar',
             'fig', 'wattle', 'eucalyptus', 'gum', 'acacia', 'banksia', 'fir', 'spruce', 'cypress'],
-    royalty: ['george street', 'george road', 'victoria street', 'victoria road', 'elizabeth street', 'elizabeth road',
-              'william street', 'albert street', 'edward street', 'mary street', 'anne street',
-              'charlotte street', 'margaret street', 'adelaide street', 'alice street', 'henry street',
-              'charles street', 'philip street', 'andrew street', 'queen street', 'king street',
-              'prince street', 'princess street', 'duke street', 'duchess street'],
+    royalty: ['george', 'victoria', 'elizabeth', 'william', 'albert', 'edward', 'mary', 'anne',
+              'charlotte', 'margaret', 'adelaide', 'alice', 'henry', 'charles', 'philip', 'andrew',
+              'queen', 'king', 'prince', 'princess', 'duke', 'duchess'],
     famous: ['cook', 'macquarie', 'phillip', 'bligh', 'hunter', 'darling', 'bourke', 'fitzroy',
              'wentworth', 'lawson', 'blaxland', 'hume', 'parkes', 'bradfield', 'banks', 'flinders',
              'sturt', 'mitchell', 'oxley', 'cunningham'],
@@ -159,6 +158,9 @@ function setupEventListeners() {
     document.getElementById('mode-name-type').addEventListener('click', () => {
         setNameMode('name-type');
     });
+
+    // Legend toggle
+    document.getElementById('legend-toggle').addEventListener('click', toggleLegend);
 
     // Sidebar resizer
     const resizer = document.querySelector('.resizer');
@@ -684,39 +686,65 @@ function updateMap() {
         document.getElementById('map').style.display = 'block';
         document.getElementById('grid-view').classList.remove('active');
 
-        // Show all streets on map with their colors
-        currentLayer = L.geoJSON(selectedFeatures, {
-            style: function(feature) {
-                const name = feature.properties.name || '';
-                let matchingStreet;
+        // Check if only one street selected for multi-color visualization
+        if (selectedStreetNames.length === 1) {
+            const colorPalette = generateColorPalette(selectedFeatures.length);
 
-                if (nameMode === 'name-only') {
-                    // Match by base name
-                    const baseName = getBaseName(name);
-                    matchingStreet = selectedStreetNames.find(s =>
-                        baseName.toLowerCase() === s.toLowerCase()
-                    );
-                } else {
-                    // Match by full name
-                    matchingStreet = selectedStreetNames.find(s =>
-                        name.toLowerCase() === s.toLowerCase()
-                    );
+            currentLayer = L.geoJSON(selectedFeatures, {
+                style: function(feature) {
+                    const index = selectedFeatures.indexOf(feature);
+                    return {
+                        color: colorPalette[index % colorPalette.length],
+                        weight: 3,
+                        opacity: 0.7
+                    };
+                },
+                onEachFeature: function(feature, layer) {
+                    const index = selectedFeatures.indexOf(feature);
+                    layer.bindPopup(`<b>${selectedStreetNames[0]}</b><br>Occurrence #${index + 1}`);
                 }
+            }).addTo(map);
 
-                const color = streetColors[matchingStreet] || '#3498db';
+            // Show legend for single street
+            showSingleStreetLegend(selectedStreetNames[0], selectedFeatures.length, colorPalette);
+        } else {
+            // Multiple streets: use assigned colors
+            currentLayer = L.geoJSON(selectedFeatures, {
+                style: function(feature) {
+                    const name = feature.properties.name || '';
+                    let matchingStreet;
 
-                return {
-                    color: color,
-                    weight: 3,
-                    opacity: 0.7
-                };
-            },
-            onEachFeature: function(feature, layer) {
-                if (feature.properties.name) {
-                    layer.bindPopup(`<strong>${feature.properties.name}</strong>`);
+                    if (nameMode === 'name-only') {
+                        // Match by base name
+                        const baseName = getBaseName(name);
+                        matchingStreet = selectedStreetNames.find(s =>
+                            baseName.toLowerCase() === s.toLowerCase()
+                        );
+                    } else {
+                        // Match by full name
+                        matchingStreet = selectedStreetNames.find(s =>
+                            name.toLowerCase() === s.toLowerCase()
+                        );
+                    }
+
+                    const color = streetColors[matchingStreet] || '#3498db';
+
+                    return {
+                        color: color,
+                        weight: 3,
+                        opacity: 0.7
+                    };
+                },
+                onEachFeature: function(feature, layer) {
+                    if (feature.properties.name) {
+                        layer.bindPopup(`<strong>${feature.properties.name}</strong>`);
+                    }
                 }
-            }
-        }).addTo(map);
+            }).addTo(map);
+
+            // Hide single street legend, maybe show multi-street legend toggle
+            hideSingleStreetLegend();
+        }
 
         if (selectedFeatures.length > 0) {
             map.fitBounds(currentLayer.getBounds());
@@ -901,4 +929,58 @@ function getBaseName(fullName) {
         base = base.replace(new RegExp(`\\s+${suffix}$`, 'i'), '');
     });
     return base.trim();
+}
+
+// Legend functions
+function showSingleStreetLegend(streetName, count, colors) {
+    const legend = document.getElementById('map-legend');
+    const toggle = document.getElementById('legend-toggle');
+
+    let html = `<div class="legend-title">${streetName} Occurrences</div>`;
+    for (let i = 0; i < Math.min(count, 20); i++) {
+        html += `
+            <div class="legend-item">
+                <div class="legend-color" style="background: ${colors[i % colors.length]}"></div>
+                <span>#${i + 1}</span>
+            </div>
+        `;
+    }
+    if (count > 20) {
+        html += `<div class="legend-item" style="font-style: italic;">...and ${count - 20} more</div>`;
+    }
+
+    legend.innerHTML = html;
+    legend.style.display = 'block';
+    toggle.style.display = 'none';
+}
+
+function hideSingleStreetLegend() {
+    document.getElementById('map-legend').style.display = 'none';
+    const toggle = document.getElementById('legend-toggle');
+    if (selectedStreetNames.length > 1) {
+        toggle.style.display = 'block';
+    } else {
+        toggle.style.display = 'none';
+    }
+}
+
+function toggleLegend() {
+    const legend = document.getElementById('map-legend');
+    legendVisible = !legendVisible;
+
+    if (legendVisible && selectedStreetNames.length > 1) {
+        let html = `<div class="legend-title">Streets</div>`;
+        selectedStreetNames.forEach(street => {
+            html += `
+                <div class="legend-item">
+                    <div class="legend-color" style="background: ${streetColors[street] || '#3498db'}"></div>
+                    <span>${street}</span>
+                </div>
+            `;
+        });
+        legend.innerHTML = html;
+        legend.style.display = 'block';
+    } else {
+        legend.style.display = 'none';
+    }
 }
