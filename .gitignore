@@ -6,9 +6,10 @@ data/melbourne-roads-optimized*.geojson
 data/*.shp
 data/*.zip
 
-# Large GeoJSON files (served via API from D1 database)
+# Large intermediate GeoJSON files (not needed for deployment)
 data/*-roads-*.geojson
-data/cities/*/streets.geojson
+# Note: data/cities/*/streets.geojson files ARE tracked (needed until API mode is ready)
+# They exceed GitHub's 50MB recommendation but are accepted
 
 # Keep smaller files for fallback
 !data/sydney-roads-sample.geojson
@@ -47,5 +48,9 @@ npm-debug.log*
 worker/*.sql
 worker/sydney_batch_*
 worker/melbourne_batch_*
+worker/perth_batch_*
 worker/node_modules/
 worker/.wrangler/
+
+# Don't include root wrangler.toml (worker has its own in worker/ directory)
+/wrangler.toml

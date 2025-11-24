@@ -935,23 +935,45 @@ function processStreetData() {
 
     // Get unique street names based on current name mode
     const nameSet = new Set();
-    allStreets.forEach(street => {
-        if (street.name && street.name !== 'Unnamed') {
+
+    // If using API mode with no features, build names from precomputed counts
+    if (USE_API && filteredFeatures.length === 0 && precomputedCounts && precomputedCounts.counts) {
+        console.log('API mode: Building street names from counts data');
+        Object.keys(precomputedCounts.counts).forEach(fullName => {
             if (nameMode === 'name-only') {
-                const baseName = getBaseName(street.name);
+                const baseName = getBaseName(fullName);
                 if (baseName) {
                     nameSet.add(baseName);
                 }
             } else if (nameMode === 'type') {
-                const streetType = getStreetType(street.name);
+                const streetType = getStreetType(fullName);
                 if (streetType) {
                     nameSet.add(streetType);
                 }
             } else {
-                nameSet.add(street.name);
+                nameSet.add(fullName);
             }
-        }
-    });
+        });
+    } else {
+        // Build from features (static file mode or API mode with features)
+        allStreets.forEach(street => {
+            if (street.name && street.name !== 'Unnamed') {
+                if (nameMode === 'name-only') {
+                    const baseName = getBaseName(street.name);
+                    if (baseName) {
+                        nameSet.add(baseName);
+                    }
+                } else if (nameMode === 'type') {
+                    const streetType = getStreetType(street.name);
+                    if (streetType) {
+                        nameSet.add(streetType);
+                    }
+                } else {
+                    nameSet.add(street.name);
+                }
+            }
+        });
+    }
     uniqueStreetNames = Array.from(nameSet).sort();
 
     // Update streetData with filtered features
@@ -1019,7 +1041,7 @@ function processStreetData() {
     }
 }
 
-function updateMap() {
+async function updateMap() {
     // Remove existing layer
     if (currentLayer) {
         map.removeLayer(currentLayer);
@@ -1033,28 +1055,62 @@ function updateMap() {
         return;
     }
 
-    // Filter features to only selected streets
-    const selectedFeatures = streetData.features.filter(feature => {
-        const name = feature.properties.name || '';
-        if (nameMode === 'name-only') {
-            // Match by base name
-            const baseName = getBaseName(name);
-            return selectedStreetNames.some(selectedName =>
-                baseName.toLowerCase() === selectedName.toLowerCase()
-            );
-        } else if (nameMode === 'type') {
-            // Match by street type
-            const streetType = getStreetType(name);
-            return selectedStreetNames.some(selectedName =>
-                streetType === selectedName
-            );
-        } else {
-            // Match by full name
-            return selectedStreetNames.some(selectedName =>
-                name.toLowerCase() === selectedName.toLowerCase()
-            );
+    let selectedFeatures;
+
+    // In API mode with no local features, fetch geometries from API
+    if (USE_API && streetData.features.length === 0) {
+        console.log('API mode: Fetching geometries for selected streets');
+        selectedFeatures = [];
+
+        // Fetch geometry for each selected street name
+        for (const selectedName of selectedStreetNames) {
+            try {
+                // Get all matching street names from counts
+                const matchingNames = Object.keys(precomputedCounts.counts).filter(fullName => {
+                    if (nameMode === 'name-only') {
+                        return getBaseName(fullName).toLowerCase() === selectedName.toLowerCase();
+                    } else if (nameMode === 'type') {
+                        return getStreetType(fullName) === selectedName;
+                    } else {
+                        return fullName.toLowerCase() === selectedName.toLowerCase();
+                    }
+                });
+
+                // Fetch geometry for each matching name
+                for (const fullName of matchingNames) {
+                    const geojson = await StreetAPI.getStreetByName(currentCity, fullName);
+                    if (geojson && geojson.features) {
+                        selectedFeatures.push(...geojson.features);
+                    }
+                }
+            } catch (error) {
+                console.error(`Failed to fetch geometry for ${selectedName}:`, error);
+            }
         }
-    });
+    } else {
+        // Static mode or API mode with cached features: filter locally
+        selectedFeatures = streetData.features.filter(feature => {
+            const name = feature.properties.name || '';
+            if (nameMode === 'name-only') {
+                // Match by base name
+                const baseName = getBaseName(name);
+                return selectedStreetNames.some(selectedName =>
+                    baseName.toLowerCase() === selectedName.toLowerCase()
+                );
+            } else if (nameMode === 'type') {
+                // Match by street type
+                const streetType = getStreetType(name);
+                return selectedStreetNames.some(selectedName =>
+                    streetType === selectedName
+                );
+            } else {
+                // Match by full name
+                return selectedStreetNames.some(selectedName =>
+                    name.toLowerCase() === selectedName.toLowerCase()
+                );
+            }
+        });
+    }
 
     if (viewMode === 'overlay') {
         // Show overlay map
