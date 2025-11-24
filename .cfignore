@@ -1,0 +1,12 @@
+# Exclude large data files from Cloudflare Pages deployment
+# These will be served via the Worker API from D1 database instead
+
+data/
+!data/cities/
+!data/cities/*/counts.json
+
+# Exclude other large files
+worker/
+scripts/
+*.md
+!README.md
