@@ -8,8 +8,9 @@ let currentLayer = null;
 let streetData = null;
 let precomputedCounts = null;
 let baseNameCountsCache = {}; // Cache for base name counts in name-only mode
+let typeCountsCache = {}; // Cache for type counts in type mode
 let viewMode = 'overlay'; // 'overlay' or 'grid'
-let nameMode = 'name-only'; // 'name-only' or 'name-type'
+let nameMode = 'name-only'; // 'name-only', 'name-type', or 'type'
 let uniqueStreetNames = []; // All unique street names in dataset
 let legendVisible = false; // Legend toggle state
 let gridMapsSync = false; // Whether grid maps pan/zoom together
@@ -72,6 +73,26 @@ const cityConfigs = {
         dataFile: 'data/cities/melbourne/streets.geojson',
         countsFile: 'data/cities/melbourne/counts.json',
         lgas: []  // TODO: add Melbourne LGAs
+    },
+    perth: {
+        name: 'Perth',
+        center: [-31.9523, 115.8613],
+        zoom: 11,
+        bounds: [[-32.5, 115.5], [-31.4, 116.4]],
+        dataFile: 'data/cities/perth/streets.geojson',
+        countsFile: 'data/cities/perth/counts.json',
+        lgas: [
+            // Cities (20)
+            'armadale', 'bayswater', 'belmont', 'canning', 'cockburn', 'fremantle',
+            'gosnells', 'joondalup', 'kalamunda', 'kwinana', 'mandurah', 'melville',
+            'nedlands', 'perth', 'rockingham', 'south perth', 'stirling', 'subiaco',
+            'swan', 'wanneroo',
+            // Towns (7)
+            'bassendean', 'cambridge', 'claremont', 'cottesloe', 'east fremantle',
+            'mosman park', 'victoria park', 'vincent',
+            // Shires (3)
+            'mundaring', 'peppermint grove', 'serpentine-jarrahdale'
+        ]
     }
 };
 
@@ -131,7 +152,7 @@ window.addEventListener('DOMContentLoaded', () => {
         maxZoom: 18
     }).setView(cityConfig.center, cityConfig.zoom);
 
-    // Add CartoDB Positron tile layer
+    // Add CartoDB Positron tile layer (with labels)
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
         subdomains: 'abcd',
@@ -244,6 +265,10 @@ function setupEventListeners() {
 
     document.getElementById('mode-name-type').addEventListener('click', () => {
         setNameMode('name-type');
+    });
+
+    document.getElementById('mode-type').addEventListener('click', () => {
+        setNameMode('type');
     });
 
     // Legend toggle
@@ -610,6 +635,12 @@ function loadList(listType) {
                 .sort((a, b) => b[1] - a[1])
                 .slice(0, 10)
                 .map(([baseName]) => baseName);
+        } else if (nameMode === 'type') {
+            // In type mode, directly use the type counts cache
+            streets = Object.entries(typeCountsCache)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10)
+                .map(([streetType]) => streetType);
         } else {
             // In name-type mode, get top 10 full names
             const fullNameCounts = {};
@@ -628,14 +659,22 @@ function loadList(listType) {
     } else if (categories[listType]) {
         // Get streets matching category
         const pattern = categories[listType];
-        streets = uniqueStreetNames.filter(name => {
+        const matchingStreets = uniqueStreetNames.filter(name => {
             const nameLower = name.toLowerCase();
             return pattern.some(word => {
                 // Use word boundary regex to match exact words only
                 const regex = new RegExp(`\\b${word.toLowerCase()}\\b`);
                 return regex.test(nameLower);
             });
-        }); // Don't limit - show all matches
+        });
+
+        // Sort by count and take top 50
+        const streetCounts = matchingStreets.map(name => ({
+            name,
+            count: getStreetCount(name)
+        })).sort((a, b) => b.count - a.count);
+
+        streets = streetCounts.slice(0, 50).map(s => s.name);
     }
 
     // Clear current selection and add new streets
@@ -664,6 +703,7 @@ function setNameMode(mode) {
     // Update button states
     document.getElementById('mode-name-only').classList.toggle('active', mode === 'name-only');
     document.getElementById('mode-name-type').classList.toggle('active', mode === 'name-type');
+    document.getElementById('mode-type').classList.toggle('active', mode === 'type');
 
     // Rebuild unique names list based on mode
     processStreetData();
@@ -691,6 +731,9 @@ function getDisplayName(fullName, mode = nameMode) {
     if (mode === 'name-only') {
         // Return just the base name (e.g., "Victoria Street" -> "Victoria")
         return getBaseName(fullName);
+    } else if (mode === 'type') {
+        // Return just the type (e.g., "Victoria Street" -> "Street")
+        return getStreetType(fullName);
     }
     // Return full name (e.g., "Victoria Street")
     return fullName;
@@ -705,6 +748,12 @@ function saveSearch() {
 
     // Update URL parameters
     const params = new URLSearchParams();
+
+    // Preserve city parameter
+    if (currentCity !== 'sydney') {
+        params.set('city', currentCity);
+    }
+
     if (selectedStreetNames.length > 0) {
         params.set('streets', selectedStreetNames.join('|'));
     }
@@ -728,10 +777,11 @@ function loadSearch() {
     const modeParam = urlParams.get('mode');
 
     // Load name mode first (before processing streets)
-    if (modeParam && (modeParam === 'name-only' || modeParam === 'name-type')) {
+    if (modeParam && (modeParam === 'name-only' || modeParam === 'name-type' || modeParam === 'type')) {
         nameMode = modeParam;
         document.getElementById('mode-name-only').classList.toggle('active', nameMode === 'name-only');
         document.getElementById('mode-name-type').classList.toggle('active', nameMode === 'name-type');
+        document.getElementById('mode-type').classList.toggle('active', nameMode === 'type');
         processStreetData(); // Rebuild street names with correct mode
     }
 
@@ -759,10 +809,11 @@ function loadSearch() {
         const savedViewMode = localStorage.getItem('sydney-streets-viewmode');
         const savedNameMode = localStorage.getItem('sydney-streets-namemode');
 
-        if (savedNameMode && (savedNameMode === 'name-only' || savedNameMode === 'name-type')) {
+        if (savedNameMode && (savedNameMode === 'name-only' || savedNameMode === 'name-type' || savedNameMode === 'type')) {
             nameMode = savedNameMode;
             document.getElementById('mode-name-only').classList.toggle('active', nameMode === 'name-only');
             document.getElementById('mode-name-type').classList.toggle('active', nameMode === 'name-type');
+            document.getElementById('mode-type').classList.toggle('active', nameMode === 'type');
             processStreetData();
         }
 
@@ -891,6 +942,11 @@ function processStreetData() {
                 if (baseName) {
                     nameSet.add(baseName);
                 }
+            } else if (nameMode === 'type') {
+                const streetType = getStreetType(street.name);
+                if (streetType) {
+                    nameSet.add(streetType);
+                }
             } else {
                 nameSet.add(street.name);
             }
@@ -930,6 +986,37 @@ function processStreetData() {
     } else {
         baseNameCountsCache = {};
     }
+
+    // Pre-compute type counts for type mode performance
+    if (nameMode === 'type') {
+        typeCountsCache = {};
+
+        // Use Grid 200m precomputed counts if available
+        if (precomputedCounts && precomputedCounts.counts) {
+            // Aggregate Grid 200m counts by street type
+            for (const [fullName, count] of Object.entries(precomputedCounts.counts)) {
+                const streetType = getStreetType(fullName);
+                if (streetType) {
+                    typeCountsCache[streetType] = (typeCountsCache[streetType] || 0) + count;
+                }
+            }
+            console.log(`Pre-computed ${Object.keys(typeCountsCache).length} street type counts (Grid 200m)`);
+        } else {
+            // Fallback: count segments (not ideal, but better than nothing)
+            filteredFeatures.forEach(feature => {
+                const fullName = feature.properties.name || '';
+                if (fullName && fullName !== 'Unnamed') {
+                    const streetType = getStreetType(fullName);
+                    if (streetType) {
+                        typeCountsCache[streetType] = (typeCountsCache[streetType] || 0) + 1;
+                    }
+                }
+            });
+            console.log(`Pre-computed ${Object.keys(typeCountsCache).length} street type counts (segment fallback - not Grid 200m)`);
+        }
+    } else {
+        typeCountsCache = {};
+    }
 }
 
 function updateMap() {
@@ -954,6 +1041,12 @@ function updateMap() {
             const baseName = getBaseName(name);
             return selectedStreetNames.some(selectedName =>
                 baseName.toLowerCase() === selectedName.toLowerCase()
+            );
+        } else if (nameMode === 'type') {
+            // Match by street type
+            const streetType = getStreetType(name);
+            return selectedStreetNames.some(selectedName =>
+                streetType === selectedName
             );
         } else {
             // Match by full name
@@ -1059,6 +1152,11 @@ function renderGridView(selectedFeatures) {
             const baseName = getBaseName(name);
             matchingStreet = selectedStreetNames.find(s =>
                 baseName.toLowerCase() === s.toLowerCase()
+            );
+        } else if (nameMode === 'type') {
+            const streetType = getStreetType(name);
+            matchingStreet = selectedStreetNames.find(s =>
+                streetType === s
             );
         } else {
             matchingStreet = selectedStreetNames.find(s =>
@@ -1191,6 +1289,9 @@ function getStreetCount(streetName) {
         // In name-only mode, use pre-computed cache for instant lookup
         const key = streetName.toLowerCase();
         return baseNameCountsCache[key] || 0;
+    } else if (nameMode === 'type') {
+        // In type mode, use type counts cache
+        return typeCountsCache[streetName] || 0;
     } else {
         // In name-type mode, count only exact matches
         // Use pre-computed counts if available
@@ -1246,6 +1347,21 @@ function getBaseName(fullName) {
         base = base.replace(new RegExp(`\\s+${suffix}$`, 'i'), '');
     });
     return base.trim();
+}
+
+function getStreetType(fullName) {
+    if (!fullName) return '';
+    const suffixes = ['Street', 'Road', 'Avenue', 'Drive', 'Lane', 'Way', 'Place', 'Circuit', 'Crescent', 'Court',
+                      'Parade', 'Boulevard', 'Terrace', 'Close', 'Grove', 'Walk', 'Path', 'Mews', 'Square',
+                      'Esplanade', 'Promenade', 'Highway', 'Freeway', 'Parkway', 'Plaza', 'Loop', 'Row'];
+    for (const suffix of suffixes) {
+        const regex = new RegExp(`\\s+(${suffix})$`, 'i');
+        const match = fullName.match(regex);
+        if (match) {
+            return match[1]; // Return with original capitalization from the match
+        }
+    }
+    return ''; // No type found
 }
 
 // Group features into geographically distinct clusters (street instances)
