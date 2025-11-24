@@ -6,25 +6,23 @@ data/melbourne-roads-optimized*.geojson
 data/*.shp
 data/*.zip
 
-# Old data structure (deprecated - keeping for now)
-!data/.gitkeep
-!data/sydney-roads-web.geojson
+# Large GeoJSON files (served via API from D1 database)
+data/*-roads-*.geojson
+data/cities/*/streets.geojson
+
+# Keep smaller files for fallback
 !data/sydney-roads-sample.geojson
-!data/melbourne-roads-web.geojson
 !data/street_counts_grid200.json
 !data/melbourne_street_counts_grid200.json
+!data/perth_street_counts_grid200.json
 !data/method_comparison.json
 !data/method_comparison_detailed.json
 !data/summary.json
 
-# New city-specific structure
+# New city-specific structure (keep counts.json only)
 !data/cities/
-!data/cities/sydney/
-!data/cities/sydney/streets.geojson
-!data/cities/sydney/counts.json
-!data/cities/melbourne/
-!data/cities/melbourne/streets.geojson
-!data/cities/melbourne/counts.json
+!data/cities/*/
+!data/cities/*/counts.json
 
 # OS files
 .DS_Store
