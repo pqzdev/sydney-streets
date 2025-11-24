@@ -14,7 +14,9 @@ let uniqueStreetNames = []; // All unique street names in dataset
 let legendVisible = false; // Legend toggle state
 let gridMapsSync = false; // Whether grid maps pan/zoom together
 let gridMaps = []; // Array of grid map instances
-let currentCity = 'sydney'; // Currently selected city
+// Get city from URL parameter or default to sydney
+const urlParams = new URLSearchParams(window.location.search);
+let currentCity = urlParams.get('city') || 'sydney'; // Currently selected city
 
 // Default colors for streets - 11 maximally distinguishable colors (Kelly's color set + additions)
 // Source: Kelly, K. L. (1965) "Color designation and specification"
@@ -127,6 +129,9 @@ window.addEventListener('DOMContentLoaded', () => {
         maxZoom: 20
     }).addTo(map);
 
+    // Set city selector to match current city
+    document.getElementById('city-selector').value = currentCity;
+
     // Initialize UI event listeners
     setupEventListeners();
 
@@ -139,9 +144,8 @@ function setupEventListeners() {
     document.getElementById('city-selector').addEventListener('change', (e) => {
         const newCity = e.target.value;
         if (newCity !== currentCity && cityConfigs[newCity]) {
-            currentCity = newCity;
-            // Reload the page to apply new city
-            window.location.reload();
+            // Reload the page with the new city parameter
+            window.location.href = `?city=${newCity}`;
         }
     });
 
