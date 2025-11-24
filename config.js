@@ -6,4 +6,4 @@ const API_BASE_URL = window.location.hostname === 'localhost' || window.location
     : 'https://street-names-api.pedroqueiroz.workers.dev';
 
 // Set to true to use API-based loading, false to use static GeoJSON files
-const USE_API = false;  // TODO: Enable after D1 data upload completes (API infrastructure ready)
+const USE_API = true;  // API infrastructure ready with all cities in D1
