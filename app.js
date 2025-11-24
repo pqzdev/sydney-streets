@@ -1100,6 +1100,12 @@ function updateMap() {
                         matchingStreet = selectedStreetNames.find(s =>
                             baseName.toLowerCase() === s.toLowerCase()
                         );
+                    } else if (nameMode === 'type') {
+                        // Match by street type
+                        const streetType = getStreetType(name);
+                        matchingStreet = selectedStreetNames.find(s =>
+                            streetType === s
+                        );
                     } else {
                         // Match by full name
                         matchingStreet = selectedStreetNames.find(s =>
