@@ -32,6 +32,10 @@ export default {
         return handleSearchRequest(url, env, corsHeaders);
       }
 
+      if (url.pathname.startsWith('/api/filter')) {
+        return handleFilterRequest(url, env, corsHeaders);
+      }
+
       return new Response('Not Found', { status: 404, headers: corsHeaders });
     } catch (error) {
       return new Response(JSON.stringify({ error: error.message }), {
@@ -186,6 +190,61 @@ async function handleSearchRequest(url, env, corsHeaders) {
 
   return new Response(JSON.stringify({
     results: results.map(r => ({ name: r.name, count: r.count }))
+  }), {
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+  });
+}
+
+/**
+ * GET /api/filter?city=sydney&pattern=\b(Elm|Oak|Ash)\b
+ * Regex-based filtering for categories (trees, royalty, etc.)
+ * Returns street names and counts matching the regex pattern
+ */
+async function handleFilterRequest(url, env, corsHeaders) {
+  const city = url.searchParams.get('city');
+  const pattern = url.searchParams.get('pattern');
+  const flags = url.searchParams.get('flags') || 'i'; // Default case-insensitive
+
+  if (!city || !pattern) {
+    return new Response(JSON.stringify({ error: 'city and pattern parameters required' }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+
+  // Validate regex pattern
+  let regex;
+  try {
+    regex = new RegExp(pattern, flags);
+  } catch (e) {
+    return new Response(JSON.stringify({ error: 'Invalid regex pattern: ' + e.message }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+
+  // Get all street counts for the city
+  const { results } = await env.DB.prepare(`
+    SELECT name, COUNT(DISTINCT instance_id) as count
+    FROM street_segments
+    WHERE city = ?
+    GROUP BY name
+  `).bind(city).all();
+
+  // Filter by regex pattern in JavaScript
+  const matchingStreets = results
+    .filter(row => regex.test(row.name))
+    .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+
+  const counts = {};
+  for (const row of matchingStreets) {
+    counts[row.name] = row.count;
+  }
+
+  return new Response(JSON.stringify({
+    pattern,
+    total_matches: matchingStreets.length,
+    counts
   }), {
     headers: { ...corsHeaders, 'Content-Type': 'application/json' }
   });

@@ -76,7 +76,16 @@ const cityConfigs = {
 };
 
 
-// Categories and patterns (base names only)
+// Category regex patterns for filtering streets
+// Using word boundaries (\b) to match whole words only
+const categoryPatterns = {
+    trees: '\\b(Oak|Pine|Elm|Maple|Ash|Birch|Cedar|Willow|Plane|Poplar|Fig|Wattle|Eucalyptus|Gum|Acacia|Banksia|Fir|Spruce|Cypress|Jacaranda|Bottlebrush|Grevillea|Melaleuca|Callistemon|Lilly\\s*Pilly|Lilly Pilly)\\b',
+    royalty: '\\b(George|Victoria|Elizabeth|William|Albert|Edward|Mary|Anne|Charlotte|Margaret|Adelaide|Alice|Henry|Charles|Philip|Andrew|Queen|King|Prince|Princess|Duke|Duchess|Royal|Regal|Imperial|Crown)\\b',
+    famous: '\\b(Cook|Macquarie|Phillip|Bligh|Hunter|Darling|Bourke|Fitzroy|Wentworth|Lawson|Blaxland|Hume|Parkes|Bradfield|Banks|Flinders|Sturt|Mitchell|Oxley|Cunningham|Endeavour)\\b',
+    suburbs: '\\b(Sydney|Parramatta|Bondi|Manly|Penrith|Liverpool|Blacktown|Melbourne|Richmond|Brunswick|Fitzroy|Carlton|Collingwood|Kensington)\\b'
+};
+
+// Legacy: Keep for backward compatibility with existing code
 const categories = {
     trees: ['oak', 'pine', 'elm', 'maple', 'ash', 'birch', 'cedar', 'willow', 'plane', 'poplar',
             'fig', 'wattle', 'eucalyptus', 'gum', 'acacia', 'banksia', 'fir', 'spruce', 'cypress'],
