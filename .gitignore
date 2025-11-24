@@ -6,10 +6,9 @@ data/melbourne-roads-optimized*.geojson
 data/*.shp
 data/*.zip
 
-# Large intermediate GeoJSON files (not needed for deployment)
+# Large GeoJSON files (kept locally, served via API from D1 database)
 data/*-roads-*.geojson
-# Note: data/cities/*/streets.geojson files ARE tracked (needed until API mode is ready)
-# They exceed GitHub's 50MB recommendation but are accepted
+data/cities/*/streets.geojson
 
 # Keep smaller files for fallback
 !data/sydney-roads-sample.geojson
