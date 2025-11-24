@@ -19,6 +19,11 @@ let gridMaps = []; // Array of grid map instances
 const urlParams = new URLSearchParams(window.location.search);
 let currentCity = urlParams.get('city') || 'sydney'; // Currently selected city
 
+// Search mode toggles
+let searchMatchCase = false;
+let searchWholeWord = false;
+let searchUseRegex = false;
+
 // Default colors for streets - 11 maximally distinguishable colors (Kelly's color set + additions)
 // Source: Kelly, K. L. (1965) "Color designation and specification"
 const defaultColors = [
@@ -218,6 +223,25 @@ function setupEventListeners() {
         }
     });
 
+    // Search toggle buttons
+    document.getElementById('match-case').addEventListener('click', () => {
+        searchMatchCase = !searchMatchCase;
+        document.getElementById('match-case').classList.toggle('active', searchMatchCase);
+        handleSearchInput({ target: searchInput }); // Re-run search
+    });
+
+    document.getElementById('match-whole-word').addEventListener('click', () => {
+        searchWholeWord = !searchWholeWord;
+        document.getElementById('match-whole-word').classList.toggle('active', searchWholeWord);
+        handleSearchInput({ target: searchInput }); // Re-run search
+    });
+
+    document.getElementById('use-regex').addEventListener('click', () => {
+        searchUseRegex = !searchUseRegex;
+        document.getElementById('use-regex').classList.toggle('active', searchUseRegex);
+        handleSearchInput({ target: searchInput }); // Re-run search
+    });
+
     // Clear button
     document.getElementById('clear-streets').addEventListener('click', () => {
         selectedStreetNames = [];
@@ -313,24 +337,35 @@ function handleSearchInput(e) {
 
     let allMatches;
 
-    // Check if query is wrapped in quotes for exact match
-    if (query.startsWith('"') && query.endsWith('"')) {
-        const exactQuery = query.slice(1, -1).toLowerCase();
-        allMatches = uniqueStreetNames.filter(name =>
-            name.toLowerCase() === exactQuery
-        );
-    } else {
-        // Try to use as regex, fall back to simple contains if invalid
+    if (searchUseRegex) {
+        // Use regex mode
         try {
-            const regex = new RegExp(query, 'i');
-            allMatches = uniqueStreetNames.filter(name => regex.test(name));
+            const flags = searchMatchCase ? '' : 'i';
+            const regex = new RegExp(query, flags);
+            allMatches = uniqueStreetNames.filter(name => {
+                if (searchWholeWord) {
+                    // Match whole street name only
+                    const wholeRegex = new RegExp(`^${query}$`, flags);
+                    return wholeRegex.test(name);
+                }
+                return regex.test(name);
+            });
         } catch (e) {
-            // Invalid regex, fall back to simple contains
-            const lowerQuery = query.toLowerCase();
-            allMatches = uniqueStreetNames.filter(name =>
-                name.toLowerCase().includes(lowerQuery)
-            );
+            // Invalid regex - show no results
+            allMatches = [];
         }
+    } else {
+        // Simple text search
+        const searchQuery = searchMatchCase ? query : query.toLowerCase();
+        allMatches = uniqueStreetNames.filter(name => {
+            const searchName = searchMatchCase ? name : name.toLowerCase();
+
+            if (searchWholeWord) {
+                return searchName === searchQuery;
+            } else {
+                return searchName.includes(searchQuery);
+            }
+        });
     }
 
     if (allMatches.length === 0) {
@@ -669,20 +704,19 @@ function setNameMode(mode) {
     document.getElementById('mode-name-type').classList.toggle('active', mode === 'name-type');
     document.getElementById('mode-type').classList.toggle('active', mode === 'type');
 
+    // Show/hide category lists based on mode
+    // In type mode, only Top 10 makes sense, not the category lists
+    const categoryLists = document.querySelectorAll('.category-list');
+    categoryLists.forEach(item => {
+        item.classList.toggle('hidden', mode === 'type');
+    });
+
     // Rebuild unique names list based on mode
     processStreetData();
 
-    // Clear and reload current selection with new mode
-    const currentStreets = [...selectedStreetNames];
+    // Clear selection when changing modes
     selectedStreetNames = [];
     streetColors = {};
-
-    currentStreets.forEach(street => {
-        const displayName = getDisplayName(street, mode);
-        if (!selectedStreetNames.includes(displayName)) {
-            addStreetToSelection(displayName);
-        }
-    });
 
     saveSearch();
     updateSelectedStreetsUI();
@@ -1143,7 +1177,10 @@ async function updateMap() {
                 },
                 onEachFeature: function(feature, layer) {
                     if (feature.properties.name) {
-                        layer.bindPopup(`<strong>${feature.properties.name}</strong>`);
+                        const streetName = feature.properties.name;
+                        const instanceId = feature.properties._instanceId !== undefined ? feature.properties._instanceId : 0;
+                        const totalCount = getStreetCount(streetName);
+                        layer.bindPopup(`<b>${streetName}</b><br>Instance #${instanceId + 1} of ${totalCount}`);
                     }
                 }
             }).addTo(map);
@@ -1162,6 +1199,9 @@ async function updateMap() {
 
         renderGridView(selectedFeatures);
     }
+
+    // Update street counts display
+    updateStreetCounts();
 }
 
 function renderGridView(selectedFeatures) {
@@ -1287,6 +1327,9 @@ function synchronizeGridMaps() {
 function updateStats() {
     if (!allStreets.length) return;
 
+}
+
+function updateStreetCounts() {
     // Count instances for selected streets only
     const selectedCounts = {};
     if (selectedStreetNames.length > 0) {
