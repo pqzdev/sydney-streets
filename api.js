@@ -72,18 +72,18 @@ const StreetAPI = {
      */
     async loadAllStreets(city, dataFile) {
         if (USE_API) {
-            // For API mode, we'll need to get all streets
-            // This is not ideal for large datasets, but needed for initial migration
-            // TODO: Implement progressive loading or viewport-based approach
-            console.warn('API mode: Loading all streets may be slow for large cities');
+            // API mode: For initial load, use the small static counts file
+            // instead of fetching 200MB+ of geometry data
+            // The app will get unique street names from counts, then fetch
+            // specific street geometries on-demand when user selects them
+            console.log(`API mode: Using counts file for street names, geometry loaded on-demand`);
 
-            // For now, fall back to static file when loading all
-            // In future, could fetch incrementally or by region
-            const response = await fetch(dataFile);
-            if (!response.ok) {
-                throw new Error(`Failed to load data file: ${response.statusText}`);
-            }
-            return await response.json();
+            // Return a minimal GeoJSON with no features
+            // The app will use counts.json to get street names
+            return {
+                type: 'FeatureCollection',
+                features: []
+            };
         } else {
             // Static file mode
             const response = await fetch(dataFile);
