@@ -38,7 +38,6 @@ def method_grid_flood_fill(segments, grid_size):
 
     # Flood fill to find connected components
     visited_cells = set()
-    visited_segments = set()
     components = []
 
     for start_cell in cell_to_segments:
@@ -76,11 +75,9 @@ def method_grid_flood_fill(segments, grid_size):
                         visited_cells.add(adj_cell)
                         queue.append(adj_cell)
 
-        # Only add non-empty components with new segments
-        new_segments = component_segments - visited_segments
-        if new_segments:
-            components.append(list(new_segments))
-            visited_segments.update(new_segments)
+        # Add component if it has segments
+        if component_segments:
+            components.append(list(component_segments))
 
     # Post-process: merge components that share endpoints
     components = merge_components_by_endpoints(segments, components)
@@ -253,7 +250,13 @@ def process_dataset(input_file, output_file):
 
 
 if __name__ == '__main__':
-    input_file = 'data/sydney-roads-osm.geojson'
-    output_file = 'data/street_counts_grid200.json'
+    import sys
+
+    if len(sys.argv) >= 3:
+        input_file = sys.argv[1]
+        output_file = sys.argv[2]
+    else:
+        input_file = 'data/sydney-roads-osm.geojson'
+        output_file = 'data/street_counts_grid200.json'
 
     process_dataset(input_file, output_file)

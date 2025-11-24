@@ -25,7 +25,6 @@ def method_grid_flood_fill(segments, grid_size):
                 cell_to_segments[cell_key].append(seg_idx)
 
     visited_cells = set()
-    visited_segments = set()
     components = []
 
     for start_cell in cell_to_segments:
@@ -59,10 +58,8 @@ def method_grid_flood_fill(segments, grid_size):
                         visited_cells.add(adj_cell)
                         queue.append(adj_cell)
 
-        new_segments = component_segments - visited_segments
-        if new_segments:
-            components.append(list(new_segments))
-            visited_segments.update(new_segments)
+        if component_segments:
+            components.append(list(component_segments))
 
     # Post-process: merge components that share endpoints
     components = merge_components_by_endpoints(segments, components)
