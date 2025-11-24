@@ -1,0 +1,3 @@
+-- Loading data/sydney-roads-web.geojson...
+-- Processing 134053 features for sydney
+-- Generated 134053 INSERT statements

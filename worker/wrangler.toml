@@ -6,7 +6,7 @@ compatibility_date = "2024-01-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "street-names"
-database_id = "" # Will be filled after creation
+database_id = "163a5ab5-825b-46ee-8b32-beddc1da696d"
 
 # CORS settings for frontend access
 [env.production]

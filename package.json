@@ -1,0 +1,14 @@
+{
+  "name": "sydney-streets",
+  "version": "1.0.0",
+  "description": "Interactive visualization of Australian capital cities street names",
+  "scripts": {
+    "build": "echo 'Static site - no build needed'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pqzdev/sydney-streets.git"
+  },
+  "author": "",
+  "license": "MIT"
+}
