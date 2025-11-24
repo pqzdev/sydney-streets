@@ -1,0 +1,16 @@
+{
+  "name": "street-names-api",
+  "version": "1.0.0",
+  "description": "Cloudflare Worker API for Street Names visualization",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:create": "wrangler d1 create street-names",
+    "db:init": "wrangler d1 execute street-names --local --file=schema.sql",
+    "db:init:remote": "wrangler d1 execute street-names --remote --file=schema.sql"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT"
+}

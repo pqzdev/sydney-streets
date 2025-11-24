@@ -190,9 +190,36 @@ Counting 23 test streets (3,956 total segments):
 - **Polygon Buffer**: 2.26 seconds
 - **Point-to-Point**: 6.28 seconds
 
+## Backend API Architecture (NEW!)
+
+To overcome Cloudflare Pages' 25MB file size limit and enable Melbourne support, we've built a backend API:
+
+### Why Backend API?
+
+**Problem:**
+- Sydney: 43.4MB → compressed to 24.4MB (fits, but reduced precision from ~11m to ~111m)
+- Melbourne: 72.1MB → compressed to 39.6MB ❌ (15MB over limit)
+
+**Solution:**
+- Cloudflare Worker + D1 (SQLite) database
+- Full coordinate precision (5+ decimals)
+- Viewport-based loading (only fetch visible streets)
+- No file size limits
+- Scalable to any city
+
+### Features
+
+- **API Endpoints**: Get counts, search streets, fetch by viewport bounds or name
+- **Hybrid Mode**: Toggle between static files (current) and API mode (future)
+- **Progressive Enhancement**: Static mode works without backend
+
+See [BACKEND_API.md](BACKEND_API.md) for architecture details and [DEPLOYMENT.md](DEPLOYMENT.md) for setup instructions.
+
 ## Future Enhancements
 
-- [ ] Apply Grid 200m to full NSW dataset
+- [x] Backend API for scalable data delivery
+- [ ] Complete Melbourne backend deployment
+- [ ] Viewport-based progressive loading
 - [ ] Add more name categories (historical figures, animals, etc.)
 - [ ] Heat map of name popularity
 - [ ] Street length analysis by category

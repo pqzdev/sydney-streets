@@ -1,0 +1,13 @@
+name = "street-names-api"
+main = "src/index.js"
+compatibility_date = "2024-01-01"
+
+# D1 Database binding
+[[d1_databases]]
+binding = "DB"
+database_name = "street-names"
+database_id = "" # Will be filled after creation
+
+# CORS settings for frontend access
+[env.production]
+vars = { ALLOWED_ORIGIN = "https://street-names.pages.dev" }

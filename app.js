@@ -49,8 +49,8 @@ const cityConfigs = {
         center: [-33.8688, 151.2093],
         zoom: 12,
         bounds: [[-34.3, 150.35], [-33.25, 151.5]],
-        dataFile: 'data/sydney-roads-web.geojson',
-        countsFile: 'data/street_counts_grid200.json',
+        dataFile: 'data/cities/sydney/streets.geojson',
+        countsFile: 'data/cities/sydney/counts.json',
         lgas: [
             'bayside', 'burwood', 'canada bay', 'inner west', 'randwick', 'strathfield',
             'sydney', 'waverley', 'woollahra',
@@ -61,8 +61,16 @@ const cityConfigs = {
             'northern beaches', 'ryde', 'willoughby',
             'canterbury-bankstown', 'georges river', 'sutherland'
         ]
+    },
+    melbourne: {
+        name: 'Melbourne',
+        center: [-37.8136, 144.9631],
+        zoom: 11,
+        bounds: [[-38.5, 144.5], [-37.4, 145.8]],
+        dataFile: 'data/cities/melbourne/streets.geojson',
+        countsFile: 'data/cities/melbourne/counts.json',
+        lgas: []  // TODO: add Melbourne LGAs
     }
-    // Additional cities will be added here when data is available
 };
 
 
@@ -774,26 +782,20 @@ async function loadData() {
     const cityConfig = cityConfigs[currentCity];
 
     try {
-        // Try to load pre-computed counts
+        // Load pre-computed counts (from API or static file)
         if (cityConfig.countsFile) {
             try {
-                const countsResponse = await fetch(cityConfig.countsFile);
-                if (countsResponse.ok) {
-                    precomputedCounts = await countsResponse.json();
+                precomputedCounts = await StreetAPI.loadCounts(currentCity, cityConfig.countsFile);
+                if (precomputedCounts) {
                     console.log(`Loaded pre-computed street counts for ${cityConfig.name} (Grid 200m + Highway-Aware)`);
                 }
             } catch (e) {
-                console.log('Pre-computed counts not available');
+                console.log('Pre-computed counts not available:', e);
             }
         }
 
-        // Load street data
-        const response = await fetch(cityConfig.dataFile);
-        if (!response.ok) {
-            throw new Error(`Failed to load data for ${cityConfig.name}`);
-        }
-
-        streetData = await response.json();
+        // Load street data (from API or static file)
+        streetData = await StreetAPI.loadAllStreets(currentCity, cityConfig.dataFile);
         processStreetData();
 
         // Load saved search or default
