@@ -104,6 +104,8 @@
             padding: 1.5rem;
             overflow-y: auto;
             position: relative;
+            display: flex;
+            flex-direction: column;
         }
 
         .resizer {
@@ -664,18 +666,10 @@
                 <button id="mode-name-type">Name + Type</button>
                 <button id="mode-type">Type</button>
             </div>
-            <button id="address-search-toggle" class="header-link" style="background: none; border: none; cursor: pointer;">
-                Search Address
-            </button>
-            <a href="https://www.openstreetmap.org" target="_blank" class="header-link">OpenStreetMap</a>
         </div>
     </header>
 
     <div class="container">
-        <div id="address-search-box" style="position: absolute; top: 80px; left: 50%; transform: translateX(-50%); z-index: 1000; display: none;">
-            <input type="text" id="address-input" placeholder="Search address in Sydney..."
-                   style="padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; width: 300px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
-        </div>
         <div id="sidebar">
             <div class="resizer"></div>
 
@@ -720,6 +714,10 @@
             <div class="stats">
                 <h3 style="margin-bottom: 0.75rem; font-size: 1rem;">Street Count</h3>
                 <div id="street-count" style="font-size: 0.85rem; line-height: 1.6;">-</div>
+            </div>
+
+            <div style="padding: 1rem; border-top: 1px solid #ddd; margin-top: auto; font-size: 0.85rem; color: #666;">
+                Powered by <a href="https://www.openstreetmap.org/copyright" target="_blank" style="color: #3498db; text-decoration: none;">OpenStreetMap</a>
             </div>
         </div>
 

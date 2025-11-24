@@ -154,7 +154,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     // Add CartoDB Positron tile layer (with labels)
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        attribution: '',
         subdomains: 'abcd',
         maxZoom: 20
     }).addTo(map);
@@ -273,42 +273,6 @@ function setupEventListeners() {
 
     // Legend toggle
     document.getElementById('legend-toggle').addEventListener('click', toggleLegend);
-
-    // Address search toggle
-    document.getElementById('address-search-toggle').addEventListener('click', () => {
-        const searchBox = document.getElementById('address-search-box');
-        searchBox.style.display = searchBox.style.display === 'none' ? 'block' : 'none';
-        if (searchBox.style.display === 'block') {
-            document.getElementById('address-input').focus();
-        }
-    });
-
-    // Address search input
-    document.getElementById('address-input').addEventListener('keypress', async (e) => {
-        if (e.key === 'Enter') {
-            const query = e.target.value.trim();
-            if (!query) return;
-
-            // Use Nominatim geocoding API
-            try {
-                const response = await fetch(
-                    `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}, Sydney, Australia&limit=1`
-                );
-                const data = await response.json();
-                if (data.length > 0) {
-                    const { lat, lon } = data[0];
-                    map.setView([lat, lon], 16);
-                    document.getElementById('address-search-box').style.display = 'none';
-                    e.target.value = '';
-                } else {
-                    alert('Address not found in Sydney area');
-                }
-            } catch (error) {
-                console.error('Geocoding error:', error);
-                alert('Error searching for address. Please try again.');
-            }
-        }
-    });
 
     // Sidebar resizer
     const resizer = document.querySelector('.resizer');
