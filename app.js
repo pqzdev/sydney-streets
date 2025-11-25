@@ -79,6 +79,15 @@ const cityConfigs = {
         countsFile: 'data/cities/melbourne/counts.json',
         lgas: []  // TODO: add Melbourne LGAs
     },
+    brisbane: {
+        name: 'Brisbane',
+        center: [-27.4705, 153.0260],
+        zoom: 11,
+        bounds: [[-27.8, 152.6], [-27.1, 153.3]],
+        dataFile: 'data/cities/brisbane/streets.geojson',
+        countsFile: 'data/cities/brisbane/counts.json',
+        lgas: []  // TODO: add Brisbane LGAs
+    },
     perth: {
         name: 'Perth',
         center: [-31.9523, 115.8613],
@@ -98,6 +107,42 @@ const cityConfigs = {
             // Shires (3)
             'mundaring', 'peppermint grove', 'serpentine-jarrahdale'
         ]
+    },
+    adelaide: {
+        name: 'Adelaide',
+        center: [-34.9285, 138.6007],
+        zoom: 11,
+        bounds: [[-35.2, 138.4], [-34.6, 138.8]],
+        dataFile: 'data/cities/adelaide/streets.geojson',
+        countsFile: 'data/cities/adelaide/counts.json',
+        lgas: []  // TODO: add Adelaide LGAs
+    },
+    canberra: {
+        name: 'Canberra',
+        center: [-35.2809, 149.1300],
+        zoom: 11,
+        bounds: [[-35.5, 148.9], [-35.1, 149.3]],
+        dataFile: 'data/cities/canberra/streets.geojson',
+        countsFile: 'data/cities/canberra/counts.json',
+        lgas: []  // TODO: add Canberra LGAs
+    },
+    hobart: {
+        name: 'Hobart',
+        center: [-42.8821, 147.3272],
+        zoom: 12,
+        bounds: [[-43.0, 147.1], [-42.7, 147.5]],
+        dataFile: 'data/cities/hobart/streets.geojson',
+        countsFile: 'data/cities/hobart/counts.json',
+        lgas: []  // TODO: add Hobart LGAs
+    },
+    darwin: {
+        name: 'Darwin',
+        center: [-12.4634, 130.8456],
+        zoom: 12,
+        bounds: [[-12.7, 130.6], [-12.2, 131.1]],
+        dataFile: 'data/cities/darwin/streets.geojson',
+        countsFile: 'data/cities/darwin/counts.json',
+        lgas: []  // TODO: add Darwin LGAs
     }
 };
 
@@ -627,21 +672,21 @@ function handleDrop(e) {
 function loadList(listType) {
     let streets = [];
 
-    if (listType === 'top10') {
+    if (listType === 'top12') {
         if (nameMode === 'name-only') {
             // In name-only mode, directly use the base name counts cache
             streets = Object.entries(baseNameCountsCache)
                 .sort((a, b) => b[1] - a[1])
-                .slice(0, 10)
+                .slice(0, 12)
                 .map(([baseName]) => baseName);
         } else if (nameMode === 'type') {
             // In type mode, directly use the type counts cache
             streets = Object.entries(typeCountsCache)
                 .sort((a, b) => b[1] - a[1])
-                .slice(0, 10)
+                .slice(0, 12)
                 .map(([streetType]) => streetType);
         } else {
-            // In name-type mode, get top 10 full names
+            // In name-type mode, get top 12 full names
             const fullNameCounts = {};
             uniqueStreetNames.forEach(fullName => {
                 const count = getStreetCount(fullName);
@@ -652,7 +697,7 @@ function loadList(listType) {
 
             streets = Object.entries(fullNameCounts)
                 .sort((a, b) => b[1] - a[1])
-                .slice(0, 10)
+                .slice(0, 12)
                 .map(([name]) => name);
         }
     } else if (categories[listType]) {
@@ -705,7 +750,7 @@ function setNameMode(mode) {
     document.getElementById('mode-type').classList.toggle('active', mode === 'type');
 
     // Show/hide category lists based on mode
-    // In type mode, only Top 10 makes sense, not the category lists
+    // In type mode, only Top 12 makes sense, not the category lists
     const categoryLists = document.querySelectorAll('.category-list');
     categoryLists.forEach(item => {
         item.classList.toggle('hidden', mode === 'type');
