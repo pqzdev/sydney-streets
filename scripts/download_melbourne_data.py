@@ -31,10 +31,11 @@ def download_melbourne_roads():
     print("This may take several minutes due to the large area...")
 
     # Overpass QL query for roads with names in Greater Melbourne
+    # Exclude non-street types: track, path, cycleway, footway, steps, pedestrian, service, busway
     query = f"""
     [out:json][timeout:300][bbox:{BBOX}];
     (
-      way["highway"]["name"];
+      way["highway"]["name"]["highway"!="track"]["highway"!="path"]["highway"!="cycleway"]["highway"!="footway"]["highway"!="steps"]["highway"!="pedestrian"]["highway"!="service"]["highway"!="busway"];
     );
     out geom;
     """

@@ -11,6 +11,32 @@ def escape_sql_string(s):
     """Escape single quotes for SQL"""
     return s.replace("'", "''")
 
+def parse_street_name(full_name):
+    """
+    Parse a full street name into base name and type.
+    E.g., "George Street" -> ("George", "Street")
+          "Main Road" -> ("Main", "Road")
+          "Broadway" -> ("Broadway", "")
+    """
+    # Common Australian street types
+    street_types = [
+        'Street', 'Road', 'Avenue', 'Drive', 'Lane', 'Way', 'Place', 'Circuit',
+        'Crescent', 'Court', 'Close', 'Terrace', 'Parade', 'Boulevard', 'Highway',
+        'Freeway', 'Motorway', 'Grove', 'Walk', 'Row', 'Square', 'Mews', 'Plaza',
+        'Esplanade', 'Promenade', 'Parkway', 'Link', 'Loop', 'Rise', 'Chase',
+        'View', 'Ridge', 'Glade', 'Glen', 'Dell', 'Vale', 'Gardens', 'Park',
+        'Reserve', 'Green', 'Common', 'Mall', 'Arcade', 'Alley', 'Retreat',
+        'Approach', 'Path', 'Track', 'Trail', 'Bend', 'Corner', 'End', 'Cove'
+    ]
+
+    for street_type in street_types:
+        if full_name.endswith(' ' + street_type):
+            base_name = full_name[:-len(street_type)-1].strip()
+            return base_name, street_type
+
+    # No type found, return full name as base
+    return full_name, ''
+
 def generate_inserts(geojson_file, city_name):
     """Generate SQL INSERT statements from GeoJSON file."""
 
@@ -30,6 +56,11 @@ def generate_inserts(geojson_file, city_name):
 
         name_escaped = escape_sql_string(name)
 
+        # Parse into base name and type
+        base_name, street_type = parse_street_name(name)
+        base_name_escaped = escape_sql_string(base_name)
+        street_type_escaped = escape_sql_string(street_type)
+
         # Get instance_id (from Grid 200m processing)
         instance_id = feature['properties'].get('_instanceId', 0)
 
@@ -47,7 +78,7 @@ def generate_inserts(geojson_file, city_name):
         min_lng = min(lons)
         max_lng = max(lons)
 
-        sql = f"INSERT INTO street_segments (city, name, instance_id, geometry, min_lat, max_lat, min_lng, max_lng) VALUES ('{city_name}', '{name_escaped}', {instance_id}, '{geom_escaped}', {min_lat}, {max_lat}, {min_lng}, {max_lng});"
+        sql = f"INSERT INTO street_segments (city, name, base_name, street_type, instance_id, geometry, min_lat, max_lat, min_lng, max_lng) VALUES ('{city_name}', '{name_escaped}', '{base_name_escaped}', '{street_type_escaped}', {instance_id}, '{geom_escaped}', {min_lat}, {max_lat}, {min_lng}, {max_lng});"
         statements.append(sql)
 
     print(f"-- Generated {len(statements)} INSERT statements", file=sys.stderr)
