@@ -207,16 +207,13 @@
         }
 
         #grid-view.active {
-            display: flex;
-            flex-direction: column;
+            display: block;
         }
 
         .grid-container {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
-            grid-auto-rows: 1fr;
             gap: 1rem;
-            flex: 1;
         }
 
         /* Optimize for 1-2 items on large screens */
@@ -237,9 +234,6 @@
             border-radius: 4px;
             padding: 1rem;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            display: flex;
-            flex-direction: column;
-            min-height: 0;
         }
 
         .grid-item-header {
@@ -271,8 +265,7 @@
 
         .grid-item-map {
             width: 100%;
-            flex: 1;
-            min-height: 200px;
+            height: 200px;
             border-radius: 4px;
             overflow: hidden;
         }
