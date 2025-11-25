@@ -61,8 +61,10 @@ def generate_inserts(geojson_file, city_name):
         base_name_escaped = escape_sql_string(base_name)
         street_type_escaped = escape_sql_string(street_type)
 
-        # Get instance_id (from Grid 200m processing)
+        # Get instance_id and readable_id (from Grid 200m processing)
         instance_id = feature['properties'].get('_instanceId', 0)
+        readable_id = feature['properties'].get('_readableId', '')
+        readable_id_escaped = escape_sql_string(readable_id)
 
         # Store full precision geometry as JSON string
         geometry = json.dumps(feature['geometry'])
@@ -78,7 +80,7 @@ def generate_inserts(geojson_file, city_name):
         min_lng = min(lons)
         max_lng = max(lons)
 
-        sql = f"INSERT INTO street_segments (city, name, base_name, street_type, instance_id, geometry, min_lat, max_lat, min_lng, max_lng) VALUES ('{city_name}', '{name_escaped}', '{base_name_escaped}', '{street_type_escaped}', {instance_id}, '{geom_escaped}', {min_lat}, {max_lat}, {min_lng}, {max_lng});"
+        sql = f"INSERT INTO street_segments (city, name, base_name, street_type, instance_id, readable_id, geometry, min_lat, max_lat, min_lng, max_lng) VALUES ('{city_name}', '{name_escaped}', '{base_name_escaped}', '{street_type_escaped}', {instance_id}, '{readable_id_escaped}', '{geom_escaped}', {min_lat}, {max_lat}, {min_lng}, {max_lng});"
         statements.append(sql)
 
     print(f"-- Generated {len(statements)} INSERT statements", file=sys.stderr)

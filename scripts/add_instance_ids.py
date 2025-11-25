@@ -7,6 +7,7 @@ This assigns each segment to its street instance for visualization.
 import json
 from collections import defaultdict
 import time
+import re
 
 def method_grid_flood_fill(segments, grid_size):
     """Grid-based flood fill method for grouping connected segments."""
@@ -118,13 +119,43 @@ def merge_components_by_endpoints(segments, components):
     return list(merged.values())
 
 
-def add_instance_ids(input_file, output_file):
+def sanitize_for_id(text):
+    """Convert street name to ID-safe format."""
+    # Replace spaces and special chars with underscores
+    text = re.sub(r'[^\w\s-]', '', text)
+    text = re.sub(r'[-\s]+', '_', text)
+    return text.strip('_')
+
+
+def detect_city_from_path(input_file):
+    """Detect city name from file path."""
+    import os
+    filename = os.path.basename(input_file).lower()
+
+    cities = ['sydney', 'melbourne', 'perth', 'brisbane', 'adelaide',
+              'canberra', 'hobart', 'darwin']
+
+    for city in cities:
+        if city in filename:
+            return city.capitalize()
+
+    # Check parent directory
+    parent = os.path.basename(os.path.dirname(input_file)).lower()
+    for city in cities:
+        if city in parent:
+            return city.capitalize()
+
+    return 'Unknown'
+
+
+def add_instance_ids(input_file, output_file, city_name=None):
     """
-    Add _instanceId property to each feature in the GeoJSON.
+    Add _instanceId and _readableId properties to each feature in the GeoJSON.
 
     Args:
         input_file: Path to input GeoJSON
         output_file: Path to output GeoJSON with instance IDs
+        city_name: City name (auto-detected if not provided)
     """
     print(f"Loading {input_file}...")
     with open(input_file, 'r') as f:
@@ -132,6 +163,11 @@ def add_instance_ids(input_file, output_file):
 
     features = data['features']
     print(f"Loaded {len(features)} features")
+
+    # Detect city if not provided
+    if not city_name:
+        city_name = detect_city_from_path(input_file)
+    print(f"City: {city_name}")
 
     # Group by street name
     street_features = defaultdict(list)
@@ -162,12 +198,22 @@ def add_instance_ids(input_file, output_file):
         if is_highway and len(components) > 1:
             components = [sum(components, [])]  # Merge all into one
 
+        # Create sanitized street name for IDs
+        safe_street_name = sanitize_for_id(street_name)
+
         # Assign instance IDs
-        for instance_id, component in enumerate(components):
+        for instance_num, component in enumerate(components, start=1):
+            # Create readable ID: Melbourne_Sydney_Road_03
+            readable_id = f"{city_name}_{safe_street_name}_{instance_num:02d}"
+
             for seg_idx in component:
                 feature_idx, feature = feature_list[seg_idx]
-                features[feature_idx]['properties']['_instanceId'] = instance_id
+                # Keep numeric _instanceId for backwards compatibility (0-indexed)
+                features[feature_idx]['properties']['_instanceId'] = instance_num - 1
                 features[feature_idx]['properties']['_totalInstances'] = len(components)
+                # Add new readable ID
+                features[feature_idx]['properties']['_readableId'] = readable_id
+                features[feature_idx]['properties']['_instanceNum'] = instance_num
 
         processed += 1
         if processed % 1000 == 0:
@@ -179,11 +225,25 @@ def add_instance_ids(input_file, output_file):
 
     print("Done!")
 
+    # Show sample IDs
+    sample_ids = set()
+    for feature in features[:100]:
+        if '_readableId' in feature['properties']:
+            sample_ids.add(feature['properties']['_readableId'])
+            if len(sample_ids) >= 5:
+                break
+
+    if sample_ids:
+        print("\nSample IDs:")
+        for rid in sorted(sample_ids)[:5]:
+            print(f"  {rid}")
+
 
 if __name__ == '__main__':
     import sys
-    if len(sys.argv) != 3:
-        print("Usage: python3 add_instance_ids.py input.geojson output.geojson")
+    if len(sys.argv) < 3:
+        print("Usage: python3 add_instance_ids.py input.geojson output.geojson [city_name]")
         sys.exit(1)
 
-    add_instance_ids(sys.argv[1], sys.argv[2])
+    city = sys.argv[3] if len(sys.argv) > 3 else None
+    add_instance_ids(sys.argv[1], sys.argv[2], city)
