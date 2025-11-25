@@ -1336,10 +1336,9 @@ function renderGridView(selectedFeatures) {
                     }
                 }).addTo(gridMap);
 
+                // Force map to recalculate size BEFORE fitting bounds
+                gridMap.invalidateSize();
                 gridMap.fitBounds(layer.getBounds(), { padding: [10, 10] });
-
-                // Force map to recalculate size to fit container
-                setTimeout(() => gridMap.invalidateSize(), 10);
 
                 // Add to grid maps array
                 gridMaps.push(gridMap);
