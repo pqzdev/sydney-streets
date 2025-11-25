@@ -1179,14 +1179,18 @@ async function updateMap() {
                     };
                 },
                 onEachFeature: function(feature, layer) {
+                    const fullStreetName = feature.properties.name || '';
+                    const highway = feature.properties.highway || '';
+                    const displayName = fullStreetName ? `${fullStreetName}` : highway;
+
                     const instanceId = feature.properties._instanceId;
                     if (instanceId !== undefined) {
                         // Get sorted unique instance IDs (filter out undefined) and find this one's rank
                         const sortedIds = Array.from(new Set(selectedFeatures.map(f => f.properties._instanceId).filter(id => id !== undefined))).sort((a,b) => a-b);
                         const instanceRank = sortedIds.indexOf(instanceId) + 1;
-                        layer.bindPopup(`<b>${selectedStreetNames[0]}</b><br>Instance #${instanceRank} of ${sortedIds.length}`);
+                        layer.bindPopup(`<b>${displayName}</b><br>Instance #${instanceRank} of ${sortedIds.length}`);
                     } else {
-                        layer.bindPopup(`<b>${selectedStreetNames[0]}</b>`);
+                        layer.bindPopup(`<b>${displayName}</b>`);
                     }
                 }
             }).addTo(map);
@@ -1228,18 +1232,23 @@ async function updateMap() {
                     };
                 },
                 onEachFeature: function(feature, layer) {
-                    if (feature.properties.name) {
-                        const streetName = feature.properties.name;
+                    const fullStreetName = feature.properties.name || '';
+                    const highway = feature.properties.highway || '';
+                    const displayName = fullStreetName ? `${fullStreetName}` : highway;
+
+                    if (fullStreetName) {
                         const instanceId = feature.properties._instanceId;
                         if (instanceId !== undefined) {
                             // Get sorted unique instance IDs for this street and find this one's rank
-                            const streetFeatures = selectedFeatures.filter(f => f.properties.name === streetName);
+                            const streetFeatures = selectedFeatures.filter(f => f.properties.name === fullStreetName);
                             const sortedIds = Array.from(new Set(streetFeatures.map(f => f.properties._instanceId).filter(id => id !== undefined))).sort((a,b) => a-b);
                             const instanceRank = sortedIds.indexOf(instanceId) + 1;
-                            layer.bindPopup(`<b>${streetName}</b><br>Instance #${instanceRank} of ${sortedIds.length}`);
+                            layer.bindPopup(`<b>${displayName}</b><br>Instance #${instanceRank} of ${sortedIds.length}`);
                         } else {
-                            layer.bindPopup(`<b>${streetName}</b>`);
+                            layer.bindPopup(`<b>${displayName}</b>`);
                         }
+                    } else {
+                        layer.bindPopup(`<b>${displayName}</b>`);
                     }
                 }
             }).addTo(map);
