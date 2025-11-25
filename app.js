@@ -1338,15 +1338,6 @@ function renderGridView(selectedFeatures) {
 
                 gridMap.fitBounds(layer.getBounds(), { padding: [10, 10] });
 
-                // Watch for container size changes and update map
-                const mapElement = document.getElementById(mapId);
-                if (mapElement && ResizeObserver) {
-                    const resizeObserver = new ResizeObserver(() => {
-                        gridMap.invalidateSize();
-                    });
-                    resizeObserver.observe(mapElement);
-                }
-
                 // Add to grid maps array
                 gridMaps.push(gridMap);
 
