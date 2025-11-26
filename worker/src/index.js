@@ -67,7 +67,7 @@ async function handleStreetsRequest(url, env, corsHeaders) {
   if (name) {
     // Fetch specific street by name
     query = `
-      SELECT name, instance_id, geometry
+      SELECT name, instance_id, readable_id, geometry
       FROM street_segments
       WHERE city = ? AND name = ?
     `;
@@ -77,7 +77,7 @@ async function handleStreetsRequest(url, env, corsHeaders) {
     const [minLat, minLng, maxLat, maxLng] = bounds.split(',').map(Number);
 
     query = `
-      SELECT name, instance_id, geometry
+      SELECT name, instance_id, readable_id, geometry
       FROM street_segments
       WHERE city = ?
         AND max_lat >= ? AND min_lat <= ?
@@ -105,7 +105,8 @@ async function handleStreetsRequest(url, env, corsHeaders) {
         type: 'Feature',
         properties: {
           name: row.name,
-          id: row.instance_id
+          id: row.instance_id,
+          readableId: row.readable_id
         },
         geometry: {
           type: 'MultiLineString',

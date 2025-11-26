@@ -1183,17 +1183,22 @@ async function updateMap() {
                     const highway = feature.properties.highway || '';
                     const displayName = fullStreetName ? `${fullStreetName}` : highway;
 
-                    const instanceId = feature.properties._instanceId;
+                    const readableId = feature.properties.readableId;
 
-                    // Get sorted unique instance IDs (filter out undefined)
-                    const sortedIds = Array.from(new Set(selectedFeatures.map(f => f.properties._instanceId).filter(id => id !== undefined))).sort((a,b) => a-b);
+                    // Get sorted unique readable IDs (alphabetically)
+                    const sortedReadableIds = Array.from(new Set(
+                        selectedFeatures
+                            .map(f => f.properties.readableId)
+                            .filter(id => id)
+                    )).sort();
 
-                    if (instanceId !== undefined && sortedIds.length > 0) {
-                        const instanceRank = sortedIds.indexOf(instanceId) + 1;
-                        layer.bindPopup(`<b>${displayName}</b><br>Instance #${instanceRank} of ${sortedIds.length}`);
+                    if (readableId && sortedReadableIds.length > 0) {
+                        const instanceRank = sortedReadableIds.indexOf(readableId) + 1;
+                        const totalInstances = sortedReadableIds.length;
+                        layer.bindPopup(`<b>${displayName}</b><br>Instance #${instanceRank} of ${totalInstances}<br><span style="font-size: 0.85em; color: #999;">${readableId}</span>`);
                     } else {
                         // Fallback: show total count from instanceCount variable
-                        const totalInstances = instanceCount || sortedIds.length;
+                        const totalInstances = instanceCount || sortedReadableIds.length;
                         if (totalInstances > 0) {
                             layer.bindPopup(`<b>${displayName}</b><br>${totalInstances} instance${totalInstances !== 1 ? 's' : ''} total`);
                         } else {
@@ -1245,17 +1250,41 @@ async function updateMap() {
                     const displayName = fullStreetName ? `${fullStreetName}` : highway;
 
                     if (fullStreetName) {
-                        const instanceId = feature.properties._instanceId;
-                        // Get sorted unique instance IDs for this street and find this one's rank
-                        const streetFeatures = selectedFeatures.filter(f => f.properties.name === fullStreetName);
-                        const sortedIds = Array.from(new Set(streetFeatures.map(f => f.properties._instanceId).filter(id => id !== undefined))).sort((a,b) => a-b);
+                        const readableId = feature.properties.readableId;
 
-                        if (instanceId !== undefined && sortedIds.length > 0) {
-                            const instanceRank = sortedIds.indexOf(instanceId) + 1;
-                            layer.bindPopup(`<b>${displayName}</b><br>Instance #${instanceRank} of ${sortedIds.length}`);
+                        // Filter features based on current grouping mode
+                        let groupedFeatures;
+                        if (nameMode === 'name-only') {
+                            const baseName = getBaseName(fullStreetName);
+                            groupedFeatures = selectedFeatures.filter(f =>
+                                getBaseName(f.properties.name || '') === baseName
+                            );
+                        } else if (nameMode === 'type') {
+                            const streetType = getStreetType(fullStreetName);
+                            groupedFeatures = selectedFeatures.filter(f =>
+                                getStreetType(f.properties.name || '') === streetType
+                            );
+                        } else {
+                            // name-type mode: exact match
+                            groupedFeatures = selectedFeatures.filter(f =>
+                                f.properties.name === fullStreetName
+                            );
+                        }
+
+                        // Get sorted unique readable IDs for this group (alphabetically)
+                        const sortedReadableIds = Array.from(new Set(
+                            groupedFeatures
+                                .map(f => f.properties.readableId)
+                                .filter(id => id)
+                        )).sort();
+
+                        if (readableId && sortedReadableIds.length > 0) {
+                            const instanceRank = sortedReadableIds.indexOf(readableId) + 1;
+                            const totalInstances = sortedReadableIds.length;
+                            layer.bindPopup(`<b>${displayName}</b><br>Instance #${instanceRank} of ${totalInstances}<br><span style="font-size: 0.85em; color: #999;">${readableId}</span>`);
                         } else {
                             // Fallback: count instances for this specific street
-                            const streetInstanceCount = getStreetCount(fullStreetName) || sortedIds.length;
+                            const streetInstanceCount = getStreetCount(fullStreetName) || sortedReadableIds.length;
                             if (streetInstanceCount > 0) {
                                 layer.bindPopup(`<b>${displayName}</b><br>${streetInstanceCount} instance${streetInstanceCount !== 1 ? 's' : ''} total`);
                             } else {
