@@ -1168,12 +1168,20 @@ async function updateMap() {
 
             const colorPalette = generateColorPalette(instanceCount);
 
+            // Get sorted unique readable IDs (alphabetically) for color assignment
+            const sortedReadableIds = Array.from(new Set(
+                selectedFeatures
+                    .map(f => f.properties.readableId || f.properties._readableId)
+                    .filter(id => id)
+            )).sort();
+
             currentLayer = L.geoJSON(selectedFeatures, {
                 style: function(feature) {
-                    // Use the precomputed instance ID from Grid 200m processing
-                    const instanceId = feature.properties._instanceId !== undefined ? feature.properties._instanceId : 0;
+                    // Use row_number of readable_id (alphabetically sorted) for color
+                    const readableId = feature.properties.readableId || feature.properties._readableId;
+                    const colorIndex = readableId ? sortedReadableIds.indexOf(readableId) : 0;
                     return {
-                        color: colorPalette[instanceId % colorPalette.length],
+                        color: colorPalette[colorIndex % colorPalette.length],
                         weight: 3,
                         opacity: 0.7
                     };
