@@ -15,6 +15,9 @@ let uniqueStreetNames = []; // All unique street names in dataset
 let legendVisible = false; // Legend toggle state
 let gridMapsSync = false; // Whether grid maps pan/zoom together
 let gridMaps = []; // Array of grid map instances
+let cityBoundaryLayer = null; // GCCSA polygon boundary layer
+let cityBoundaryData = null; // Loaded GCCSA boundary geometry
+let showBoundary = false; // Toggle for boundary visibility
 // Get city from URL parameter or default to sydney
 const urlParams = new URLSearchParams(window.location.search);
 let currentCity = urlParams.get('city') || 'sydney'; // Currently selected city
@@ -51,12 +54,15 @@ const colors = {
 };
 
 // City configurations
+// Bounds are based on official GCCSA (Greater Capital City Statistical Area) boundaries
+// from Australian Bureau of Statistics (ASGS Edition 3, 2021-2026)
 const cityConfigs = {
     sydney: {
         name: 'Sydney',
         center: [-33.8688, 151.2093],
-        zoom: 12,
-        bounds: [[-34.3, 150.35], [-33.25, 151.5]],
+        zoom: 11,
+        bounds: [[-34.3312, 149.9719], [-32.9961, 151.6306]], // Bounding box for initial view
+        boundaryFile: 'data/boundaries/sydney_boundary.json', // GCCSA polygon boundary
         dataFile: 'data/cities/sydney/streets.geojson',
         countsFile: 'data/cities/sydney/counts.json',
         lgas: [
@@ -74,7 +80,8 @@ const cityConfigs = {
         name: 'Melbourne',
         center: [-37.8136, 144.9631],
         zoom: 11,
-        bounds: [[-38.5, 144.5], [-37.4, 145.8]],
+        bounds: [[-38.5030, 144.3336], [-37.1751, 145.8784]],
+        boundaryFile: 'data/boundaries/melbourne_boundary.json',
         dataFile: 'data/cities/melbourne/streets.geojson',
         countsFile: 'data/cities/melbourne/counts.json',
         lgas: []  // TODO: add Melbourne LGAs
@@ -83,7 +90,8 @@ const cityConfigs = {
         name: 'Brisbane',
         center: [-27.4705, 153.0260],
         zoom: 11,
-        bounds: [[-27.8, 152.6], [-27.1, 153.3]],
+        bounds: [[-28.3639, 152.0734], [-26.4523, 153.5467]],
+        boundaryFile: 'data/boundaries/brisbane_boundary.json',
         dataFile: 'data/cities/brisbane/streets.geojson',
         countsFile: 'data/cities/brisbane/counts.json',
         lgas: []  // TODO: add Brisbane LGAs
@@ -92,7 +100,8 @@ const cityConfigs = {
         name: 'Perth',
         center: [-31.9523, 115.8613],
         zoom: 11,
-        bounds: [[-32.5, 115.5], [-31.4, 116.4]],
+        bounds: [[-32.8019, 115.4495], [-31.4551, 116.4151]],
+        boundaryFile: 'data/boundaries/perth_boundary.json',
         dataFile: 'data/cities/perth/streets.geojson',
         countsFile: 'data/cities/perth/counts.json',
         lgas: [
@@ -112,7 +121,8 @@ const cityConfigs = {
         name: 'Adelaide',
         center: [-34.9285, 138.6007],
         zoom: 11,
-        bounds: [[-35.2, 138.4], [-34.6, 138.8]],
+        bounds: [[-35.3503, 138.4357], [-34.5002, 139.0440]],
+        boundaryFile: 'data/boundaries/adelaide_boundary.json',
         dataFile: 'data/cities/adelaide/streets.geojson',
         countsFile: 'data/cities/adelaide/counts.json',
         lgas: []  // TODO: add Adelaide LGAs
@@ -121,7 +131,8 @@ const cityConfigs = {
         name: 'Canberra',
         center: [-35.2809, 149.1300],
         zoom: 11,
-        bounds: [[-35.5, 148.9], [-35.1, 149.3]],
+        bounds: [[-35.9205, 148.7628], [-35.1244, 149.3993]],
+        boundaryFile: 'data/boundaries/canberra_boundary.json',
         dataFile: 'data/cities/canberra/streets.geojson',
         countsFile: 'data/cities/canberra/counts.json',
         lgas: []  // TODO: add Canberra LGAs
@@ -129,8 +140,9 @@ const cityConfigs = {
     hobart: {
         name: 'Hobart',
         center: [-42.8821, 147.3272],
-        zoom: 12,
-        bounds: [[-43.0, 147.1], [-42.7, 147.5]],
+        zoom: 11,
+        bounds: [[-43.1213, 147.0267], [-42.6554, 147.9369]],
+        boundaryFile: 'data/boundaries/hobart_boundary.json',
         dataFile: 'data/cities/hobart/streets.geojson',
         countsFile: 'data/cities/hobart/counts.json',
         lgas: []  // TODO: add Hobart LGAs
@@ -138,8 +150,9 @@ const cityConfigs = {
     darwin: {
         name: 'Darwin',
         center: [-12.4634, 130.8456],
-        zoom: 12,
-        bounds: [[-12.7, 130.6], [-12.2, 131.1]],
+        zoom: 11,
+        bounds: [[-12.8619, 130.8151], [-12.0009, 131.3967]],
+        boundaryFile: 'data/boundaries/darwin_boundary.json',
         dataFile: 'data/cities/darwin/streets.geojson',
         countsFile: 'data/cities/darwin/counts.json',
         lgas: []  // TODO: add Darwin LGAs
@@ -342,6 +355,15 @@ function setupEventListeners() {
 
     // Legend toggle
     document.getElementById('legend-toggle').addEventListener('click', toggleLegend);
+
+    // Boundary toggle
+    document.getElementById('boundary-toggle').addEventListener('click', () => {
+        showBoundary = !showBoundary;
+        toggleCityBoundary(showBoundary);
+        const btn = document.getElementById('boundary-toggle');
+        btn.style.fontWeight = showBoundary ? 'bold' : 'normal';
+        btn.style.backgroundColor = showBoundary ? '#e74c3c' : '#3498db';
+    });
 
     // Sidebar resizer
     const resizer = document.querySelector('.resizer');
@@ -881,6 +903,62 @@ function loadSearch() {
     updateStreetColorsUI();
 }
 
+// Load GCCSA polygon boundary for the current city
+async function loadCityBoundary() {
+    const cityConfig = cityConfigs[currentCity];
+
+    if (!cityConfig.boundaryFile) {
+        console.log('No boundary file configured for', cityConfig.name);
+        return null;
+    }
+
+    try {
+        const response = await fetch(cityConfig.boundaryFile);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const boundary = await response.json();
+        cityBoundaryData = boundary;
+        console.log(`Loaded ${boundary.name} GCCSA boundary (${boundary.code})`);
+        return boundary;
+    } catch (error) {
+        console.error('Error loading city boundary:', error);
+        return null;
+    }
+}
+
+// Show or hide the GCCSA boundary on the map
+function toggleCityBoundary(show) {
+    showBoundary = show;
+
+    if (!cityBoundaryData) {
+        console.log('City boundary not loaded');
+        return;
+    }
+
+    // Remove existing boundary layer
+    if (cityBoundaryLayer) {
+        map.removeLayer(cityBoundaryLayer);
+        cityBoundaryLayer = null;
+    }
+
+    // Add boundary if requested
+    if (show) {
+        cityBoundaryLayer = L.geoJSON(cityBoundaryData.geometry, {
+            style: {
+                color: '#FF0000',
+                weight: 2,
+                opacity: 0.6,
+                fillOpacity: 0.05,
+                fillColor: '#FF0000',
+                dashArray: '5, 10'
+            }
+        }).addTo(map);
+
+        console.log(`${cityBoundaryData.name} boundary displayed`);
+    }
+}
+
 async function loadData() {
     // Show loading bar
     const loadingBar = document.getElementById('loading-bar');
@@ -889,6 +967,9 @@ async function loadData() {
     const cityConfig = cityConfigs[currentCity];
 
     try {
+        // Load GCCSA boundary
+        await loadCityBoundary();
+
         // Load pre-computed counts (from API or static file)
         if (cityConfig.countsFile) {
             try {

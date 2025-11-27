@@ -10,12 +10,16 @@
 For each city, follow these steps:
 
 ### 1. Download OSM Data
-Create a download script similar to `scripts/download_perth_data.py`:
+Use the new unified download script with official GCCSA boundaries:
 ```bash
-python scripts/download_adelaide_data.py
-python scripts/download_canberra_data.py
-python scripts/download_hobart_data.py
+python scripts/download_city_data.py adelaide
+python scripts/download_city_data.py canberra
+python scripts/download_city_data.py hobart
 ```
+
+**Note:** The old city-specific download scripts (e.g., `download_adelaide_data.py`) are deprecated.
+Use `download_city_data.py` instead, which uses official ABS GCCSA boundaries.
+See [METROPOLITAN_BOUNDARIES.md](METROPOLITAN_BOUNDARIES.md) for details.
 
 ### 2. Process Full Dataset
 Use the existing `process_full_dataset.py` script for each city:
@@ -47,19 +51,27 @@ cd worker
 ./upload_batches.sh hobart
 ```
 
-## City Bounding Boxes (for OSM downloads)
+## Official GCCSA Boundaries
 
-**Adelaide:**
-- Bounds: [-35.2, 138.4] to [-34.6, 138.8]
+All cities now use official GCCSA (Greater Capital City Statistical Area) boundaries from the
+Australian Bureau of Statistics (ASGS Edition 3, 2021-2026).
+
+**Adelaide (Greater Adelaide GCCSA):**
+- GCCSA Bounds: [-35.3503, 138.4357] to [-34.5002, 139.0440]
 - Center: [-34.9285, 138.6007]
+- Code: 4GADE
 
-**Canberra:**
-- Bounds: [-35.5, 148.9] to [-35.1, 149.3]
+**Canberra (Australian Capital Territory GCCSA):**
+- GCCSA Bounds: [-35.9205, 148.7628] to [-35.1244, 149.3993]
 - Center: [-35.2809, 149.1300]
+- Code: 8ACTE
 
-**Hobart:**
-- Bounds: [-43.0, 147.1] to [-42.7, 147.5]
+**Hobart (Greater Hobart GCCSA):**
+- GCCSA Bounds: [-43.1213, 147.0267] to [-42.6554, 147.9369]
 - Center: [-42.8821, 147.3272]
+- Code: 6GHOB
+
+For full details on the boundary system, see [METROPOLITAN_BOUNDARIES.md](METROPOLITAN_BOUNDARIES.md).
 
 ## Expected File Structure
 
