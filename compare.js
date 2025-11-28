@@ -47,41 +47,6 @@ const PRESETS = {
 };
 
 /**
- * Helper function to extract base name from full street name
- * Example: "George Street" -> "George"
- */
-function getBaseName(fullName) {
-    if (!fullName) return '';
-    const suffixes = ['Street', 'Road', 'Avenue', 'Drive', 'Lane', 'Way', 'Place', 'Circuit', 'Crescent', 'Court',
-                      'Parade', 'Boulevard', 'Terrace', 'Close', 'Grove', 'Walk', 'Path', 'Mews', 'Square',
-                      'Esplanade', 'Promenade', 'Highway', 'Freeway', 'Parkway', 'Plaza', 'Loop', 'Row'];
-    let base = fullName;
-    suffixes.forEach(suffix => {
-        base = base.replace(new RegExp(`\\s+${suffix}$`, 'i'), '');
-    });
-    return base.trim();
-}
-
-/**
- * Helper function to extract street type from full street name
- * Example: "George Street" -> "Street"
- */
-function getStreetType(fullName) {
-    if (!fullName) return '';
-    const suffixes = ['Street', 'Road', 'Avenue', 'Drive', 'Lane', 'Way', 'Place', 'Circuit', 'Crescent', 'Court',
-                      'Parade', 'Boulevard', 'Terrace', 'Close', 'Grove', 'Walk', 'Path', 'Mews', 'Square',
-                      'Esplanade', 'Promenade', 'Highway', 'Freeway', 'Parkway', 'Plaza', 'Loop', 'Row'];
-    for (const suffix of suffixes) {
-        const regex = new RegExp(`\\s+(${suffix})$`, 'i');
-        const match = fullName.match(regex);
-        if (match) {
-            return match[1]; // Return with original capitalization from the match
-        }
-    }
-    return ''; // No type found
-}
-
-/**
  * Data Loader - Handles loading and caching of city data using the API
  */
 class ComparisonDataLoader {
@@ -130,7 +95,7 @@ class ComparisonDataLoader {
             }
 
             // If name-type mode or only one match, fetch directly
-            if (mode === 'name_type' || matchingNames.length === 1) {
+            if (mode === 'name-type' || matchingNames.length === 1) {
                 const geojson = await StreetAPI.getStreetByName(cityId, matchingNames[0]);
                 this.geometryCache[cacheKey] = geojson;
                 return geojson;
@@ -169,7 +134,7 @@ class ComparisonDataLoader {
         const allNames = Object.keys(counts.street_counts || {});
 
         switch (mode) {
-            case 'name':
+            case 'name-only':
                 // Match by base name only (e.g., "George" matches "George Street", "George Road")
                 const searchBase = getBaseName(searchName).toLowerCase();
                 return allNames.filter(fullName =>
@@ -183,7 +148,7 @@ class ComparisonDataLoader {
                     getStreetType(fullName).toLowerCase() === searchType
                 );
 
-            case 'name_type':
+            case 'name-type':
             default:
                 // Exact match for full name
                 return allNames.filter(fullName =>
@@ -297,7 +262,7 @@ class ComparisonMatrix {
     constructor() {
         this.selectedCities = ['sydney', 'melbourne', 'brisbane'];
         this.selectedStreets = [];
-        this.nameMode = 'name';
+        this.nameMode = 'name-only';
         this.miniMaps = {}; // Track mini map instances
     }
 
@@ -331,7 +296,7 @@ class ComparisonMatrix {
 
         // Load mode
         const modeParam = params.get('mode');
-        if (modeParam && ['name', 'name_type', 'type'].includes(modeParam)) {
+        if (modeParam && ['name-only', 'name-type', 'type'].includes(modeParam)) {
             this.nameMode = modeParam;
         }
     }
@@ -368,7 +333,7 @@ class ComparisonMatrix {
             params.set('streets', this.selectedStreets.map(s => encodeURIComponent(s)).join(','));
         }
 
-        if (this.nameMode !== 'name') {
+        if (this.nameMode !== 'name-only') {
             params.set('mode', this.nameMode);
         }
 
