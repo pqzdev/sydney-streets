@@ -47,6 +47,41 @@ const PRESETS = {
 };
 
 /**
+ * Helper function to extract base name from full street name
+ * Example: "George Street" -> "George"
+ */
+function getBaseName(fullName) {
+    if (!fullName) return '';
+    const suffixes = ['Street', 'Road', 'Avenue', 'Drive', 'Lane', 'Way', 'Place', 'Circuit', 'Crescent', 'Court',
+                      'Parade', 'Boulevard', 'Terrace', 'Close', 'Grove', 'Walk', 'Path', 'Mews', 'Square',
+                      'Esplanade', 'Promenade', 'Highway', 'Freeway', 'Parkway', 'Plaza', 'Loop', 'Row'];
+    let base = fullName;
+    suffixes.forEach(suffix => {
+        base = base.replace(new RegExp(`\\s+${suffix}$`, 'i'), '');
+    });
+    return base.trim();
+}
+
+/**
+ * Helper function to extract street type from full street name
+ * Example: "George Street" -> "Street"
+ */
+function getStreetType(fullName) {
+    if (!fullName) return '';
+    const suffixes = ['Street', 'Road', 'Avenue', 'Drive', 'Lane', 'Way', 'Place', 'Circuit', 'Crescent', 'Court',
+                      'Parade', 'Boulevard', 'Terrace', 'Close', 'Grove', 'Walk', 'Path', 'Mews', 'Square',
+                      'Esplanade', 'Promenade', 'Highway', 'Freeway', 'Parkway', 'Plaza', 'Loop', 'Row'];
+    for (const suffix of suffixes) {
+        const regex = new RegExp(`\\s+(${suffix})$`, 'i');
+        const match = fullName.match(regex);
+        if (match) {
+            return match[1]; // Return with original capitalization from the match
+        }
+    }
+    return ''; // No type found
+}
+
+/**
  * Data Loader - Handles loading and caching of city data using the API
  */
 class ComparisonDataLoader {
@@ -75,19 +110,50 @@ class ComparisonDataLoader {
 
     /**
      * Load geometry data for a specific street in a city using the API
+     * In name-only or type-only mode, this loads ALL variants of the street
      */
-    async loadStreetGeometry(cityId, streetName) {
-        const cacheKey = `${cityId}:${streetName}`;
+    async loadStreetGeometry(cityId, searchName, mode) {
+        const cacheKey = `${cityId}:${searchName}:${mode}`;
         if (this.geometryCache[cacheKey]) {
             return this.geometryCache[cacheKey];
         }
 
         try {
-            const geojson = await StreetAPI.getStreetByName(cityId, streetName);
-            this.geometryCache[cacheKey] = geojson;
-            return geojson;
+            // Get all matching street names based on mode
+            const matchingNames = await this.getMatchingStreetNames(cityId, searchName, mode);
+
+            if (matchingNames.length === 0) {
+                return {
+                    type: 'FeatureCollection',
+                    features: []
+                };
+            }
+
+            // If name-type mode or only one match, fetch directly
+            if (mode === 'name_type' || matchingNames.length === 1) {
+                const geojson = await StreetAPI.getStreetByName(cityId, matchingNames[0]);
+                this.geometryCache[cacheKey] = geojson;
+                return geojson;
+            }
+
+            // For name-only or type mode, fetch all variants and combine
+            const allFeatures = [];
+            for (const streetName of matchingNames) {
+                const geojson = await StreetAPI.getStreetByName(cityId, streetName);
+                if (geojson.features) {
+                    allFeatures.push(...geojson.features);
+                }
+            }
+
+            const combined = {
+                type: 'FeatureCollection',
+                features: allFeatures
+            };
+            this.geometryCache[cacheKey] = combined;
+            return combined;
+
         } catch (error) {
-            console.error(`Error loading geometry for ${cityId} - ${streetName}:`, error);
+            console.error(`Error loading geometry for ${cityId} - ${searchName}:`, error);
             return {
                 type: 'FeatureCollection',
                 features: []
@@ -96,17 +162,53 @@ class ComparisonDataLoader {
     }
 
     /**
-     * Get count for a specific street in a city
+     * Get all street names that match the search term based on mode
      */
-    async getStreetCount(cityId, streetName) {
+    async getMatchingStreetNames(cityId, searchName, mode) {
+        const counts = await this.loadCounts(cityId);
+        const allNames = Object.keys(counts.street_counts || {});
+
+        switch (mode) {
+            case 'name':
+                // Match by base name only (e.g., "George" matches "George Street", "George Road")
+                const searchBase = getBaseName(searchName).toLowerCase();
+                return allNames.filter(fullName =>
+                    getBaseName(fullName).toLowerCase() === searchBase
+                );
+
+            case 'type':
+                // Match by street type only (e.g., "Street" matches all streets)
+                const searchType = getStreetType(searchName).toLowerCase() || searchName.toLowerCase();
+                return allNames.filter(fullName =>
+                    getStreetType(fullName).toLowerCase() === searchType
+                );
+
+            case 'name_type':
+            default:
+                // Exact match for full name
+                return allNames.filter(fullName =>
+                    fullName.toLowerCase() === searchName.toLowerCase()
+                );
+        }
+    }
+
+    /**
+     * Get count for a specific street in a city
+     * Aggregates counts based on the mode (name-only, type-only, or exact)
+     */
+    async getStreetCount(cityId, searchName, mode) {
+        const matchingNames = await this.getMatchingStreetNames(cityId, searchName, mode);
         const counts = await this.loadCounts(cityId);
 
-        // API returns structure: { "street_counts": { "George": 52, ... } }
-        if (counts.street_counts && counts.street_counts[streetName] !== undefined) {
-            return counts.street_counts[streetName];
+        // Sum up all matching counts
+        let totalCount = 0;
+        for (const streetName of matchingNames) {
+            if (counts.street_counts && counts.street_counts[streetName] !== undefined) {
+                totalCount += counts.street_counts[streetName];
+            }
         }
 
-        return 0;
+        return totalCount;
     }
 
     /**
@@ -122,10 +224,11 @@ class ComparisonDataLoader {
  * Mini Map - Renders a small Leaflet map for a street in a city
  */
 class MiniMap {
-    constructor(containerId, cityId, streetName) {
+    constructor(containerId, cityId, streetName, mode) {
         this.containerId = containerId;
         this.cityId = cityId;
         this.streetName = streetName;
+        this.mode = mode;
         this.map = null;
         this.layer = null;
     }
@@ -156,8 +259,8 @@ class MiniMap {
             maxZoom: 19
         }).addTo(this.map);
 
-        // Load and display street geometry
-        const geometry = await dataLoader.loadStreetGeometry(this.cityId, this.streetName);
+        // Load and display street geometry (handles mode-based matching)
+        const geometry = await dataLoader.loadStreetGeometry(this.cityId, this.streetName, this.mode);
 
         if (geometry.features.length > 0) {
             this.layer = L.geoJSON(geometry, {
@@ -510,8 +613,8 @@ class ComparisonMatrix {
                 const countId = `count-${containerId}`;
 
                 try {
-                    // Get count
-                    const count = await dataLoader.getStreetCount(cityId, streetName);
+                    // Get count (using current name mode)
+                    const count = await dataLoader.getStreetCount(cityId, streetName, this.nameMode);
                     const countElement = document.getElementById(countId);
                     if (countElement) {
                         countElement.textContent = count;
@@ -527,7 +630,7 @@ class ComparisonMatrix {
                             container.classList.remove('loading');
                             container.textContent = '';
 
-                            const miniMap = new MiniMap(containerId, cityId, streetName);
+                            const miniMap = new MiniMap(containerId, cityId, streetName, this.nameMode);
                             await miniMap.render();
                             this.miniMaps[containerId] = miniMap;
                         }
