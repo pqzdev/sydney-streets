@@ -202,8 +202,78 @@ class ComparisonMatrix {
      * Initialize the matrix and event listeners
      */
     init() {
+        this.loadFromURL();
         this.bindEvents();
+        this.syncUIWithState();
         this.render();
+    }
+
+    /**
+     * Load state from URL parameters
+     */
+    loadFromURL() {
+        const params = new URLSearchParams(window.location.search);
+
+        // Load cities
+        const citiesParam = params.get('cities');
+        if (citiesParam) {
+            this.selectedCities = citiesParam.split(',').filter(c => CITY_CONFIG[c]);
+        }
+
+        // Load streets
+        const streetsParam = params.get('streets');
+        if (streetsParam) {
+            this.selectedStreets = streetsParam.split(',').map(s => decodeURIComponent(s));
+        }
+
+        // Load mode
+        const modeParam = params.get('mode');
+        if (modeParam && ['name', 'name_type', 'type'].includes(modeParam)) {
+            this.nameMode = modeParam;
+        }
+    }
+
+    /**
+     * Sync UI checkboxes and radio buttons with current state
+     */
+    syncUIWithState() {
+        // Sync city checkboxes
+        document.querySelectorAll('.city-checkboxes input[type="checkbox"]').forEach(checkbox => {
+            checkbox.checked = this.selectedCities.includes(checkbox.value);
+        });
+
+        // Sync mode radio buttons
+        document.querySelectorAll('.name-mode input[type="radio"]').forEach(radio => {
+            radio.checked = radio.value === this.nameMode;
+        });
+
+        // Update street list UI
+        this.updateStreetList();
+    }
+
+    /**
+     * Update URL with current state
+     */
+    updateURL() {
+        const params = new URLSearchParams();
+
+        if (this.selectedCities.length > 0) {
+            params.set('cities', this.selectedCities.join(','));
+        }
+
+        if (this.selectedStreets.length > 0) {
+            params.set('streets', this.selectedStreets.map(s => encodeURIComponent(s)).join(','));
+        }
+
+        if (this.nameMode !== 'name') {
+            params.set('mode', this.nameMode);
+        }
+
+        const newURL = params.toString() ?
+            `${window.location.pathname}?${params.toString()}` :
+            window.location.pathname;
+
+        window.history.replaceState({}, '', newURL);
     }
 
     /**
@@ -226,6 +296,7 @@ class ComparisonMatrix {
         document.querySelectorAll('.name-mode input[type="radio"]').forEach(radio => {
             radio.addEventListener('change', (e) => {
                 this.nameMode = e.target.value;
+                this.updateURL();
                 this.render();
             });
         });
@@ -262,6 +333,7 @@ class ComparisonMatrix {
     addCity(cityId) {
         if (!this.selectedCities.includes(cityId)) {
             this.selectedCities.push(cityId);
+            this.updateURL();
             this.render();
         }
     }
@@ -271,6 +343,7 @@ class ComparisonMatrix {
      */
     removeCity(cityId) {
         this.selectedCities = this.selectedCities.filter(id => id !== cityId);
+        this.updateURL();
         this.render();
     }
 
@@ -294,6 +367,7 @@ class ComparisonMatrix {
         if (!this.selectedStreets.includes(streetName)) {
             this.selectedStreets.push(streetName);
             this.updateStreetList();
+            this.updateURL();
             this.render();
         }
     }
@@ -304,6 +378,7 @@ class ComparisonMatrix {
     removeStreet(streetName) {
         this.selectedStreets = this.selectedStreets.filter(s => s !== streetName);
         this.updateStreetList();
+        this.updateURL();
         this.render();
     }
 
@@ -313,6 +388,7 @@ class ComparisonMatrix {
     clearAllStreets() {
         this.selectedStreets = [];
         this.updateStreetList();
+        this.updateURL();
         this.render();
     }
 
@@ -323,6 +399,7 @@ class ComparisonMatrix {
         const streets = PRESETS[presetName] || [];
         this.selectedStreets = [...streets];
         this.updateStreetList();
+        this.updateURL();
         this.render();
     }
 
