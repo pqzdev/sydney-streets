@@ -17,7 +17,7 @@ let gridMapsSync = false; // Whether grid maps pan/zoom together
 let gridMaps = []; // Array of grid map instances
 let cityBoundaryLayer = null; // GCCSA polygon boundary layer
 let cityBoundaryData = null; // Loaded GCCSA boundary geometry
-let showBoundary = false; // Toggle for boundary visibility
+let showBoundary = true; // Toggle for boundary visibility (default: show)
 // Get city from URL parameter or default to sydney
 const urlParams = new URLSearchParams(window.location.search);
 let currentCity = urlParams.get('city') || 'sydney'; // Currently selected city
@@ -992,6 +992,16 @@ async function loadData() {
         // Update map with selected streets
         updateMap();
         updateStats();
+
+        // Show boundary by default
+        if (cityBoundaryData) {
+            toggleCityBoundary(true);
+            const btn = document.getElementById('boundary-toggle');
+            if (btn) {
+                btn.style.fontWeight = 'bold';
+                btn.style.backgroundColor = '#e74c3c';
+            }
+        }
 
         // Hide loading bar
         loadingBar.classList.remove('show');

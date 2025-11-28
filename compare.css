@@ -1,0 +1,457 @@
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background-color: #f5f5f5;
+    color: #333;
+    line-height: 1.6;
+}
+
+/* Container Layout */
+.container {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Control Panel */
+.control-panel {
+    background: white;
+    border-right: 1px solid #ddd;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    box-shadow: 2px 0 8px rgba(0,0,0,0.05);
+}
+
+.control-panel h2 {
+    font-size: 1.5rem;
+    padding: 1.5rem 1rem;
+    border-bottom: 2px solid #3498db;
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    color: white;
+    margin: 0;
+}
+
+.control-section {
+    padding: 1.25rem 1rem;
+    border-bottom: 1px solid #eee;
+}
+
+.control-section h3 {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    color: #666;
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+/* City Checkboxes */
+.city-checkboxes {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.city-checkboxes label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.city-checkboxes label:hover {
+    background-color: #f8f9fa;
+}
+
+.city-checkboxes input[type="checkbox"] {
+    margin-right: 0.5rem;
+    cursor: pointer;
+    width: 16px;
+    height: 16px;
+}
+
+/* Name Mode */
+.name-mode {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.name-mode label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.name-mode label:hover {
+    background-color: #f8f9fa;
+}
+
+.name-mode input[type="radio"] {
+    margin-right: 0.5rem;
+    cursor: pointer;
+}
+
+/* Street Search */
+.street-search {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+#street-search-input {
+    flex: 1;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+#street-search-input:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+#add-street-btn {
+    padding: 0.5rem 1rem;
+    background: #3498db;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+#add-street-btn:hover {
+    background: #2980b9;
+}
+
+/* Street List */
+.street-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    min-height: 40px;
+}
+
+.street-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.75rem;
+    background: #ecf0f1;
+    border-radius: 16px;
+    font-size: 0.85rem;
+    border: 1px solid #bdc3c7;
+}
+
+.street-chip .remove-btn {
+    background: none;
+    border: none;
+    color: #e74c3c;
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+    padding: 0;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.street-chip .remove-btn:hover {
+    color: #c0392b;
+}
+
+/* Preset Buttons */
+.preset-btn {
+    width: 100%;
+    padding: 0.6rem;
+    margin-bottom: 0.5rem;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.preset-btn:hover {
+    background: #f8f9fa;
+    border-color: #3498db;
+}
+
+.preset-btn:last-child {
+    margin-bottom: 0;
+}
+
+/* Danger Button */
+.danger-btn {
+    width: 100%;
+    padding: 0.6rem;
+    background: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.danger-btn:hover {
+    background: #c0392b;
+}
+
+/* Panel Footer */
+.panel-footer {
+    margin-top: auto;
+    padding: 1rem;
+    border-top: 1px solid #eee;
+    text-align: center;
+}
+
+.panel-footer a {
+    color: #3498db;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.panel-footer a:hover {
+    text-decoration: underline;
+}
+
+/* Matrix Container */
+.matrix-container {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: #fafafa;
+}
+
+.matrix-header {
+    padding: 2rem;
+    background: white;
+    border-bottom: 1px solid #ddd;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.matrix-header h1 {
+    font-size: 2rem;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+}
+
+.subtitle {
+    color: #7f8c8d;
+    font-size: 1rem;
+}
+
+.matrix-scroll {
+    flex: 1;
+    overflow: auto;
+    padding: 1rem;
+}
+
+/* Comparison Matrix Table */
+.comparison-matrix {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.comparison-matrix thead {
+    background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+    color: white;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.comparison-matrix th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #2c3e50;
+}
+
+.comparison-matrix th.street-name-header {
+    min-width: 200px;
+    position: sticky;
+    left: 0;
+    background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+    z-index: 11;
+    box-shadow: 2px 0 4px rgba(0,0,0,0.1);
+}
+
+.comparison-matrix th.city-header {
+    text-align: center;
+    min-width: 220px;
+}
+
+.comparison-matrix tbody tr {
+    border-bottom: 1px solid #ecf0f1;
+    transition: background-color 0.2s;
+}
+
+.comparison-matrix tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.comparison-matrix td {
+    padding: 0.75rem;
+}
+
+.comparison-matrix td.street-name-cell {
+    font-weight: 600;
+    color: #2c3e50;
+    position: sticky;
+    left: 0;
+    background: white;
+    box-shadow: 2px 0 4px rgba(0,0,0,0.05);
+    z-index: 9;
+}
+
+.comparison-matrix tbody tr:hover td.street-name-cell {
+    background-color: #f8f9fa;
+}
+
+.comparison-matrix td.map-cell {
+    text-align: center;
+    vertical-align: top;
+    padding: 1rem;
+}
+
+/* Mini Map Container */
+.mini-map-container {
+    display: inline-block;
+    text-align: center;
+}
+
+.mini-map {
+    width: 200px;
+    height: 150px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+    background: #f5f5f5;
+}
+
+.mini-map.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #95a5a6;
+    font-size: 0.85rem;
+}
+
+.street-count {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #3498db;
+}
+
+.street-count.zero {
+    color: #95a5a6;
+}
+
+/* Empty State */
+.empty-state td {
+    padding: 4rem 2rem;
+    text-align: center;
+}
+
+.empty-message {
+    color: #95a5a6;
+    font-size: 1.1rem;
+}
+
+.empty-message p {
+    margin: 0;
+}
+
+/* Matrix Footer */
+.matrix-footer {
+    padding: 1rem 2rem;
+    background: white;
+    border-top: 1px solid #ddd;
+    text-align: center;
+    font-size: 0.9rem;
+    color: #7f8c8d;
+}
+
+.matrix-footer a {
+    color: #3498db;
+    text-decoration: none;
+}
+
+.matrix-footer a:hover {
+    text-decoration: underline;
+}
+
+/* Scrollbar Styling */
+.matrix-scroll::-webkit-scrollbar,
+.control-panel::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.matrix-scroll::-webkit-scrollbar-track,
+.control-panel::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.matrix-scroll::-webkit-scrollbar-thumb,
+.control-panel::-webkit-scrollbar-thumb {
+    background: #bdc3c7;
+    border-radius: 4px;
+}
+
+.matrix-scroll::-webkit-scrollbar-thumb:hover,
+.control-panel::-webkit-scrollbar-thumb:hover {
+    background: #95a5a6;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .container {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr;
+    }
+
+    .control-panel {
+        border-right: none;
+        border-bottom: 1px solid #ddd;
+        max-height: 40vh;
+    }
+
+    .matrix-header h1 {
+        font-size: 1.5rem;
+    }
+
+    .mini-map {
+        width: 150px;
+        height: 120px;
+    }
+}
