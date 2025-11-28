@@ -8,9 +8,15 @@
  */
 function getBaseName(fullName) {
     if (!fullName) return '';
-    const suffixes = ['Street', 'Road', 'Avenue', 'Drive', 'Lane', 'Way', 'Place', 'Circuit', 'Crescent', 'Court',
-                      'Parade', 'Boulevard', 'Terrace', 'Close', 'Grove', 'Walk', 'Path', 'Mews', 'Square',
-                      'Esplanade', 'Promenade', 'Highway', 'Freeway', 'Parkway', 'Plaza', 'Loop', 'Row'];
+    // Order matters: more specific patterns first (e.g., "Road North" before "Road")
+    const suffixes = [
+        'Road South', 'Road North', 'Road West', 'Road East',
+        'Road S', 'Road N', 'Road W', 'Road E',
+        'Street', 'Road', 'Avenue', 'Drive', 'Lane', 'Way', 'Place', 'Circuit', 'Crescent', 'Court',
+        'Parade', 'Boulevard', 'Terrace', 'Close', 'Grove', 'Walk', 'Path', 'Mews', 'Square',
+        'Esplanade', 'Promenade', 'Highway', 'Motorway', 'Freeway', 'Parkway', 'Plaza', 'Loop', 'Row',
+        'Gateway', 'Tunnel', 'Corso'
+    ];
     let base = fullName;
     suffixes.forEach(suffix => {
         base = base.replace(new RegExp(`\\s+${suffix}$`, 'i'), '');
@@ -24,9 +30,15 @@ function getBaseName(fullName) {
  */
 function getStreetType(fullName) {
     if (!fullName) return '';
-    const suffixes = ['Street', 'Road', 'Avenue', 'Drive', 'Lane', 'Way', 'Place', 'Circuit', 'Crescent', 'Court',
-                      'Parade', 'Boulevard', 'Terrace', 'Close', 'Grove', 'Walk', 'Path', 'Mews', 'Square',
-                      'Esplanade', 'Promenade', 'Highway', 'Freeway', 'Parkway', 'Plaza', 'Loop', 'Row'];
+    // Order matters: more specific patterns first (e.g., "Road North" before "Road")
+    const suffixes = [
+        'Road South', 'Road North', 'Road West', 'Road East',
+        'Road S', 'Road N', 'Road W', 'Road E',
+        'Street', 'Road', 'Avenue', 'Drive', 'Lane', 'Way', 'Place', 'Circuit', 'Crescent', 'Court',
+        'Parade', 'Boulevard', 'Terrace', 'Close', 'Grove', 'Walk', 'Path', 'Mews', 'Square',
+        'Esplanade', 'Promenade', 'Highway', 'Motorway', 'Freeway', 'Parkway', 'Plaza', 'Loop', 'Row',
+        'Gateway', 'Tunnel', 'Corso'
+    ];
     for (const suffix of suffixes) {
         const regex = new RegExp(`\\s+(${suffix})$`, 'i');
         const match = fullName.match(regex);
