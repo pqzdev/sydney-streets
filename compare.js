@@ -7,51 +7,35 @@
 const CITY_CONFIG = {
     sydney: {
         name: 'Sydney',
-        center: [-33.8688, 151.2093],
-        countsFile: 'data/cities/sydney/counts.json',
-        streetsFile: 'data/cities/sydney/streets.geojson'
+        center: [-33.8688, 151.2093]
     },
     melbourne: {
         name: 'Melbourne',
-        center: [-37.8136, 144.9631],
-        countsFile: 'data/cities/melbourne/counts.json',
-        streetsFile: 'data/cities/melbourne/streets.geojson'
+        center: [-37.8136, 144.9631]
     },
     brisbane: {
         name: 'Brisbane',
-        center: [-27.4698, 153.0251],
-        countsFile: 'data/cities/brisbane/counts.json',
-        streetsFile: 'data/cities/brisbane/streets.geojson'
+        center: [-27.4698, 153.0251]
     },
     perth: {
         name: 'Perth',
-        center: [-31.9505, 115.8605],
-        countsFile: 'data/cities/perth/counts.json',
-        streetsFile: 'data/cities/perth/streets.geojson'
+        center: [-31.9505, 115.8605]
     },
     adelaide: {
         name: 'Adelaide',
-        center: [-34.9285, 138.6007],
-        countsFile: 'data/cities/adelaide/counts.json',
-        streetsFile: 'data/cities/adelaide/streets.geojson'
+        center: [-34.9285, 138.6007]
     },
     canberra: {
         name: 'Canberra',
-        center: [-35.2809, 149.1300],
-        countsFile: 'data/cities/canberra/counts.json',
-        streetsFile: 'data/cities/canberra/streets.geojson'
+        center: [-35.2809, 149.1300]
     },
     hobart: {
         name: 'Hobart',
-        center: [-42.8821, 147.3272],
-        countsFile: 'data/cities/hobart/counts.json',
-        streetsFile: 'data/cities/hobart/streets.geojson'
+        center: [-42.8821, 147.3272]
     },
     darwin: {
         name: 'Darwin',
-        center: [-12.4634, 130.8456],
-        countsFile: 'data/cities/darwin/counts.json',
-        streetsFile: 'data/cities/darwin/streets.geojson'
+        center: [-12.4634, 130.8456]
     }
 };
 
@@ -63,31 +47,34 @@ const PRESETS = {
 };
 
 /**
- * Data Loader - Handles loading and caching of city data
+ * Data Loader - Handles loading and caching of city data using the API
  */
 class ComparisonDataLoader {
     constructor() {
-        this.countsCache = {}; // Cache for counts.json files
+        this.countsCache = {}; // Cache for counts data
         this.geometryCache = {}; // Cache for street geometries
     }
 
     /**
-     * Load counts data for a city
+     * Load counts data for a city using the API
      */
     async loadCounts(cityId) {
         if (this.countsCache[cityId]) {
             return this.countsCache[cityId];
         }
 
-        const config = CITY_CONFIG[cityId];
-        const response = await fetch(config.countsFile);
-        const data = await response.json();
-        this.countsCache[cityId] = data;
-        return data;
+        try {
+            const data = await StreetAPI.getCounts(cityId);
+            this.countsCache[cityId] = data;
+            return data;
+        } catch (error) {
+            console.error(`Error loading counts for ${cityId}:`, error);
+            return { street_counts: {}, total_streets: 0 };
+        }
     }
 
     /**
-     * Load geometry data for a specific street in a city
+     * Load geometry data for a specific street in a city using the API
      */
     async loadStreetGeometry(cityId, streetName) {
         const cacheKey = `${cityId}:${streetName}`;
@@ -95,23 +82,17 @@ class ComparisonDataLoader {
             return this.geometryCache[cacheKey];
         }
 
-        const config = CITY_CONFIG[cityId];
-        const response = await fetch(config.streetsFile);
-        const geojson = await response.json();
-
-        // Filter features for this street name
-        const features = geojson.features.filter(f => {
-            const name = f.properties.name || '';
-            return name === streetName;
-        });
-
-        const result = {
-            type: 'FeatureCollection',
-            features: features
-        };
-
-        this.geometryCache[cacheKey] = result;
-        return result;
+        try {
+            const geojson = await StreetAPI.getStreetByName(cityId, streetName);
+            this.geometryCache[cacheKey] = geojson;
+            return geojson;
+        } catch (error) {
+            console.error(`Error loading geometry for ${cityId} - ${streetName}:`, error);
+            return {
+                type: 'FeatureCollection',
+                features: []
+            };
+        }
     }
 
     /**
@@ -120,7 +101,7 @@ class ComparisonDataLoader {
     async getStreetCount(cityId, streetName) {
         const counts = await this.loadCounts(cityId);
 
-        // counts.json has structure: { "street_counts": { "George": 52, ... } }
+        // API returns structure: { "street_counts": { "George": 52, ... } }
         if (counts.street_counts && counts.street_counts[streetName] !== undefined) {
             return counts.street_counts[streetName];
         }
