@@ -9,6 +9,14 @@ data/*.zip
 # Large GeoJSON files (kept locally, served via API from D1 database)
 data/*-roads-*.geojson
 data/cities/*/streets.geojson
+data/cities/*/streets.geojson.backup
+
+# Shapefiles (source data, not needed after extraction)
+data/boundaries/*.shp
+data/boundaries/*.shx
+data/boundaries/*.dbf
+data/boundaries/*.prj
+data/boundaries/*.cpg
 
 # Keep smaller files for fallback
 !data/sydney-roads-sample.geojson
