@@ -7,10 +7,11 @@ const StreetAPI = {
     /**
      * Get street counts for a city
      * @param {string} city - City name (e.g., 'sydney', 'melbourne')
-     * @returns {Promise<Object>} - Counts data with {method, total_streets, counts}
+     * @param {string} mode - Display mode ('name-only', 'name-type', 'type')
+     * @returns {Promise<Object>} - Counts data with {method, mode, total_streets, counts}
      */
-    async getCounts(city) {
-        const url = `${API_BASE_URL}/api/counts?city=${city}`;
+    async getCounts(city, mode = 'name-type') {
+        const url = `${API_BASE_URL}/api/counts?city=${city}&mode=${mode}`;
         const response = await fetch(url);
         if (!response.ok) {
             throw new Error(`Failed to fetch counts: ${response.statusText}`);
@@ -98,11 +99,12 @@ const StreetAPI = {
      * Load street counts (from API or static file)
      * @param {string} city - City name
      * @param {string} countsFile - Path to static counts file (fallback)
+     * @param {string} mode - Display mode ('name-only', 'name-type', 'type')
      * @returns {Promise<Object>} - Counts data
      */
-    async loadCounts(city, countsFile) {
+    async loadCounts(city, countsFile, mode = 'name-type') {
         if (USE_API) {
-            return await this.getCounts(city);
+            return await this.getCounts(city, mode);
         } else {
             try {
                 const response = await fetch(countsFile);

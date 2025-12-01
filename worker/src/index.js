@@ -131,10 +131,11 @@ async function handleStreetsRequest(url, env, corsHeaders) {
 }
 
 /**
- * GET /api/counts?city=sydney
+ * GET /api/counts?city=sydney&mode=name-only|name-type|type
  */
 async function handleCountsRequest(url, env, corsHeaders) {
   const city = url.searchParams.get('city');
+  const mode = url.searchParams.get('mode') || 'name-type'; // Default to full name
 
   if (!city) {
     return new Response(JSON.stringify({ error: 'city parameter required' }), {
@@ -143,22 +144,33 @@ async function handleCountsRequest(url, env, corsHeaders) {
     });
   }
 
-  // Get pre-computed street counts
+  // Select appropriate column based on mode
+  let groupByColumn;
+  if (mode === 'name-only') {
+    groupByColumn = 'base_name';
+  } else if (mode === 'type') {
+    groupByColumn = 'street_type';
+  } else {
+    groupByColumn = 'name'; // name-type mode uses full name
+  }
+
+  // Get pre-computed street counts grouped by the appropriate column
   const { results } = await env.DB.prepare(`
-    SELECT name, COUNT(DISTINCT instance_id) as count
+    SELECT ${groupByColumn} as street_name, COUNT(DISTINCT instance_id) as count
     FROM street_segments
-    WHERE city = ?
-    GROUP BY name
-    ORDER BY count DESC, name ASC
+    WHERE city = ? AND ${groupByColumn} IS NOT NULL AND ${groupByColumn} != ''
+    GROUP BY ${groupByColumn}
+    ORDER BY count DESC, ${groupByColumn} ASC
   `).bind(city).all();
 
   const counts = {};
   for (const row of results) {
-    counts[row.name] = row.count;
+    counts[row.street_name] = row.count;
   }
 
   return new Response(JSON.stringify({
     method: 'Grid 200m + Highway-Aware',
+    mode: mode,
     total_streets: results.length,
     counts
   }), {

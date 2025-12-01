@@ -763,7 +763,7 @@ function setViewMode(mode) {
     updateMap();
 }
 
-function setNameMode(mode) {
+async function setNameMode(mode) {
     nameMode = mode;
 
     // Update button states
@@ -777,6 +777,16 @@ function setNameMode(mode) {
     categoryLists.forEach(item => {
         item.classList.toggle('hidden', mode === 'type');
     });
+
+    // Reload counts with new mode (API mode only)
+    if (USE_API && cityConfigs[currentCity].countsFile) {
+        try {
+            precomputedCounts = await StreetAPI.loadCounts(currentCity, cityConfigs[currentCity].countsFile, nameMode);
+            console.log(`Reloaded counts for ${nameMode} mode`);
+        } catch (e) {
+            console.log('Error reloading counts:', e);
+        }
+    }
 
     // Rebuild unique names list based on mode
     processStreetData();
@@ -825,9 +835,8 @@ function saveSearch() {
     if (viewMode !== 'overlay') {
         params.set('view', viewMode);
     }
-    if (nameMode !== 'name-only') {
-        params.set('mode', nameMode);
-    }
+    // Always include mode in URL for clarity
+    params.set('mode', nameMode);
 
     // Update URL without reloading page
     const newUrl = params.toString() ? `${window.location.pathname}?${params.toString()}` : window.location.pathname;
@@ -973,9 +982,9 @@ async function loadData() {
         // Load pre-computed counts (from API or static file)
         if (cityConfig.countsFile) {
             try {
-                precomputedCounts = await StreetAPI.loadCounts(currentCity, cityConfig.countsFile);
+                precomputedCounts = await StreetAPI.loadCounts(currentCity, cityConfig.countsFile, nameMode);
                 if (precomputedCounts) {
-                    console.log(`Loaded pre-computed street counts for ${cityConfig.name} (Grid 200m + Highway-Aware)`);
+                    console.log(`Loaded pre-computed street counts for ${cityConfig.name} (Grid 200m + Highway-Aware), mode: ${nameMode}`);
                 }
             } catch (e) {
                 console.log('Pre-computed counts not available:', e);
@@ -1071,22 +1080,11 @@ function processStreetData() {
     const nameSet = new Set();
 
     // If using API mode with no features, build names from precomputed counts
+    // The API already returns mode-specific data (base_name, name, or street_type)
     if (USE_API && filteredFeatures.length === 0 && precomputedCounts && precomputedCounts.counts) {
-        console.log('API mode: Building street names from counts data');
-        Object.keys(precomputedCounts.counts).forEach(fullName => {
-            if (nameMode === 'name-only') {
-                const baseName = getBaseName(fullName);
-                if (baseName) {
-                    nameSet.add(baseName);
-                }
-            } else if (nameMode === 'type') {
-                const streetType = getStreetType(fullName);
-                if (streetType) {
-                    nameSet.add(streetType);
-                }
-            } else {
-                nameSet.add(fullName);
-            }
+        console.log(`API mode: Building street names from counts data (mode: ${nameMode})`);
+        Object.keys(precomputedCounts.counts).forEach(streetName => {
+            nameSet.add(streetName);
         });
     } else {
         // Build from features (static file mode or API mode with features)
@@ -1628,30 +1626,7 @@ function countAllStreets() {
     return nameCounts;
 }
 
-function getBaseName(fullName) {
-    if (!fullName) return '';
-    const suffixes = ['Street', 'Road', 'Avenue', 'Drive', 'Lane', 'Way', 'Place', 'Circuit', 'Crescent', 'Court'];
-    let base = fullName;
-    suffixes.forEach(suffix => {
-        base = base.replace(new RegExp(`\\s+${suffix}$`, 'i'), '');
-    });
-    return base.trim();
-}
-
-function getStreetType(fullName) {
-    if (!fullName) return '';
-    const suffixes = ['Street', 'Road', 'Avenue', 'Drive', 'Lane', 'Way', 'Place', 'Circuit', 'Crescent', 'Court',
-                      'Parade', 'Boulevard', 'Terrace', 'Close', 'Grove', 'Walk', 'Path', 'Mews', 'Square',
-                      'Esplanade', 'Promenade', 'Highway', 'Freeway', 'Parkway', 'Plaza', 'Loop', 'Row'];
-    for (const suffix of suffixes) {
-        const regex = new RegExp(`\\s+(${suffix})$`, 'i');
-        const match = fullName.match(regex);
-        if (match) {
-            return match[1]; // Return with original capitalization from the match
-        }
-    }
-    return ''; // No type found
-}
+// getBaseName() and getStreetType() are defined in utils.js
 
 // Group features into geographically distinct clusters (street instances)
 // Features that are close together belong to the same instance
