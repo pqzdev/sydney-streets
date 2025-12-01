@@ -695,11 +695,18 @@ class ComparisonMatrix {
 
         // Render second header row (individual city names)
         headerRow2.innerHTML = '';
+
+        // Calculate equal width for each city column
+        const cityColWidth = this.selectedCities.length > 0
+            ? `${100 / this.selectedCities.length}%`
+            : '100%';
+
         this.selectedCities.forEach(cityId => {
             const config = CITY_CONFIG[cityId];
             const th = document.createElement('th');
             th.className = 'city-header';
             th.textContent = config.name;
+            th.style.width = cityColWidth;
             headerRow2.appendChild(th);
         });
 

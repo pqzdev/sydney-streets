@@ -156,7 +156,7 @@ async function handleCountsRequest(url, env, corsHeaders) {
 
   // Get pre-computed street counts grouped by the appropriate column
   const { results } = await env.DB.prepare(`
-    SELECT ${groupByColumn} as street_name, COUNT(DISTINCT readableId) as count
+    SELECT ${groupByColumn} as street_name, COUNT(DISTINCT readable_id) as count
     FROM street_segments
     WHERE city = ? AND ${groupByColumn} IS NOT NULL AND ${groupByColumn} != ''
     GROUP BY ${groupByColumn}
