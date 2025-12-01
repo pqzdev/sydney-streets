@@ -958,8 +958,8 @@ function toggleCityBoundary(show) {
                 color: '#FF0000',
                 weight: 2,
                 opacity: 0.6,
-                fillOpacity: 0.05,
-                fillColor: '#FF0000',
+                fillOpacity: 0,
+                fill: false,
                 dashArray: '5, 10'
             }
         }).addTo(map);

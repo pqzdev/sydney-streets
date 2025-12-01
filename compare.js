@@ -224,9 +224,10 @@ class MiniMap {
             attributionControl: false
         });
 
-        // Add tile layer
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19
+        // Add tile layer (CartoDB Light - same as main page)
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
         }).addTo(this.map);
 
         // Load and display street geometry (handles mode-based matching)
@@ -310,10 +311,8 @@ class ComparisonMatrix {
      * Sync UI checkboxes and radio buttons with current state
      */
     syncUIWithState() {
-        // Sync city checkboxes
-        document.querySelectorAll('.city-checkboxes input[type="checkbox"]').forEach(checkbox => {
-            checkbox.checked = this.selectedCities.includes(checkbox.value);
-        });
+        // Render city checkboxes in order (selected first, then unselected)
+        this.renderCityCheckboxes();
 
         // Sync mode radio buttons
         document.querySelectorAll('.name-mode input[type="radio"]').forEach(radio => {
@@ -322,6 +321,91 @@ class ComparisonMatrix {
 
         // Update street list UI
         this.updateStreetList();
+    }
+
+    /**
+     * Render city checkboxes with drag-and-drop support
+     */
+    renderCityCheckboxes() {
+        const container = document.querySelector('.city-checkboxes');
+        container.innerHTML = '';
+
+        // Get all cities (selected first, maintaining order, then unselected)
+        const allCityIds = Object.keys(CITY_CONFIG);
+        const unselectedCities = allCityIds.filter(id => !this.selectedCities.includes(id));
+        const orderedCities = [...this.selectedCities, ...unselectedCities];
+
+        orderedCities.forEach(cityId => {
+            const config = CITY_CONFIG[cityId];
+            const isSelected = this.selectedCities.includes(cityId);
+
+            const label = document.createElement('label');
+            label.draggable = isSelected; // Only selected cities are draggable
+            label.dataset.cityId = cityId;
+            label.className = isSelected ? 'draggable' : '';
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.value = cityId;
+            checkbox.checked = isSelected;
+            checkbox.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    this.addCity(cityId);
+                } else {
+                    this.removeCity(cityId);
+                }
+            });
+
+            label.appendChild(checkbox);
+            label.appendChild(document.createTextNode(' ' + config.name));
+
+            // Add drag-and-drop event listeners for selected cities
+            if (isSelected) {
+                label.addEventListener('dragstart', (e) => this.handleDragStart(e));
+                label.addEventListener('dragend', (e) => this.handleDragEnd(e));
+                label.addEventListener('dragover', (e) => this.handleDragOver(e));
+                label.addEventListener('drop', (e) => this.handleDrop(e));
+            }
+
+            container.appendChild(label);
+        });
+    }
+
+    handleDragStart(e) {
+        e.target.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', e.target.dataset.cityId);
+    }
+
+    handleDragEnd(e) {
+        e.target.classList.remove('dragging');
+    }
+
+    handleDragOver(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+    }
+
+    handleDrop(e) {
+        e.preventDefault();
+        const draggedCityId = e.dataTransfer.getData('text/plain');
+        const targetCityId = e.target.closest('label').dataset.cityId;
+
+        if (draggedCityId === targetCityId) return;
+
+        // Reorder selectedCities array
+        const draggedIndex = this.selectedCities.indexOf(draggedCityId);
+        const targetIndex = this.selectedCities.indexOf(targetCityId);
+
+        if (draggedIndex !== -1 && targetIndex !== -1) {
+            this.selectedCities.splice(draggedIndex, 1);
+            const newTargetIndex = this.selectedCities.indexOf(targetCityId);
+            this.selectedCities.splice(newTargetIndex, 0, draggedCityId);
+
+            this.updateURL();
+            this.syncUIWithState();
+            this.render();
+        }
     }
 
     /**
@@ -338,9 +422,8 @@ class ComparisonMatrix {
             params.set('streets', this.selectedStreets.map(s => encodeURIComponent(s)).join(','));
         }
 
-        if (this.nameMode !== 'name-only') {
-            params.set('mode', this.nameMode);
-        }
+        // Always include mode in URL
+        params.set('mode', this.nameMode);
 
         const newURL = params.toString() ?
             `${window.location.pathname}?${params.toString()}` :
@@ -353,17 +436,7 @@ class ComparisonMatrix {
      * Bind event listeners
      */
     bindEvents() {
-        // City checkboxes
-        document.querySelectorAll('.city-checkboxes input[type="checkbox"]').forEach(checkbox => {
-            checkbox.addEventListener('change', (e) => {
-                const cityId = e.target.value;
-                if (e.target.checked) {
-                    this.addCity(cityId);
-                } else {
-                    this.removeCity(cityId);
-                }
-            });
-        });
+        // City checkboxes are handled in renderCityCheckboxes()
 
         // Name mode radio buttons
         document.querySelectorAll('.name-mode input[type="radio"]').forEach(radio => {
@@ -504,21 +577,36 @@ class ComparisonMatrix {
      * Render the comparison matrix
      */
     async render() {
-        const headerRow = document.getElementById('matrix-header-row');
+        const headerRow1 = document.getElementById('matrix-header-row-1');
+        const headerRow2 = document.getElementById('matrix-header-row-2');
         const tbody = document.getElementById('matrix-body');
 
         // Clear existing mini maps
         Object.values(this.miniMaps).forEach(map => map.destroy());
         this.miniMaps = {};
 
-        // Render header
-        headerRow.innerHTML = '<th class="street-name-header">Street Name</th>';
+        // Render first header row (Metro area label)
+        // Clear existing city headers (keep Street Name which has rowspan=2)
+        while (headerRow1.children.length > 1) {
+            headerRow1.removeChild(headerRow1.lastChild);
+        }
+
+        if (this.selectedCities.length > 0) {
+            const metroTh = document.createElement('th');
+            metroTh.className = 'metro-area-header';
+            metroTh.colSpan = this.selectedCities.length;
+            metroTh.textContent = 'Metro area';
+            headerRow1.appendChild(metroTh);
+        }
+
+        // Render second header row (individual city names)
+        headerRow2.innerHTML = '';
         this.selectedCities.forEach(cityId => {
             const config = CITY_CONFIG[cityId];
             const th = document.createElement('th');
             th.className = 'city-header';
             th.textContent = config.name;
-            headerRow.appendChild(th);
+            headerRow2.appendChild(th);
         });
 
         // Render body
@@ -605,16 +693,12 @@ class ComparisonMatrix {
                             this.miniMaps[containerId] = miniMap;
                         }
                     } else {
-                        // No streets found
+                        // No streets found - just show empty grey square
                         const container = document.getElementById(containerId);
                         if (container) {
                             container.classList.remove('loading');
-                            container.textContent = 'No data';
-                            container.style.display = 'flex';
-                            container.style.alignItems = 'center';
-                            container.style.justifyContent = 'center';
-                            container.style.fontSize = '0.85rem';
-                            container.style.color = '#95a5a6';
+                            container.textContent = '';
+                            container.classList.add('no-data');
                         }
                     }
                 } catch (error) {
