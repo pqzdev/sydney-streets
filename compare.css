@@ -333,16 +333,17 @@ body {
 
 .comparison-matrix tbody {
     flex: 1;
-    display: table;
+    display: grid;
+    grid-auto-rows: 1fr;
     width: 100%;
-    table-layout: fixed;
 }
 
 .comparison-matrix tbody tr {
     border-bottom: 1px solid #ecf0f1;
     transition: background-color 0.2s;
-    display: table-row;
-    height: 100%;
+    display: flex;
+    width: 100%;
+    min-height: 0;
 }
 
 .comparison-matrix tbody tr:hover {
@@ -351,7 +352,6 @@ body {
 
 .comparison-matrix td {
     padding: 0;
-    display: table-cell;
     height: 100%;
 }
 
@@ -366,7 +366,9 @@ body {
     width: 150px;
     min-width: 100px;
     max-width: 400px;
-    vertical-align: middle;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
 }
 
 .comparison-matrix tbody tr:hover td.street-name-cell {
@@ -375,11 +377,12 @@ body {
 
 .comparison-matrix td.map-cell {
     text-align: center;
-    vertical-align: top;
     padding: 0;
     border: 2px solid white;
     position: relative;
     height: 100%;
+    flex: 1;
+    min-width: 0;
 }
 
 /* Mini Map Container */
