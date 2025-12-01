@@ -248,6 +248,25 @@ class MiniMap {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
         }).addTo(this.map);
 
+        // Load and display metro boundary
+        try {
+            const boundaryData = await StreetAPI.getBoundary(this.cityId);
+            if (boundaryData && boundaryData.features && boundaryData.features.length > 0) {
+                L.geoJSON(boundaryData, {
+                    style: {
+                        color: '#FF0000',
+                        weight: 1,
+                        opacity: 0.4,
+                        fillOpacity: 0,
+                        fill: false,
+                        dashArray: '5, 10'
+                    }
+                }).addTo(this.map);
+            }
+        } catch (error) {
+            console.log('Could not load boundary for', this.cityId);
+        }
+
         // Load and display street geometry (handles mode-based matching)
         const geometry = await dataLoader.loadStreetGeometry(this.cityId, this.streetName, this.mode);
 

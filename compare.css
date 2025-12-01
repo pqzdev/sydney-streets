@@ -275,8 +275,7 @@ body {
 /* Comparison Matrix Table */
 .comparison-matrix {
     width: 100%;
-    height: 100%;
-    table-layout: fixed;
+    table-layout: auto;
     border-collapse: separate;
     border-spacing: 0;
     background: white;
@@ -291,7 +290,7 @@ body {
 }
 
 .comparison-matrix th {
-    padding: 1rem;
+    padding: 0.75rem;
     text-align: left;
     font-weight: 600;
     border-bottom: 2px solid #2c3e50;
@@ -299,14 +298,14 @@ body {
 
 .comparison-matrix th.street-name-header {
     width: 150px;
+    min-width: 100px;
+    max-width: 400px;
     position: sticky;
     left: 0;
     background: #5a6c7d;
     color: white;
     z-index: 11;
     box-shadow: 2px 0 4px rgba(0,0,0,0.1);
-    resize: horizontal;
-    overflow: hidden;
 }
 
 .comparison-matrix th.metro-area-header {
@@ -326,7 +325,6 @@ body {
 .comparison-matrix tbody tr {
     border-bottom: 1px solid #ecf0f1;
     transition: background-color 0.2s;
-    height: 250px;
 }
 
 .comparison-matrix tbody tr:hover {
@@ -335,7 +333,6 @@ body {
 
 .comparison-matrix td {
     padding: 0;
-    height: 100%;
 }
 
 .comparison-matrix td.street-name-cell {
@@ -347,6 +344,8 @@ body {
     z-index: 9;
     padding: 0.75rem 0.75rem 0.75rem 1rem;
     width: 150px;
+    min-width: 100px;
+    max-width: 400px;
     vertical-align: middle;
 }
 
@@ -360,15 +359,13 @@ body {
     padding: 0;
     border: 2px solid white;
     position: relative;
-    height: 100%;
 }
 
 /* Mini Map Container */
 .mini-map-container {
     position: relative;
     width: 100%;
-    height: 100%;
-    min-height: 250px;
+    height: 300px;
 }
 
 .mini-map {
