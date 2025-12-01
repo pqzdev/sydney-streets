@@ -1194,19 +1194,31 @@ async function updateMap() {
         console.log('API mode: Fetching geometries for selected streets');
         selectedFeatures = [];
 
+        // Get full name list for matching (always use name-type mode for geometry lookups)
+        const fullNameData = await StreetAPI.getCounts(currentCity, 'name-type');
+        const allFullNames = Object.keys(fullNameData.counts || {});
+
         // Fetch geometry for each selected street name
         for (const selectedName of selectedStreetNames) {
             try {
-                // Get all matching street names from counts
-                const matchingNames = Object.keys(precomputedCounts.counts).filter(fullName => {
-                    if (nameMode === 'name-only') {
-                        return getBaseName(fullName).toLowerCase() === selectedName.toLowerCase();
-                    } else if (nameMode === 'type') {
-                        return getStreetType(fullName) === selectedName;
-                    } else {
-                        return fullName.toLowerCase() === selectedName.toLowerCase();
-                    }
-                });
+                // Get all matching full street names based on current mode
+                let matchingNames;
+                if (nameMode === 'name-only') {
+                    // Find all full names with this base name
+                    matchingNames = allFullNames.filter(fullName =>
+                        getBaseName(fullName).toLowerCase() === selectedName.toLowerCase()
+                    );
+                } else if (nameMode === 'type') {
+                    // Find all full names with this street type
+                    matchingNames = allFullNames.filter(fullName =>
+                        getStreetType(fullName).toLowerCase() === selectedName.toLowerCase()
+                    );
+                } else {
+                    // Exact match for name-type mode
+                    matchingNames = allFullNames.filter(fullName =>
+                        fullName.toLowerCase() === selectedName.toLowerCase()
+                    );
+                }
 
                 // Fetch geometry for each matching name
                 for (const fullName of matchingNames) {

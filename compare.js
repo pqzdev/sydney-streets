@@ -58,18 +58,19 @@ class ComparisonDataLoader {
     /**
      * Load counts data for a city using the API
      */
-    async loadCounts(cityId) {
-        if (this.countsCache[cityId]) {
-            return this.countsCache[cityId];
+    async loadCounts(cityId, mode = 'name-type') {
+        const cacheKey = `${cityId}:${mode}`;
+        if (this.countsCache[cacheKey]) {
+            return this.countsCache[cacheKey];
         }
 
         try {
-            const data = await StreetAPI.getCounts(cityId);
-            this.countsCache[cityId] = data;
+            const data = await StreetAPI.getCounts(cityId, mode);
+            this.countsCache[cacheKey] = data;
             return data;
         } catch (error) {
             console.error(`Error loading counts for ${cityId}:`, error);
-            return { street_counts: {}, total_streets: 0 };
+            return { counts: {}, total_streets: 0 };
         }
     }
 
@@ -128,60 +129,64 @@ class ComparisonDataLoader {
 
     /**
      * Get all street names that match the search term based on mode
+     * Returns full street names (for fetching geometry)
      */
     async getMatchingStreetNames(cityId, searchName, mode) {
-        const counts = await this.loadCounts(cityId);
-        const allNames = Object.keys(counts.street_counts || {});
-
-        switch (mode) {
-            case 'name-only':
-                // Match by base name only (e.g., "George" matches "George Street", "George Road")
-                const searchBase = getBaseName(searchName).toLowerCase();
-                return allNames.filter(fullName =>
-                    getBaseName(fullName).toLowerCase() === searchBase
-                );
-
-            case 'type':
-                // Match by street type only (e.g., "Street" matches all streets)
-                const searchType = getStreetType(searchName).toLowerCase() || searchName.toLowerCase();
-                return allNames.filter(fullName =>
-                    getStreetType(fullName).toLowerCase() === searchType
-                );
-
-            case 'name-type':
-            default:
-                // Exact match for full name
-                return allNames.filter(fullName =>
-                    fullName.toLowerCase() === searchName.toLowerCase()
-                );
+        if (mode === 'name-type') {
+            // For name-type mode, searchName is already the full name
+            return [searchName];
         }
+
+        // For name-only and type modes, we need to find all full names that match
+        // Get the full name list from name-type mode
+        const fullNameData = await this.loadCounts(cityId, 'name-type');
+        const allFullNames = Object.keys(fullNameData.counts || {});
+
+        if (mode === 'name-only') {
+            // Find all full names with this base name
+            return allFullNames.filter(fullName =>
+                getBaseName(fullName).toLowerCase() === searchName.toLowerCase()
+            );
+        } else if (mode === 'type') {
+            // Find all full names with this street type
+            return allFullNames.filter(fullName =>
+                getStreetType(fullName).toLowerCase() === searchName.toLowerCase()
+            );
+        }
+
+        return [];
     }
 
     /**
      * Get count for a specific street in a city
-     * Aggregates counts based on the mode (name-only, type-only, or exact)
+     * In the new API, the count is already aggregated based on mode
      */
     async getStreetCount(cityId, searchName, mode) {
-        const matchingNames = await this.getMatchingStreetNames(cityId, searchName, mode);
-        const counts = await this.loadCounts(cityId);
+        const data = await this.loadCounts(cityId, mode);
 
-        // Sum up all matching counts
-        let totalCount = 0;
-        for (const streetName of matchingNames) {
-            if (counts.street_counts && counts.street_counts[streetName] !== undefined) {
-                totalCount += counts.street_counts[streetName];
+        // Direct lookup since API already aggregates by mode
+        // Try exact match first, then case-insensitive search
+        if (data.counts[searchName] !== undefined) {
+            return data.counts[searchName];
+        }
+
+        // Case-insensitive fallback
+        const lowerSearch = searchName.toLowerCase();
+        for (const [name, count] of Object.entries(data.counts)) {
+            if (name.toLowerCase() === lowerSearch) {
+                return count;
             }
         }
 
-        return totalCount;
+        return 0;
     }
 
     /**
      * Get all street names from a city (for autocomplete)
      */
-    async getAllStreetNames(cityId) {
-        const counts = await this.loadCounts(cityId);
-        return Object.keys(counts.street_counts || {}).sort();
+    async getAllStreetNames(cityId, mode = 'name-type') {
+        const data = await this.loadCounts(cityId, mode);
+        return Object.keys(data.counts || {}).sort();
     }
 }
 
