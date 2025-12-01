@@ -843,7 +843,7 @@ function saveSearch() {
     window.history.replaceState({}, '', newUrl);
 }
 
-function loadSearch() {
+async function loadSearch() {
     // Try URL parameters first
     const urlParams = new URLSearchParams(window.location.search);
     const streetsParam = urlParams.get('streets');
@@ -856,6 +856,18 @@ function loadSearch() {
         document.getElementById('mode-name-only').classList.toggle('active', nameMode === 'name-only');
         document.getElementById('mode-name-type').classList.toggle('active', nameMode === 'name-type');
         document.getElementById('mode-type').classList.toggle('active', nameMode === 'type');
+
+        // Reload counts with correct mode (API mode only)
+        const cityConfig = cityConfigs[currentCity];
+        if (USE_API && cityConfig.countsFile) {
+            try {
+                precomputedCounts = await StreetAPI.loadCounts(currentCity, cityConfig.countsFile, nameMode);
+                console.log(`Reloaded counts for ${nameMode} mode from URL`);
+            } catch (e) {
+                console.log('Error reloading counts:', e);
+            }
+        }
+
         processStreetData(); // Rebuild street names with correct mode
     }
 
@@ -996,7 +1008,7 @@ async function loadData() {
         processStreetData();
 
         // Load saved search or default
-        loadSearch();
+        await loadSearch();
 
         // Update map with selected streets
         updateMap();
