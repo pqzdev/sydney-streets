@@ -799,4 +799,70 @@ const matrix = new ComparisonMatrix();
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
     matrix.init();
+    initializeResizableStreetColumn();
 });
+
+/**
+ * Make the street name column resizable
+ */
+function initializeResizableStreetColumn() {
+    const streetNameHeader = document.querySelector('.street-name-header');
+    if (!streetNameHeader) return;
+
+    let isResizing = false;
+    let startX = 0;
+    let startWidth = 0;
+
+    // Create resize handle
+    const resizeHandle = document.createElement('div');
+    resizeHandle.style.cssText = `
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        width: 5px;
+        cursor: col-resize;
+        background: transparent;
+        z-index: 1000;
+    `;
+    resizeHandle.addEventListener('mouseenter', () => {
+        resizeHandle.style.background = 'rgba(255, 255, 255, 0.3)';
+    });
+    resizeHandle.addEventListener('mouseleave', () => {
+        if (!isResizing) resizeHandle.style.background = 'transparent';
+    });
+
+    streetNameHeader.style.position = 'relative';
+    streetNameHeader.appendChild(resizeHandle);
+
+    resizeHandle.addEventListener('mousedown', (e) => {
+        isResizing = true;
+        startX = e.clientX;
+        startWidth = streetNameHeader.offsetWidth;
+        document.body.style.cursor = 'col-resize';
+        e.preventDefault();
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (!isResizing) return;
+
+        const delta = e.clientX - startX;
+        const newWidth = Math.max(100, Math.min(400, startWidth + delta));
+
+        // Update street name header width
+        streetNameHeader.style.width = `${newWidth}px`;
+
+        // Update all street name cells
+        document.querySelectorAll('.street-name-cell').forEach(cell => {
+            cell.style.width = `${newWidth}px`;
+        });
+    });
+
+    document.addEventListener('mouseup', () => {
+        if (isResizing) {
+            isResizing = false;
+            document.body.style.cursor = '';
+            resizeHandle.style.background = 'transparent';
+        }
+    });
+}

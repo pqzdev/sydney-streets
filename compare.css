@@ -247,39 +247,39 @@ body {
 }
 
 .matrix-header {
-    padding: 2rem;
+    padding: 0.75rem 1rem;
     background: white;
     border-bottom: 1px solid #ddd;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    flex-shrink: 0;
 }
 
 .matrix-header h1 {
-    font-size: 2rem;
+    font-size: 1.25rem;
     color: #2c3e50;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.25rem;
 }
 
 .subtitle {
     color: #7f8c8d;
-    font-size: 1rem;
+    font-size: 0.85rem;
 }
 
 .matrix-scroll {
     flex: 1;
     overflow: auto;
-    padding: 1rem;
+    padding: 0;
+    height: 100%;
 }
 
 /* Comparison Matrix Table */
 .comparison-matrix {
     width: 100%;
-    table-layout: auto;
+    height: 100%;
+    table-layout: fixed;
     border-collapse: separate;
     border-spacing: 0;
     background: white;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    border-radius: 8px;
-    overflow: hidden;
 }
 
 .comparison-matrix thead {
@@ -298,13 +298,15 @@ body {
 }
 
 .comparison-matrix th.street-name-header {
-    min-width: 200px;
+    width: 150px;
     position: sticky;
     left: 0;
     background: #5a6c7d;
     color: white;
     z-index: 11;
     box-shadow: 2px 0 4px rgba(0,0,0,0.1);
+    resize: horizontal;
+    overflow: hidden;
 }
 
 .comparison-matrix th.metro-area-header {
@@ -317,7 +319,6 @@ body {
 
 .comparison-matrix th.city-header {
     text-align: center;
-    width: auto;
     background: #2c3e50;
     color: white;
 }
@@ -325,6 +326,7 @@ body {
 .comparison-matrix tbody tr {
     border-bottom: 1px solid #ecf0f1;
     transition: background-color 0.2s;
+    height: 250px;
 }
 
 .comparison-matrix tbody tr:hover {
@@ -332,7 +334,8 @@ body {
 }
 
 .comparison-matrix td {
-    padding: 0.75rem;
+    padding: 0;
+    height: 100%;
 }
 
 .comparison-matrix td.street-name-cell {
@@ -342,7 +345,9 @@ body {
     background: #f5f5f5;
     box-shadow: 2px 0 4px rgba(0,0,0,0.05);
     z-index: 9;
-    padding-left: 1rem;
+    padding: 0.75rem 0.75rem 0.75rem 1rem;
+    width: 150px;
+    vertical-align: middle;
 }
 
 .comparison-matrix tbody tr:hover td.street-name-cell {
@@ -355,13 +360,15 @@ body {
     padding: 0;
     border: 2px solid white;
     position: relative;
+    height: 100%;
 }
 
 /* Mini Map Container */
 .mini-map-container {
     position: relative;
     width: 100%;
-    height: 200px;
+    height: 100%;
+    min-height: 250px;
 }
 
 .mini-map {
@@ -417,12 +424,13 @@ body {
 
 /* Matrix Footer */
 .matrix-footer {
-    padding: 1rem 2rem;
+    padding: 0.5rem 1rem;
     background: white;
     border-top: 1px solid #ddd;
     text-align: center;
-    font-size: 0.9rem;
+    font-size: 0.75rem;
     color: #7f8c8d;
+    flex-shrink: 0;
 }
 
 .matrix-footer a {
