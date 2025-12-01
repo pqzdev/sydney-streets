@@ -267,7 +267,7 @@ body {
 
 .matrix-scroll {
     flex: 1;
-    overflow: auto;
+    overflow: hidden;
     padding: 0;
     display: flex;
     flex-direction: column;
@@ -276,18 +276,25 @@ body {
 /* Comparison Matrix Table */
 .comparison-matrix {
     width: 100%;
+    height: 100%;
     table-layout: fixed;
     border-collapse: separate;
     border-spacing: 0;
     background: white;
+    display: flex;
+    flex-direction: column;
 }
 
 .comparison-matrix thead {
     background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
     color: white;
-    position: sticky;
-    top: 0;
-    z-index: 10;
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+}
+
+.comparison-matrix thead tr {
+    display: table-row;
 }
 
 .comparison-matrix th {
@@ -295,6 +302,7 @@ body {
     text-align: left;
     font-weight: 600;
     border-bottom: 2px solid #2c3e50;
+    display: table-cell;
 }
 
 .comparison-matrix th.street-name-header {
@@ -323,9 +331,18 @@ body {
     color: white;
 }
 
+.comparison-matrix tbody {
+    flex: 1;
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+}
+
 .comparison-matrix tbody tr {
     border-bottom: 1px solid #ecf0f1;
     transition: background-color 0.2s;
+    display: table-row;
+    height: 100%;
 }
 
 .comparison-matrix tbody tr:hover {
@@ -334,6 +351,8 @@ body {
 
 .comparison-matrix td {
     padding: 0;
+    display: table-cell;
+    height: 100%;
 }
 
 .comparison-matrix td.street-name-cell {
@@ -360,13 +379,14 @@ body {
     padding: 0;
     border: 2px solid white;
     position: relative;
+    height: 100%;
 }
 
 /* Mini Map Container */
 .mini-map-container {
     position: relative;
     width: 100%;
-    height: 300px;
+    height: 100%;
 }
 
 .mini-map {
