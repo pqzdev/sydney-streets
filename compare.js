@@ -3,6 +3,24 @@
  * Compare street name distributions across Australian capital cities
  */
 
+/**
+ * Generate a consistent color for a street name using a hash function
+ */
+function getStreetColor(streetName) {
+    // Simple hash function
+    let hash = 0;
+    for (let i = 0; i < streetName.length; i++) {
+        hash = streetName.charCodeAt(i) + ((hash << 5) - hash);
+    }
+
+    // Convert hash to HSL color (hue varies, saturation and lightness fixed for good contrast)
+    const hue = Math.abs(hash % 360);
+    const saturation = 65; // Good color saturation
+    const lightness = 45; // Dark enough for contrast on white
+
+    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+}
+
 // Configuration
 const CITY_CONFIG = {
     sydney: {
@@ -234,11 +252,39 @@ class MiniMap {
         const geometry = await dataLoader.loadStreetGeometry(this.cityId, this.streetName, this.mode);
 
         if (geometry.features.length > 0) {
+            const streetColor = getStreetColor(this.streetName);
+
+            // Get sorted unique readable IDs (alphabetically)
+            const sortedReadableIds = Array.from(new Set(
+                geometry.features
+                    .map(f => f.properties.readableId)
+                    .filter(id => id)
+            )).sort();
+
             this.layer = L.geoJSON(geometry, {
                 style: {
-                    color: '#e74c3c',
+                    color: streetColor,
                     weight: 3,
-                    opacity: 0.8
+                    opacity: 0.9
+                },
+                onEachFeature: (feature, layer) => {
+                    const fullStreetName = feature.properties.name || '';
+                    const highway = feature.properties.highway || '';
+                    const displayName = fullStreetName ? `${fullStreetName}` : highway;
+                    const readableId = feature.properties.readableId;
+
+                    if (readableId && sortedReadableIds.length > 0) {
+                        const instanceRank = sortedReadableIds.indexOf(readableId) + 1;
+                        const totalInstances = sortedReadableIds.length;
+                        layer.bindPopup(`<b>${displayName}</b><br>Instance #${instanceRank} of ${totalInstances}<br><span style="font-size: 0.85em; color: #999;">${readableId}</span>`);
+                    } else {
+                        const totalInstances = sortedReadableIds.length;
+                        if (totalInstances > 0) {
+                            layer.bindPopup(`<b>${displayName}</b><br>${totalInstances} instance${totalInstances !== 1 ? 's' : ''} total`);
+                        } else {
+                            layer.bindPopup(`<b>${displayName}</b>`);
+                        }
+                    }
                 }
             }).addTo(this.map);
 
@@ -364,6 +410,8 @@ class ComparisonMatrix {
                 label.addEventListener('dragstart', (e) => this.handleDragStart(e));
                 label.addEventListener('dragend', (e) => this.handleDragEnd(e));
                 label.addEventListener('dragover', (e) => this.handleDragOver(e));
+                label.addEventListener('dragenter', (e) => this.handleDragEnter(e));
+                label.addEventListener('dragleave', (e) => this.handleDragLeave(e));
                 label.addEventListener('drop', (e) => this.handleDrop(e));
             }
 
@@ -379,31 +427,58 @@ class ComparisonMatrix {
 
     handleDragEnd(e) {
         e.target.classList.remove('dragging');
+        // Remove drag-over class from all labels
+        document.querySelectorAll('.city-checkboxes label.drag-over').forEach(label => {
+            label.classList.remove('drag-over');
+        });
+    }
+
+    handleDragEnter(e) {
+        const targetLabel = e.currentTarget;
+        if (targetLabel.classList.contains('draggable') && !targetLabel.classList.contains('dragging')) {
+            targetLabel.classList.add('drag-over');
+        }
+    }
+
+    handleDragLeave(e) {
+        const targetLabel = e.currentTarget;
+        targetLabel.classList.remove('drag-over');
     }
 
     handleDragOver(e) {
+        if (!e.currentTarget.classList.contains('draggable')) return;
         e.preventDefault();
         e.dataTransfer.dropEffect = 'move';
     }
 
     handleDrop(e) {
         e.preventDefault();
-        const draggedCityId = e.dataTransfer.getData('text/plain');
-        const targetCityId = e.target.closest('label').dataset.cityId;
+        e.stopPropagation();
 
-        if (draggedCityId === targetCityId) return;
+        const targetLabel = e.currentTarget;
+        targetLabel.classList.remove('drag-over');
+
+        const draggedCityId = e.dataTransfer.getData('text/plain');
+        const targetCityId = targetLabel.dataset.cityId;
+
+        if (!draggedCityId || !targetCityId || draggedCityId === targetCityId) return;
 
         // Reorder selectedCities array
         const draggedIndex = this.selectedCities.indexOf(draggedCityId);
         const targetIndex = this.selectedCities.indexOf(targetCityId);
 
         if (draggedIndex !== -1 && targetIndex !== -1) {
+            // Remove dragged item
             this.selectedCities.splice(draggedIndex, 1);
+
+            // Find new position of target (might have shifted)
             const newTargetIndex = this.selectedCities.indexOf(targetCityId);
+
+            // Insert dragged item at target position
             this.selectedCities.splice(newTargetIndex, 0, draggedCityId);
 
             this.updateURL();
-            this.syncUIWithState();
+            this.renderCityCheckboxes();
             this.render();
         }
     }
@@ -631,10 +706,13 @@ class ComparisonMatrix {
         for (const streetName of this.selectedStreets) {
             const row = document.createElement('tr');
 
-            // Street name cell
+            // Street name cell with color
             const nameCell = document.createElement('td');
             nameCell.className = 'street-name-cell';
             nameCell.textContent = streetName;
+            const streetColor = getStreetColor(streetName);
+            nameCell.style.borderLeft = `4px solid ${streetColor}`;
+            nameCell.style.color = streetColor;
             row.appendChild(nameCell);
 
             // City cells

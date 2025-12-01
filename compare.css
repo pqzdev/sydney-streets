@@ -273,6 +273,7 @@ body {
 /* Comparison Matrix Table */
 .comparison-matrix {
     width: 100%;
+    table-layout: auto;
     border-collapse: separate;
     border-spacing: 0;
     background: white;
@@ -300,25 +301,25 @@ body {
     min-width: 200px;
     position: sticky;
     left: 0;
-    background: #2c3e50;
+    background: #5a6c7d;
     color: white;
     z-index: 11;
     box-shadow: 2px 0 4px rgba(0,0,0,0.1);
 }
 
 .comparison-matrix th.metro-area-header {
-    text-align: center;
-    background: #e0e0e0;
-    color: #333;
+    text-align: left;
+    background: #2c3e50;
+    color: white;
     font-weight: 600;
-    border-bottom: 1px solid #ccc;
+    border-bottom: 1px solid #1a252f;
 }
 
 .comparison-matrix th.city-header {
     text-align: center;
-    min-width: 220px;
-    background: #f5f5f5;
-    color: #333;
+    width: auto;
+    background: #2c3e50;
+    color: white;
 }
 
 .comparison-matrix tbody tr {
@@ -336,12 +337,12 @@ body {
 
 .comparison-matrix td.street-name-cell {
     font-weight: 600;
-    color: #2c3e50;
     position: sticky;
     left: 0;
-    background: white;
+    background: #f5f5f5;
     box-shadow: 2px 0 4px rgba(0,0,0,0.05);
     z-index: 9;
+    padding-left: 1rem;
 }
 
 .comparison-matrix tbody tr:hover td.street-name-cell {
@@ -360,14 +361,12 @@ body {
 .mini-map-container {
     position: relative;
     width: 100%;
-    height: 100%;
-    min-height: 200px;
+    height: 200px;
 }
 
 .mini-map {
     width: 100%;
     height: 100%;
-    min-height: 200px;
     background: #f5f5f5;
 }
 
@@ -488,6 +487,7 @@ body {
 .city-checkboxes label.draggable {
     cursor: move;
     user-select: none;
+    transition: background-color 0.2s, opacity 0.2s;
 }
 
 .city-checkboxes label.draggable:hover {
@@ -497,6 +497,12 @@ body {
 
 .city-checkboxes label.dragging {
     opacity: 0.5;
+}
+
+.city-checkboxes label.drag-over {
+    background-color: #e3f2fd;
+    border-radius: 3px;
+    border: 1px dashed #3498db;
 }
 
 /* No data state */
